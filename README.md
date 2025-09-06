@@ -1,53 +1,77 @@
-SENSITIVITY (HASX)
-===================
+Sensitivity: Mi Assistant CLI
+=============================
 
-MiAssistant reimplementation in Rust: a clean, safe, production-ready CLI that talks ADB over USB (Mi Assistant mode), validates Xiaomi Recovery ROMs against the miotaV3 endpoint, and sideloads in 64 KiB chunks.
+Sensitivity is a modern, Rust-based reimplementation of Xiaomi’s Mi Assistant flashing flow. It speaks the ADB protocol directly over USB (no adb.exe required), validates Recovery ROMs against Xiaomi’s `miotaV3` endpoint, and sideloads with robust progress, error reporting, and cross‑region handling.
 
-Key features
-- Pure Rust, no adb.exe required
-- USB via libusb (`rusb`): detects Mi Assistant interface 0xff/0x42/1
-- ADB mini-protocol implementation (CONNECT/OPEN/WRTE/OKAY/CLSE)
-- Xiaomi custom commands: getdevice, getsn, getversion, getcodebase, getbranch, getlanguage, getregion, getromzone, format-data, reboot
-- ROM validation: AES-128-CBC + Base64 framing, HTTP(S) POST; robust diagnostics
-- Sideload: `sideload-host:{size}:{chunk}:{token}:0`, 64 KiB chunks, smooth progress bar
+Highlights
+- Pure Rust, production‑ready, no external ADB needed
+- Direct USB via `rusb` (Mi Assistant interface 0xff/0x42/1)
+- Minimal ADB protocol (CONNECT/OPEN/WRTE/OKAY/CLSE)
+- Xiaomi commands: `getdevice`, `getsn`, `getversion`, `getcodebase`, `getbranch`, `getlanguage`, `getregion`, `getromzone`, `format-data`, `reboot`
+- Validation client for `miotaV3` (AES‑128‑CBC + Base64 framing)
+- Sideload with correct wipe flag negotiation and proper end‑of‑transfer handling
 
-Build
-- Requires Rust 1.70+ (Edition 2021)
-- On Windows, install libusb-1.0 (runtime DLL). If `libusb-1.0.dll` is missing, the tool will explain how to fix (use Zadig to bind WinUSB to device if needed).
+Safety First
+- Stock recovery constraints apply: avoid downgrades on locked bootloaders
+- Cross‑region flashes may require a data wipe; the tool will honor server guidance or a `--wipe` override
+- FRP remains enforced by the device; flashing does not bypass Google account lock
 
-Windows USB notes
-- You may need to install a WinUSB driver for the ADB interface. Use Zadig to select the interface with class 0xff, subclass 0x42, protocol 1 and install WinUSB.
-- Ensure `libusb-1.0.dll` is available (e.g., via vcpkg or a bundled copy). The program errors clearly if it cannot load the DLL.
+Build From Source
+- Prerequisites: Rust (stable, 1.70+)
+- Linux:
+  - `cargo build --release` (libusb is built vendored automatically)
+- Windows:
+  - Install a WinUSB driver for the Mi Assistant interface using Zadig (class 0xff / subclass 0x42 / protocol 1)
+  - `cargo build --release` (vendored libusb is compiled automatically)
 
-CLI
-- `miassistant read-info`
-- `miassistant list-allowed-roms`
-- `miassistant flash <path-to-zip> [--yes]`
-- `miassistant format-data`
-- `miassistant reboot`
+CI Builds
+- GitHub Actions builds are provided for Linux and Windows (release profile) and upload artifacts.
 
-Global flags
-- `--device-index <n>`: choose among multiple devices (default 0)
-- `--chunk-size <bytes>`: chunk size for sideload (default 65536)
-- `--server-url <url>`: default `https://update.miui.com/updates/miotaV3.php`
-- `--http`: allow HTTP (prints a big warning)
-- `--debug-usb`: log raw USB packet directions/sizes
-- `--verbose`: more logging
+Install (Artifacts)
+- Download the latest artifact from GitHub Actions (Linux: `miassistant-linux-x86_64`, Windows: `miassistant-windows-x86_64.exe`) and place it in your PATH.
 
-Tests
-- AES-128-CBC + Base64 roundtrip vector
-- JSON extraction between first `{` and last `}`
-- MD5 of fixture file
-- Optional integration test (feature `integration`): mocks server for validate flow
+Quick Start
+1) Put device into stock recovery and select “Connect with Mi Assistant”.
+2) Connect via USB.
+3) Read info:
+   `miassistant read-info`
+4) Validate and flash a ROM with automatic token fetching:
+   `miassistant flash "/path/to/rom.zip" --profile global --codename garnet --yes`
 
-Example
-```
-miassistant read-info --verbose
-miassistant flash C:\\ROM\\miui_recovery.zip --yes --debug-usb
-```
+Important Flags
+- `--profile <region>` and `--codename <device>`: build the device identity for cross‑region (e.g., `--profile global --codename garnet`)
+- `--wipe`: allow/force a data wipe when flashing (sets the final `:1` in `sideload-host`)
+- `--token <string>`: provide validation token manually (advanced; pair with `--wipe` if needed)
+- `--chunk-size <bytes>`: default 65536 (64 KiB)
+- `--verbose` / `-v`: more logs (`-vv` for debug)
+- `--dump-json`: print decrypted validation JSON for inspection
 
-Security and safety
-- No `unsafe` used
-- Handles short reads/writes as errors
-- Explicit diagnostics for validation failures and malformed responses
+Examples
+- List allowed ROMs for current device (after applying a profile):
+  `miassistant list-allowed-roms --profile global --codename garnet --dump-json`
+- Flash with server token and wipe if required:
+  `miassistant flash "/path/to/rom.zip" --yes`
+- Flash with manual token and forced wipe:
+  `miassistant flash "/path/to/rom.zip" --token <token> --wipe --yes`
+- Download LatestRom from server and flash:
+  `miassistant flash-from-latest --profile global --codename garnet --yes`
 
+Environment (Advanced)
+- `SENSITIVITY_AES_KEY` / `SENSITIVITY_AES_IV`: 32‑hex strings to override AES‑128‑CBC key/iv used for `miotaV3` framing. Defaults mimic the original client.
+
+Troubleshooting
+- Handshake failed / Not detected:
+  - Ensure recovery is in “Connect with Mi Assistant” (not ADB sideload)
+  - On Windows, stop `adb` server or run with exclusive mode; install WinUSB driver
+  - Reconnect USB cable, try another port
+- “Installation aborted”:
+  - Mismatched token vs ROM or missing wipe flag; re‑validate and let the tool fetch the token, or use `--wipe` with manual `--token`
+  - Downgrade attempts on a locked bootloader will be refused by recovery
+- EEA/Global cross‑flash:
+  - Use `--profile global --codename <device>` and let the tool validate; be prepared for a wipe
+
+Project Name
+- This project is Sensitivity. Any legacy references to “(HasX)” in older materials should be treated as developer attribution only; the tool itself is branded as Sensitivity.
+
+License
+- See repository license (if present). No Xiaomi proprietary components are included.
