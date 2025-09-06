@@ -1,0 +1,300 @@
+cargo:rerun-if-env-changed=LIBUSB_STATIC
+cargo:rerun-if-env-changed=LIBUSB_1.0_NO_PKG_CONFIG
+cargo:rerun-if-env-changed=PKG_CONFIG_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG
+cargo:rerun-if-env-changed=PKG_CONFIG
+cargo:rerun-if-env-changed=LIBUSB_1.0_STATIC
+cargo:rerun-if-env-changed=LIBUSB_1.0_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_STATIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_SYSROOT_DIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR
+cargo:rerun-if-env-changed=LIBUSB_1.0_STATIC
+cargo:rerun-if-env-changed=LIBUSB_1.0_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_STATIC
+cargo:rerun-if-env-changed=PKG_CONFIG_ALL_DYNAMIC
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_PATH
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64-pc-windows-msvc
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64_pc_windows_msvc
+cargo:rerun-if-env-changed=HOST_PKG_CONFIG_SYSROOT_DIR
+cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR
+Can't find libusb pkg: VcpkgNotFound("No vcpkg installation found. Set the VCPKG_ROOT environment variable or run 'vcpkg integrate install'")
+cargo:vendored=1
+cargo:static=1
+cargo:include=E:\Sensitivity\sensitivity\target\debug\build\libusb1-sys-9d303e51172a09b9\out\include
+cargo:rustc-link-lib=dylib=user32
+OUT_DIR = Some(E:\Sensitivity\sensitivity\target\debug\build\libusb1-sys-9d303e51172a09b9\out)
+OPT_LEVEL = Some(0)
+TARGET = Some(x86_64-pc-windows-msvc)
+cargo:rerun-if-env-changed=VCINSTALLDIR
+VCINSTALLDIR = None
+cargo:rerun-if-env-changed=VSTEL_MSBuildProjectFullPath
+VSTEL_MSBuildProjectFullPath = None
+cargo:rerun-if-env-changed=VSCMD_ARG_VCVARS_SPECTRE
+VSCMD_ARG_VCVARS_SPECTRE = None
+cargo:rerun-if-env-changed=WindowsSdkDir
+WindowsSdkDir = None
+cargo:rerun-if-env-changed=WindowsSDKVersion
+WindowsSDKVersion = None
+cargo:rerun-if-env-changed=LIB
+LIB = None
+PATH = Some(E:\Sensitivity\sensitivity\target\debug\deps;E:\Sensitivity\sensitivity\target\debug;C:\Users\hasx\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\x86_64-pc-windows-msvc\lib;C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\VMware\VMware Workstation\bin\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\platform-tools;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\gradle-8.14\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\PowerShell\7\;C:\Program Files\Tesseract-OCR;C:\Program Files\php;C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\VMware\VMware Workstation\bin\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\platform-tools;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\gradle-8.14\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;c:\Users\hasx\AppData\Local\Programs\Trae\bin;C:\Users\hasx\.cargo\bin;C:\Users\hasx\AppData\Local\pnpm;C:\Users\hasx\AppData\Local\Programs\Eclipse Adoptium\jre-8.0.442.6-hotspot\bin;C:\Users\hasx\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\hasx\AppData\Local\Programs\Python\Python313\;C:\Users\hasx\AppData\Local\Microsoft\WindowsApps;C:\Users\hasx\AppData\Local\Programs\Microso;C:\Users\hasx\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\hasx\.rustup\toolchains\stable-x86_64-pc-windows-msvc\bin)
+cargo:rerun-if-env-changed=INCLUDE
+INCLUDE = None
+HOST = Some(x86_64-pc-windows-msvc)
+cargo:rerun-if-env-changed=CC_x86_64-pc-windows-msvc
+CC_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CC_x86_64_pc_windows_msvc
+CC_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CC
+HOST_CC = None
+cargo:rerun-if-env-changed=CC
+CC = None
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+CARGO_CFG_TARGET_FEATURE = Some(cmpxchg16b,fxsr,sse,sse2,sse3)
+DEBUG = Some(true)
+cargo:rerun-if-env-changed=CFLAGS
+CFLAGS = None
+cargo:rerun-if-env-changed=HOST_CFLAGS
+HOST_CFLAGS = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64_pc_windows_msvc
+CFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64-pc-windows-msvc
+CFLAGS_x86_64-pc-windows-msvc = None
+CARGO_ENCODED_RUSTFLAGS = Some()
+cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+events_windows.c
+threads_windows.c
+windows_common.c
+windows_usbdk.c
+windows_winusb.c
+libusb\libusb/os/windows_winusb.c(2113): warning C5287: operands are different enum types 'libusb_endpoint_direction' and 'libusb_request_type'; use an explicit cast to silence this warning
+core.c
+descriptor.c
+hotplug.c
+io.c
+strerror.c
+libusb\libusb/strerror.c(84): warning C4566: character represented by universal-character-name '\u00E8' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(86): warning C4566: character represented by universal-character-name '\u00E8' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(87): warning C4566: character represented by universal-character-name '\u00E8' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(88): warning C4566: character represented by universal-character-name '\u00EA' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(90): warning C4566: character represented by universal-character-name '\u00E0' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(94): warning C4566: character represented by universal-character-name '\u00E8' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(94): warning C4566: character represented by universal-character-name '\u00EA' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(94): warning C4566: character represented by universal-character-name '\u00E0' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(99): warning C4566: character represented by universal-character-name '\u0423' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(99): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(99): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(99): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(99): warning C4566: character represented by universal-character-name '\u0445' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u041E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u0448' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u0431' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u043A' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u0434' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(100): warning C4566: character represented by universal-character-name '\u044B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u041D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u044B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u0439' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u043C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(101): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0414' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0443' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0437' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0449' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0451' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0445' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(102): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0423' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0439' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0443' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0437' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u043C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0436' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0431' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u044B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u043B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0434' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(103): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u042D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u043B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u043C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u0439' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(104): warning C4566: character represented by universal-character-name '\u0434' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0420' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0443' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0437' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u044F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(105): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0418' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u043A' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u043B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u043C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u044F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0436' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0434' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(106): warning C4566: character represented by universal-character-name '\u0446' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u041F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u043B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(107): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u041E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u0448' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u0431' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u043A' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(108): warning C4566: character represented by universal-character-name '\u043B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0421' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u043C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u044B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0439' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0437' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0436' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u0433' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(109): warning C4566: character represented by universal-character-name '\u043B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u041F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u043C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u044F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u044C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u0447' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(110): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u041E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u043F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0440' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0446' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u044F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0434' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0436' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0439' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u043B' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u0444' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(111): warning C4566: character represented by universal-character-name '\u043C' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u041D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0435' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0438' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0437' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0432' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0441' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0442' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u043D' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0430' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u044F' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u043E' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0448' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u0431' cannot be represented in the current code page (1250)
+libusb\libusb/strerror.c(112): warning C4566: character represented by universal-character-name '\u043A' cannot be represented in the current code page (1250)
+sync.c
+cargo:rerun-if-env-changed=AR_x86_64-pc-windows-msvc
+AR_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=AR_x86_64_pc_windows_msvc
+AR_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_AR
+HOST_AR = None
+cargo:rerun-if-env-changed=AR
+AR = None
+cargo:rerun-if-env-changed=ARFLAGS
+ARFLAGS = None
+cargo:rerun-if-env-changed=HOST_ARFLAGS
+HOST_ARFLAGS = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64_pc_windows_msvc
+ARFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64-pc-windows-msvc
+ARFLAGS_x86_64-pc-windows-msvc = None
+cargo:rustc-link-search=native=S:\VSStudio\VC\Tools\MSVC\14.44.35207\atlmfc\lib\x64
+cargo:rustc-link-lib=static=usb-vendored
+cargo:rustc-link-search=native=E:\Sensitivity\sensitivity\target\debug\build\libusb1-sys-9d303e51172a09b9\out
+cargo:version_number=1.0.27
