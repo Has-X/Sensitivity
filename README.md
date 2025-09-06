@@ -1,6 +1,8 @@
 Sensitivity: Mi Assistant CLI
 =============================
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](./LICENSE)
+
 Sensitivity is a modern, Rust-based reimplementation of Xiaomi’s Mi Assistant flashing flow. It speaks the ADB protocol directly over USB (no adb.exe required), validates Recovery ROMs against Xiaomi’s `miotaV3` endpoint, and sideloads with robust progress, error reporting, and cross‑region handling.
 
 Highlights

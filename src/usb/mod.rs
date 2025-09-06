@@ -1,3 +1,7 @@
+// Copyright (C) 2025 HasX
+// Licensed under the GNU AGPL v3.0. See LICENSE file for details.
+// Website: https://hasx.dev
+
 use anyhow::{bail, Context, Result};
 use rusb::{DeviceHandle, UsbContext};
 use std::time::Duration;

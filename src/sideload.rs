@@ -1,3 +1,7 @@
+// Copyright (C) 2025 HasX
+// Licensed under the GNU AGPL v3.0. See LICENSE file for details.
+// Website: https://hasx.dev
+
 use std::fs::File;
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;

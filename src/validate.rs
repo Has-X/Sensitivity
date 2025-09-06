@@ -1,3 +1,7 @@
+// Copyright (C) 2025 HasX
+// Licensed under the GNU AGPL v3.0. See LICENSE file for details.
+// Website: https://hasx.dev
+
 use anyhow::{anyhow, bail, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
 use cbc::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};

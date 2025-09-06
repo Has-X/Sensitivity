@@ -1,3 +1,7 @@
+// Copyright (C) 2025 HasX
+// Licensed under the GNU AGPL v3.0. See LICENSE file for details.
+// Website: https://hasx.dev
+
 use anyhow::{Context, Result};
 use std::io::{Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
