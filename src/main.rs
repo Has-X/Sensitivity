@@ -109,6 +109,9 @@ enum Commands {
         /// Provide validation token manually (skip server validation)
         #[arg(long)]
         token: Option<String>,
+        /// Allow/force data wipe (sets sideload-host :1). Useful if using --token without server response.
+        #[arg(long, action = ArgAction::SetTrue)]
+        wipe: bool,
     },
     /// Issue format-data and reboot
     FormatData,
@@ -128,6 +131,9 @@ enum Commands {
         /// Skip confirmation prompts
         #[arg(long)]
         yes: bool,
+        /// Allow/force data wipe (sets sideload-host :1). Overrides server Erase=0 when true.
+        #[arg(long, action = ArgAction::SetTrue)]
+        wipe: bool,
     },
     /// Persistently set the MD5 used for validation (bypass hashing)
     SetHash { md5: String },
@@ -257,7 +263,7 @@ fn main() -> Result<()> {
             let path = download::download_with_md5(&client_http, &url, &out_dir, &latest.md5).context("Downloading LatestRom")?;
             println!("Downloaded to {} (md5 ok)", path.display());
         }
-        Commands::FlashFromLatest { output_dir, yes } => {
+        Commands::FlashFromLatest { output_dir, yes, wipe } => {
             let mut info = client.read_all_info().context("Fetching device info")?;
             if let Some(p) = &cli.profile { if let Some(rp) = RegionProfile::from_str(p) { info = apply_profile(&info, rp, cli.codename.as_deref(), true)?; eprintln!("Applied profile: {}", p); } }
             if let Some(v) = &cli.override_device { info.device = v.clone(); }
@@ -281,14 +287,15 @@ fn main() -> Result<()> {
             if cli.dump_json { if let Ok(q) = validate::encode_request_b64(&req_json2) { eprintln!("Request JSON: {}", req_json2); eprintln!("q (base64): {}", q); } }
             let resp2 = validate::validate(&cli.server_url, &req_json2).context("Validation HTTP call failed")?;
             if let Some(msg) = resp2.code_message.as_deref() { println!("Server message: {}", msg); }
-            if resp2.pkgrom_erase == Some(1) && !yes {
+            if (resp2.pkgrom_erase == Some(1) || wipe) && !yes {
                 println!("NOTICE: Data will be erased during flashing. Press Enter to continue…");
                 let mut s = String::new();
                 let _ = std::io::stdin().read_line(&mut s);
             }
             let token = resp2.validate_token.as_deref().ok_or_else(|| anyhow::anyhow!("Missing Validate token in response"))?.to_string();
             if cli.verbose > 0 { eprintln!("Using validate token (len {}): {:.8}…", token.len(), token); }
-            sideload_zip(&mut client, &local_path, cli.chunk_size, &token).context("Sideload failed")?;
+            let allow_wipe = resp2.pkgrom_erase == Some(1) || wipe;
+            sideload_zip(&mut client, &local_path, cli.chunk_size, &token, allow_wipe).context("Sideload failed")?;
         }
         Commands::SetHash { .. } => {
             // Already handled before USB init
@@ -317,7 +324,7 @@ fn main() -> Result<()> {
             let resp = validate::validate(&cli.server_url, &req_json).context("Validation HTTP call failed")?;
             validate::print_allowed_with_options(&resp, cli.dump_json);
         }
-        Commands::Flash { path, yes, token } => {
+        Commands::Flash { path, yes, token, wipe } => {
             if !path.exists() {
                 bail!("Zip not found: {}", path.display());
             }
@@ -368,12 +375,13 @@ fn main() -> Result<()> {
                     eprintln!("No allowed ROMs reported by server (Validate array empty). Proceeding may fail.");
                 }
             }
-            if resp.pkgrom_erase == Some(1) && !yes {
+            if (resp.pkgrom_erase == Some(1) || (token.is_some() && wipe)) && !yes {
                 println!("NOTICE: Data will be erased during flashing. Press Enter to continue…");
                 let mut s = String::new();
                 let _ = std::io::stdin().read_line(&mut s);
             }
-            sideload_zip(&mut client, &path, cli.chunk_size, &token).context("Sideload failed")?;
+            let allow_wipe = if token.is_some() { wipe } else { resp.pkgrom_erase == Some(1) || wipe };
+            sideload_zip(&mut client, &path, cli.chunk_size, &token, allow_wipe).context("Sideload failed")?;
         }
         Commands::FormatData => {
             client.simple_command("format-data:").context("format-data:")?;
