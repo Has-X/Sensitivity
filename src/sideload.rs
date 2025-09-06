@@ -44,7 +44,12 @@ pub fn sideload_zip(
     let mut reader = BufReader::new(file);
     let mut send_block = |index: u64, s: &mut AdbStream<'_>, pkt_arg0: u32, pkt_arg1: u32| -> Result<usize> {
         let offset = index * (chunk_size as u64);
-        if offset >= total { return Ok(0); }
+        if offset >= total {
+            // Always acknowledge the device's WRTE, even if there's no more data.
+            // Some recoveries request one extra block to signal completion.
+            s.send_okay_mirror(pkt_arg0, pkt_arg1)?;
+            return Ok(0);
+        }
         let to_send = std::cmp::min(chunk_size as u64, total - offset) as usize;
         let mut buf = vec![0u8; to_send];
         reader.seek(SeekFrom::Start(offset))?;
@@ -73,7 +78,18 @@ pub fn sideload_zip(
         }
     }
     loop {
-        let pkt = stream.recv_raw().context("Reading sideload request")?;
+        // Read next packet; if the device disconnected after sending final status,
+        // treat it as end-of-session instead of surfacing a transport error.
+        let pkt = match stream.recv_raw() {
+            Ok(p) => p,
+            Err(e) => {
+                if final_status.is_some() {
+                    break;
+                } else {
+                    return Err(e).context("Reading sideload request");
+                }
+            }
+        };
         match pkt.cmd {
             x if x == A_OKAY => {
                 // Mirror OKAY
@@ -89,11 +105,13 @@ pub fn sideload_zip(
                     if n == 0 { finished = true; }
                     bytes_sent = std::cmp::min(total, (idx * chunk_size as u64) + (n as u64));
                 } else {
-                    // Treat as final status message. Ack it, record, and proceed to wait for CLSE.
+                    // Treat as final status message. Ack it, record, and proactively end the session.
                     final_status = Some(trimmed.to_string());
                     eprintln!("{}", trimmed);
+                    // Acknowledge the device's status WRTE
                     stream.send_okay_mirror(pkt.arg0, pkt.arg1)?;
-                    // Do not break yet; wait for device to close the stream.
+                    // Break out and close from host side to avoid waiting on a CLSE that may never arrive.
+                    break;
                 }
             }
             x if x == A_CLSE => {
