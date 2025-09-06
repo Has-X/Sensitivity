@@ -355,7 +355,9 @@ fn main() -> Result<()> {
                 }
             }
             let mut resp = validate::ValidateResult::default();
-            let token = match token {
+            // Preserve whether CLI provided a token before shadowing it
+            let cli_token_provided = token.is_some();
+            let token_string = match token {
                 Some(t) => t,
                 None => {
                     let r = validate::validate(&cli.server_url, &req_json).context("Validation HTTP call failed")?;
@@ -369,19 +371,19 @@ fn main() -> Result<()> {
                     t
                 }
             };
-            if cli.verbose > 0 { eprintln!("Using validate token (len {}): {:.8}…", token.len(), token); }
+            if cli.verbose > 0 { eprintln!("Using validate token (len {}): {:.8}…", token_string.len(), token_string); }
             if let Some(v) = &resp.pkgrom_validate {
                 if v.is_empty() {
                     eprintln!("No allowed ROMs reported by server (Validate array empty). Proceeding may fail.");
                 }
             }
-            if (resp.pkgrom_erase == Some(1) || (token.is_some() && wipe)) && !yes {
+            if (resp.pkgrom_erase == Some(1) || (cli_token_provided && wipe)) && !yes {
                 println!("NOTICE: Data will be erased during flashing. Press Enter to continue…");
                 let mut s = String::new();
                 let _ = std::io::stdin().read_line(&mut s);
             }
-            let allow_wipe = if token.is_some() { wipe } else { resp.pkgrom_erase == Some(1) || wipe };
-            sideload_zip(&mut client, &path, cli.chunk_size, &token, allow_wipe).context("Sideload failed")?;
+            let allow_wipe = if cli_token_provided { wipe } else { resp.pkgrom_erase == Some(1) || wipe };
+            sideload_zip(&mut client, &path, cli.chunk_size, &token_string, allow_wipe).context("Sideload failed")?;
         }
         Commands::FormatData => {
             client.simple_command("format-data:").context("format-data:")?;

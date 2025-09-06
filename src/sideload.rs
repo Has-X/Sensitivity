@@ -97,8 +97,7 @@ pub fn sideload_zip(
                 }
             }
             x if x == A_CLSE => {
-                // Device closed the stream; mirror close and exit loop.
-                let _ = stream.close();
+                // Device closed the stream; exit loop and mirror close after loop.
                 break;
             }
             _ => { /* ignore unknown */ }
