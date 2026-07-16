@@ -24,7 +24,7 @@ The duplicate `miassistant` executable has been retired. Update scripts to use t
 - Ctrl-C or the GUI Cancel button requests a graceful close after the current USB operation.
 - MAF's claimed resume field is intentionally unavailable: protocol review found that the same field is the verified data-wipe flag, so sending a block offset there could request an unintended wipe.
 - Arbitrary raw ADB commands are not part of the normal interface. Sensitivity exposes the supported Xiaomi recovery operations directly.
-- Windows uses the native `Sensitivity.App.exe` WinUI 3 interface. Linux and macOS use `sensitivity-gui`. Both consume the same tested Rust recovery implementation and include multi-device selection, validation, wipe confirmation, progress, and cancellation.
+- Windows uses the native `Sensitivity.exe` WinUI 3 interface and exposes the terminal tool as `sensitivity-cli.exe`. Linux and macOS use `sensitivity-gui`. Both consume the same tested Rust recovery implementation and include multi-device selection, validation, wipe confirmation, progress, and cancellation.
 
 ## Automation changes
 

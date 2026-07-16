@@ -1,6 +1,6 @@
 [package]
 name = "sensitivity"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 authors = ["HasX <mi@hasx.dev>"]
 description = "Sensitivity: a direct-USB Xiaomi Recovery flash and rescue CLI"

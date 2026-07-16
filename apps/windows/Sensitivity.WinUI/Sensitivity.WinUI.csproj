@@ -5,7 +5,8 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>Sensitivity.WinUI</RootNamespace>
-    <AssemblyName>Sensitivity.App</AssemblyName>
+    <AssemblyName>Sensitivity</AssemblyName>
+    <Version>1.1.1</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>

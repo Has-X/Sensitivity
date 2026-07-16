@@ -1,8 +1,8 @@
 # Windows setup
 
-Install the MSI and open **Sensitivity** from the Start menu, or extract the portable ZIP and open `Sensitivity.App.exe`. The Windows interface is a self-contained WinUI 3 application; no separate .NET or Windows App SDK installation is required.
+Install the MSI and open **Sensitivity** from the Start menu, or extract the portable ZIP and open `Sensitivity.exe`. The Windows interface is a self-contained WinUI 3 application; no separate .NET or Windows App SDK installation is required.
 
-The app includes diagnostics and can explain likely driver or ADB ownership problems. The `sensitivity.exe` CLI remains available for scripts and detailed troubleshooting.
+The app includes diagnostics and can explain likely driver or ADB ownership problems. The separate `sensitivity-cli.exe` remains available for scripts and detailed troubleshooting.
 
 ## One-time WinUSB setup
 
@@ -18,7 +18,7 @@ Stock Xiaomi recovery exposes a vendor-specific Mi Assistant USB interface. Wind
 Sensitivity leaves the normal ADB server running by default. If it appears to own the recovery interface, the app asks before stopping ADB and retrying. From the CLI, the equivalent command is:
 
 ```powershell
-.\sensitivity.exe --adb-policy stop doctor
+.\sensitivity-cli.exe --adb-policy stop doctor
 ```
 
 The old driver can be restored through Windows Device Manager by uninstalling the selected USB interface and reconnecting the phone.

@@ -54,7 +54,9 @@ jobs:
         run: |
           dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item target/release/sensitivity.exe native-publish/sensitivity.exe
+          Copy-Item target/release/sensitivity.exe native-publish/sensitivity-cli.exe
+          if (!(Test-Path native-publish/Sensitivity.exe)) { throw "Sensitivity.exe was not published" }
+          if (!(Test-Path native-publish/sensitivity-cli.exe)) { throw "sensitivity-cli.exe was not packaged" }
       - name: Package Unix
         if: runner.os != 'Windows'
         shell: bash
@@ -104,8 +106,8 @@ jobs:
           [xml]$harvest = Get-Content sensitivity-files.wxs
           $namespaces = New-Object System.Xml.XmlNamespaceManager($harvest.NameTable)
           $namespaces.AddNamespace("wix", "http://schemas.microsoft.com/wix/2006/wi")
-          $appFile = $harvest.SelectSingleNode("//wix:File[substring(@Source, string-length(@Source) - string-length('Sensitivity.App.exe') + 1) = 'Sensitivity.App.exe']", $namespaces)
-          if ($null -eq $appFile) { throw "Harvested Sensitivity.App.exe was not found" }
+          $appFile = $harvest.SelectSingleNode("//wix:File[substring(@Source, string-length(@Source) - string-length('Sensitivity.exe') + 1) = 'Sensitivity.exe']", $namespaces)
+          if ($null -eq $appFile) { throw "Harvested Sensitivity.exe was not found" }
           $shortcut = $harvest.CreateElement("Shortcut", "http://schemas.microsoft.com/wix/2006/wi")
           $shortcut.SetAttribute("Id", "StartMenuShortcut")
           $shortcut.SetAttribute("Directory", "CommonProgramsFolder")
@@ -116,7 +118,7 @@ jobs:
           $harvest.Save("$PWD\sensitivity-files.wxs")
           & "$wixBin\candle.exe" -arch x64 "-dVersion=$version" "-dPublishDir=$PWD\package" packaging/windows/sensitivity.wxs sensitivity-files.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "$wixBin\light.exe" -sice:ICE03 sensitivity.wixobj sensitivity-files.wixobj -out sensitivity-windows-x86_64.msi
+          & "$wixBin\light.exe" -ext WixUIExtension -sice:ICE03 sensitivity.wixobj sensitivity-files.wixobj -out sensitivity-windows-x86_64.msi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v7
         with:

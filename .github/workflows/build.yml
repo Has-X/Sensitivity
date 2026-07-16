@@ -92,7 +92,9 @@ jobs:
         run: |
           dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item target/release/sensitivity.exe native-publish/sensitivity.exe
+          Copy-Item target/release/sensitivity.exe native-publish/sensitivity-cli.exe
+          if (!(Test-Path native-publish/Sensitivity.exe)) { throw "Sensitivity.exe was not published" }
+          if (!(Test-Path native-publish/sensitivity-cli.exe)) { throw "sensitivity-cli.exe was not packaged" }
       - uses: actions/upload-artifact@v7
         with:
           name: sensitivity-Windows-X64

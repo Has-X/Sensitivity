@@ -55,7 +55,7 @@ public sealed partial class MainWindow : Window
     {
         if (!_backend.IsAvailable)
         {
-            ShowStatus("Backend missing", "sensitivity.exe was not found beside the application.", InfoBarSeverity.Error);
+            ShowStatus("Backend missing", "sensitivity-cli.exe was not found beside the application.", InfoBarSeverity.Error);
             SetInteractive(false);
             return;
         }

@@ -9,7 +9,7 @@ It speaks the Mi Assistant ADB-like protocol directly over USB, validates offici
 
 ## Install
 
-Download the archive for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases) and extract it. On Windows, open `Sensitivity.App.exe` for the native Fluent Design interface. On Linux or macOS, open `sensitivity-gui`. The `sensitivity` CLI is included on every platform, and releases include SHA-256 checksums.
+Download the archive for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, install the MSI and open **Sensitivity** from Start, or extract the portable ZIP and open `Sensitivity.exe`. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
 
 To build or install from source:
 

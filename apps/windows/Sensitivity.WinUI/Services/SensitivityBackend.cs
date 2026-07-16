@@ -16,7 +16,7 @@ public sealed class SensitivityBackend
 
     public SensitivityBackend()
     {
-        ExecutablePath = Path.Combine(AppContext.BaseDirectory, "sensitivity.exe");
+        ExecutablePath = Path.Combine(AppContext.BaseDirectory, "sensitivity-cli.exe");
     }
 
     public bool IsAvailable => File.Exists(ExecutablePath);
@@ -126,7 +126,7 @@ public sealed class SensitivityBackend
         if (!IsAvailable)
         {
             throw new FileNotFoundException(
-                "The Sensitivity backend is missing. Reinstall the application or place sensitivity.exe beside Sensitivity.App.exe.",
+                "The Sensitivity backend is missing. Reinstall the application or place sensitivity-cli.exe beside Sensitivity.exe.",
                 ExecutablePath);
         }
 
