@@ -101,9 +101,22 @@ jobs:
           $wixBin = (Resolve-Path "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" | Select-Object -Last 1).Path
           & "$wixBin\heat.exe" dir package -cg AppFiles -dr INSTALLFOLDER -srd -sreg -scom -gg -var var.PublishDir -out sensitivity-files.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          [xml]$harvest = Get-Content sensitivity-files.wxs
+          $namespaces = New-Object System.Xml.XmlNamespaceManager($harvest.NameTable)
+          $namespaces.AddNamespace("wix", "http://schemas.microsoft.com/wix/2006/wi")
+          $appFile = $harvest.SelectSingleNode("//wix:File[substring(@Source, string-length(@Source) - string-length('Sensitivity.App.exe') + 1) = 'Sensitivity.App.exe']", $namespaces)
+          if ($null -eq $appFile) { throw "Harvested Sensitivity.App.exe was not found" }
+          $shortcut = $harvest.CreateElement("Shortcut", "http://schemas.microsoft.com/wix/2006/wi")
+          $shortcut.SetAttribute("Id", "StartMenuShortcut")
+          $shortcut.SetAttribute("Directory", "CommonProgramsFolder")
+          $shortcut.SetAttribute("Name", "Sensitivity")
+          $shortcut.SetAttribute("WorkingDirectory", "INSTALLFOLDER")
+          $shortcut.SetAttribute("Advertise", "no")
+          [void]$appFile.AppendChild($shortcut)
+          $harvest.Save("$PWD\sensitivity-files.wxs")
           & "$wixBin\candle.exe" -arch x64 "-dVersion=$version" "-dPublishDir=$PWD\package" packaging/windows/sensitivity.wxs sensitivity-files.wxs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "$wixBin\light.exe" sensitivity.wixobj sensitivity-files.wixobj -out sensitivity-windows-x86_64.msi
+          & "$wixBin\light.exe" -sice:ICE03 sensitivity.wixobj sensitivity-files.wixobj -out sensitivity-windows-x86_64.msi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v7
         with:

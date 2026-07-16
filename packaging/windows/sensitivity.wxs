@@ -8,21 +8,12 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="Sensitivity">
-          <Component Id="ApplicationShortcut" Guid="*" Win64="yes">
-            <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder"
-                      Name="Sensitivity" WorkingDirectory="INSTALLFOLDER"
-                      Target="[INSTALLFOLDER]Sensitivity.App.exe" Advertise="no"/>
-            <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall"/>
-            <RegistryValue Root="HKLM" Key="Software\HasX\Sensitivity"
-                           Name="Installed" Type="integer" Value="1" KeyPath="yes"/>
-          </Component>
         </Directory>
       </Directory>
-      <Directory Id="ProgramMenuFolder" Name="Programs"/>
+      <Directory Id="CommonProgramsFolder" Name="Programs"/>
     </Directory>
     <Feature Id="Complete" Title="Sensitivity" Level="1">
       <ComponentGroupRef Id="AppFiles"/>
-      <ComponentRef Id="ApplicationShortcut"/>
     </Feature>
   </Product>
 </Wix>
