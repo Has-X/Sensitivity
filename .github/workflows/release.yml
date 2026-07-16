@@ -29,9 +29,9 @@ jobs:
             archive: sensitivity-macos-aarch64.tar.gz
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         if: runner.os == 'Windows'
         with:
           dotnet-version: 8.0.x
@@ -99,11 +99,13 @@ jobs:
           choco install wixtoolset --no-progress -y
           $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
           $wixBin = (Resolve-Path "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" | Select-Object -Last 1).Path
-          & "$wixBin\heat.exe" dir package -cg AppFiles -dr INSTALLFOLDER -srd -gg -var var.PublishDir -out sensitivity-files.wxs
-          & "$wixBin\candle.exe" -arch x64 -dVersion=$version -dPublishDir="$PWD\package" packaging/windows/sensitivity.wxs sensitivity-files.wxs
+          & "$wixBin\heat.exe" dir package -cg AppFiles -dr INSTALLFOLDER -srd -sreg -scom -gg -var var.PublishDir -out sensitivity-files.wxs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & "$wixBin\candle.exe" -arch x64 "-dVersion=$version" "-dPublishDir=$PWD\package" packaging/windows/sensitivity.wxs sensitivity-files.wxs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & "$wixBin\light.exe" sensitivity.wixobj sensitivity-files.wixobj -out sensitivity-windows-x86_64.msi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
           path: |
@@ -116,7 +118,7 @@ jobs:
     needs: package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
