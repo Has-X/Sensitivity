@@ -164,7 +164,7 @@ public sealed partial class MainWindow : Window
     {
         var picker = new FileOpenPicker
         {
-            SuggestedStartLocation = PickerLocationId.DownloadsView,
+            SuggestedStartLocation = PickerLocationId.Downloads,
             ViewMode = PickerViewMode.List
         };
         picker.FileTypeFilter.Add(".zip");
@@ -246,7 +246,7 @@ public sealed partial class MainWindow : Window
 
     private Task<bool?> HandleBackendEventAsync(BackendEvent backendEvent)
     {
-        return RunOnUiAsync(async () =>
+        return RunOnUiAsync<bool?>(async () =>
         {
             switch (backendEvent.Event)
             {

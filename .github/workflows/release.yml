@@ -53,6 +53,7 @@ jobs:
         shell: pwsh
         run: |
           dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Copy-Item target/release/sensitivity.exe native-publish/sensitivity.exe
       - name: Package Unix
         if: runner.os != 'Windows'
