@@ -2,37 +2,31 @@
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 use crate::mi::DeviceInfo;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
 pub enum RegionProfile {
+    #[value(alias = "mi")]
     Global,
+    #[value(alias = "eu")]
     Eea,
+    #[value(alias = "india")]
     In,
+    #[value(alias = "russia")]
     Ru,
+    #[value(alias = "indo", alias = "indonesia")]
     Id,
+    #[value(alias = "turkey")]
     Tr,
+    #[value(alias = "taiwan")]
     Tw,
+    #[value(alias = "china")]
     Cn,
 }
 
 impl RegionProfile {
-    pub fn from_str(s: &str) -> Option<Self> {
-        match s.to_ascii_lowercase().as_str() {
-            "global" | "mi" => Some(Self::Global),
-            "eea" | "eu" => Some(Self::Eea),
-            "in" | "india" => Some(Self::In),
-            "ru" | "russia" => Some(Self::Ru),
-            "id" | "indo" | "indonesia" => Some(Self::Id),
-            "tr" | "turkey" => Some(Self::Tr),
-            "tw" | "taiwan" => Some(Self::Tw),
-            "cn" | "china" => Some(Self::Cn),
-            _ => None,
-        }
-    }
-
     fn device_name(&self, codename: &str) -> String {
         match self {
             RegionProfile::Global => format!("{}_global", codename),
@@ -78,17 +72,70 @@ fn replace_version_region_suffix(version: &str, new_suffix: &str) -> String {
     version.to_string()
 }
 
-pub fn apply_profile(info: &DeviceInfo, profile: RegionProfile, codename_override: Option<&str>, keep_codebase: bool) -> Result<DeviceInfo> {
-    let codename = codename_override.map(|s| s.to_string()).unwrap_or_else(|| derive_codename(&info.device));
+pub fn apply_profile(
+    info: &DeviceInfo,
+    profile: RegionProfile,
+    codename_override: Option<&str>,
+) -> Result<DeviceInfo> {
+    let codename = codename_override
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| derive_codename(&info.device));
+    if codename.is_empty()
+        || !codename.chars().all(|character| {
+            character.is_ascii_alphanumeric() || character == '_' || character == '-'
+        })
+    {
+        bail!("invalid device codename: {codename:?}");
+    }
     let device = profile.device_name(&codename);
     let version = replace_version_region_suffix(&info.version, profile.version_suffix());
     let mut out = info.clone();
     out.device = device;
     out.version = version;
     out.branch = "F".to_string();
-    if !keep_codebase {
-        out.codebase = info.codebase.clone(); // keep by default; explicit override controls codebase
-    }
     Ok(out)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn device_info() -> DeviceInfo {
+        DeviceInfo {
+            device: "garnet_in_global".into(),
+            sn: "serial".into(),
+            version: "OS2.0.202.0.VNRINXM".into(),
+            codebase: "15.0".into(),
+            branch: "original".into(),
+            language: "en".into(),
+            region: "IN".into(),
+            romzone: "1".into(),
+        }
+    }
+
+    #[test]
+    fn global_profile_changes_only_expected_identity_fields() {
+        let original = device_info();
+        let changed = apply_profile(&original, RegionProfile::Global, None).unwrap();
+
+        assert_eq!(changed.device, "garnet_global");
+        assert_eq!(changed.version, "OS2.0.202.0.VNRMIXM");
+        assert_eq!(changed.branch, "F");
+        assert_eq!(changed.sn, original.sn);
+        assert_eq!(changed.codebase, original.codebase);
+        assert_eq!(changed.romzone, original.romzone);
+    }
+
+    #[test]
+    fn explicit_codename_is_used_for_region_profile() {
+        let changed = apply_profile(&device_info(), RegionProfile::Eea, Some("ruby")).unwrap();
+        assert_eq!(changed.device, "ruby_eea_global");
+        assert!(changed.version.ends_with("EUXM"));
+    }
+
+    #[test]
+    fn unsafe_or_empty_codename_is_rejected() {
+        assert!(apply_profile(&device_info(), RegionProfile::Global, Some("")).is_err());
+        assert!(apply_profile(&device_info(), RegionProfile::Global, Some("bad value")).is_err());
+    }
+}

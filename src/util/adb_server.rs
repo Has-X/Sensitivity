@@ -4,8 +4,8 @@
 
 use anyhow::{Context, Result};
 use std::io::{Read, Write};
-use std::net::{Shutdown, TcpListener, TcpStream};
-use std::time::Duration;
+use std::net::{Shutdown, TcpStream};
+use std::time::{Duration, Instant};
 
 fn connect(port: u16, timeout: Duration) -> Result<TcpStream> {
     let addr = format!("127.0.0.1:{}", port);
@@ -30,10 +30,7 @@ fn read_status(stream: &mut TcpStream) -> Result<String> {
 }
 
 pub fn kill_adb_server(timeout: Duration) -> Result<()> {
-    let mut s = match connect(5037, timeout) {
-        Ok(s) => s,
-        Err(e) => return Err(e),
-    };
+    let mut s = connect(5037, timeout)?;
     // Try host:kill
     send_request(&mut s, "host:kill")?;
     // Read status; server may close immediately on success.
@@ -54,7 +51,19 @@ pub fn kill_adb_server(timeout: Duration) -> Result<()> {
         _ => {}
     }
     let _ = s.shutdown(Shutdown::Both);
+    wait_until_stopped(timeout)?;
     Ok(())
+}
+
+fn wait_until_stopped(timeout: Duration) -> Result<()> {
+    let deadline = Instant::now() + timeout;
+    while Instant::now() < deadline {
+        if !is_running(Duration::from_millis(100)) {
+            return Ok(());
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    anyhow::bail!("ADB server did not release port 5037 within {timeout:?}")
 }
 
 pub fn is_running(timeout: Duration) -> bool {
@@ -66,27 +75,8 @@ pub fn is_running(timeout: Duration) -> bool {
                     return st == "OKAY" || st == "FAIL"; // both indicate a speaking server
                 }
             }
-            true
+            false
         }
         Err(_) => false,
-    }
-}
-
-#[cfg(windows)]
-pub fn kill_adb_process() {
-    // Best-effort: use taskkill to terminate adb.exe if present
-    let _ = std::process::Command::new("taskkill")
-        .args(["/F", "/IM", "adb.exe", "/T"]) // force, by image name, include child processes
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status();
-}
-
-// Bind to 127.0.0.1:5037 to prevent adb server from reappearing during our session.
-// Return the listener so the caller can keep it alive (drop releases the port).
-pub fn block_port_5037() -> Option<TcpListener> {
-    match TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 5037)) {
-        Ok(l) => Some(l),
-        Err(_) => None,
     }
 }

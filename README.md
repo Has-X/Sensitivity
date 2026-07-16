@@ -1,97 +1,132 @@
-Sensitivity: Mi Assistant CLI
-=============================
+# Sensitivity
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](./LICENSE)
+Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, native WinUI 3 on Windows, and a lightweight portable GUI on Linux and macOS.
 
-⚠️ **Notice:** Sensitivity is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).  
-This means it **cannot** be integrated into closed-source or paid “pro tools” (e.g. Hydra, TFM, DFT, etc.).  
-Any redistribution or modification must remain open source under the AGPL.  
-See [License & Usage Notice](#license--usage-notice) for details.
+It speaks the Mi Assistant ADB-like protocol directly over USB, validates official Recovery ROMs with Xiaomi's `miotaV3` service, and streams approved packages to stock recovery. It does not require `adb`, an unlocked bootloader, or proprietary Xiaomi desktop software.
 
----
+> [!CAUTION]
+> Flashing can erase data or leave a device unable to boot. Use an official Recovery ROM for the exact device and region. Sensitivity does not bypass bootloader, account, anti-rollback, or FRP protections.
 
-Sensitivity is a modern, Rust-based reimplementation of Xiaomi’s Mi Assistant flashing flow. It speaks the ADB protocol directly over USB (no adb.exe required), validates Recovery ROMs against Xiaomi’s `miotaV3` endpoint, and sideloads with robust progress, error reporting, and cross-region handling.
+## Install
 
-Highlights
-- Pure Rust, production-ready, no external ADB needed
-- Direct USB via `rusb` (Mi Assistant interface 0xff/0x42/1)
-- Minimal ADB protocol (CONNECT/OPEN/WRTE/OKAY/CLSE)
-- Xiaomi commands: `getdevice`, `getsn`, `getversion`, `getcodebase`, `getbranch`, `getlanguage`, `getregion`, `getromzone`, `format-data`, `reboot`
-- Validation client for `miotaV3` (AES-128-CBC + Base64 framing)
-- Sideload with correct wipe flag negotiation and proper end-of-transfer handling
+Download the archive for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases) and extract it. On Windows, open `Sensitivity.App.exe` for the native Fluent Design interface. On Linux or macOS, open `sensitivity-gui`. The `sensitivity` CLI is included on every platform, and releases include SHA-256 checksums.
 
-Safety First
-- Stock recovery constraints apply: avoid downgrades on locked bootloaders
-- Cross-region flashes may require a data wipe; the tool will honor server guidance or a `--wipe` override
-- FRP remains enforced by the device; flashing does not bypass Google account lock
+To build or install from source:
 
-Build From Source
-- Prerequisites: Rust (stable, 1.70+)
-- Linux:
-  - `cargo build --release` (libusb is built vendored automatically)
-- Windows:
-  - Install a WinUSB driver for the Mi Assistant interface using Zadig (class 0xff / subclass 0x42 / protocol 1)
-  - `cargo build --release` (vendored libusb is compiled automatically)
+```console
+cargo install --git https://github.com/Has-X/Sensitivity --locked
+# or, from a clone
+cargo build --workspace --release --locked
+```
 
-CI Builds
-- GitHub Actions builds are provided for Linux and Windows (release profile) and upload artifacts.
+Linux release archives include an optional desktop-access rule. Install it once with `./install-udev-rule.sh`, reconnect the phone, and use `./install-udev-rule.sh --uninstall` to remove it. Windows archives include a focused WinUSB setup guide for the Mi Assistant interface (class `ff`, subclass `42`, protocol `01`).
 
-Install (Artifacts)
-- Download the latest artifact from GitHub Actions (Linux: `miassistant-linux-x86_64`, Windows: `miassistant-windows-x86_64.exe`) and place it in your PATH.
+## Quick start
 
-Quick Start
-1) Put device into stock recovery and select “Connect with Mi Assistant”.
-2) Connect via USB.
-3) Read info:
-   `miassistant read-info`
-4) Validate and flash a ROM with automatic token fetching:
-   `miassistant flash "/path/to/rom.zip" --profile global --codename garnet --yes`
+In the desktop app, select the detected recovery and ROM, review validation and wipe warnings, then flash. The native Windows interface and portable Unix interface both delegate recovery work to the same Rust implementation.
 
-Important Flags
-- `--profile <region>` and `--codename <device>`: build the device identity for cross-region (e.g., `--profile global --codename garnet`)
-- `--wipe`: allow/force a data wipe when flashing (sets the final `:1` in `sideload-host`)
-- `--token <string>`: provide validation token manually (advanced; pair with `--wipe` if needed)
-- `--chunk-size <bytes>`: default 65536 (64 KiB)
-- `--verbose` / `-v`: more logs (`-vv` for debug)
-- `--dump-json`: print decrypted validation JSON for inspection
+For the CLI:
 
-Examples
-- List allowed ROMs for current device (after applying a profile):
-  `miassistant list-allowed-roms --profile global --codename garnet --dump-json`
-- Flash with server token and wipe if required:
-  `miassistant flash "/path/to/rom.zip" --yes`
-- Flash with manual token and forced wipe:
-  `miassistant flash "/path/to/rom.zip" --token <token> --wipe --yes`
-- Download LatestRom from server and flash:
-  `miassistant flash-from-latest --profile global --codename garnet --yes`
+1. Boot the phone into stock recovery and choose **Connect with Mi Assistant**.
+2. Connect it directly by USB and run the setup check:
 
-Environment (Advanced)
-- `SENSITIVITY_AES_KEY` / `SENSITIVITY_AES_IV`: 32-hex strings to override AES-128-CBC key/iv used for `miotaV3` framing. Defaults mimic the original client.
+   ```console
+   sensitivity doctor
+   ```
 
-Troubleshooting
-- Handshake failed / Not detected:
-  - Ensure recovery is in “Connect with Mi Assistant” (not ADB sideload)
-  - On Windows, stop `adb` server or run with exclusive mode; install WinUSB driver
-  - Reconnect USB cable, try another port
-- “Installation aborted”:
-  - Mismatched token vs ROM or missing wipe flag; re-validate and let the tool fetch the token, or use `--wipe` with manual `--token`
-  - Downgrade attempts on a locked bootloader will be refused by recovery
-- EEA/Global cross-flash:
-  - Use `--profile global --codename <device>` and let the tool validate; be prepared for a wipe
+3. Read the detected device identity:
 
-Project Name
-- This project is Sensitivity. Any legacy references to “(HasX)” in older materials should be treated as developer attribution only; the tool itself is branded as Sensitivity.
+   ```console
+   sensitivity info
+   ```
 
----
+4. Flash an official Recovery ROM:
 
-## License & Usage Notice
+   ```console
+   sensitivity flash /path/to/recovery-rom.zip
+   ```
 
-This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.  
+Sensitivity calculates the package MD5, asks Xiaomi's service for approval and the validation token, warns when the response requires a data wipe, and then starts sideloading. Review the displayed device and wipe information before continuing.
 
-- ✅ Free to use, study, modify, and share.  
-- ✅ Redistribution allowed only if the source code remains under the AGPL.  
-- ❌ **Not permitted**: integration into closed-source or paid “pro tools” (e.g. Hydra, TFM, DFT, etc.).  
-- ❌ **Not permitted**: repackaging Sensitivity as proprietary software.  
+Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
 
-Sensitivity is intended for **learning, research, and legitimate device recovery only**.  
-No Xiaomi proprietary components are included.
+## Common commands
+
+```console
+sensitivity doctor                       # diagnose USB and local ADB coexistence
+sensitivity devices                      # list matching USB interfaces without claiming them
+sensitivity detect                       # verify the direct-USB protocol handshake
+sensitivity info                         # human-readable device information
+sensitivity info --json                  # stable output for scripts
+sensitivity completions bash             # generate shell completion definitions
+sensitivity list-allowed-roms             # query packages accepted for this device
+sensitivity download-latest               # download and verify the latest approved ROM
+sensitivity flash ROM.zip                 # validate and flash a local package
+sensitivity flash-from-latest             # download, validate, and flash
+sensitivity reboot                        # leave recovery
+```
+
+Cross-region validation is advanced and can wipe data:
+
+```console
+sensitivity --profile global --codename garnet flash ROM.zip
+```
+
+The supported profiles are `global`, `eea`, `in`, `ru`, `id`, `tr`, `tw`, and `cn`.
+
+## ADB coexistence
+
+Sensitivity uses direct USB and leaves a local Android Debug Bridge server untouched by default. If `adb` already owns the recovery interface, stop it only for this invocation:
+
+```console
+sensitivity --adb-policy stop doctor
+sensitivity --adb-policy stop flash ROM.zip
+```
+
+Sensitivity never occupies port 5037 and only asks the ADB server to stop when you choose that policy. The Windows app detects likely ownership conflicts, explains the impact, and asks before retrying.
+
+Users and scripts moving from the older project should read [Migrating from MiAssistantFork](docs/MIGRATING_FROM_MAF.md).
+
+## Safety behavior
+
+- HTTPS validation is required unless the advanced `--http` override is supplied.
+- Package integrity is checked before downloaded ROMs are used.
+- Server-requested wipes are shown before flashing; `--yes` is intended for automation.
+- A manual token does not imply permission to wipe; add `--wipe` explicitly when required.
+- Validation tokens are never printed or passed to the Windows presentation layer.
+- `doctor` reports setup problems without changing the ADB server unless explicitly requested.
+- Ctrl-C during sideload requests a graceful close after the current USB operation.
+
+Hardware behavior varies between recovery versions. Offline CI proves builds, parsing, crypto framing, and command behavior; it cannot prove a real flash. Please report the device codename, OS, recovery version, command output, and ROM filename when filing a hardware issue.
+
+## Development
+
+Requirements: Rust 1.88 or newer. `libusb` is built from vendored sources.
+
+```console
+cargo fmt --all -- --check
+cargo test --workspace --locked
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo build --workspace --release --locked
+```
+
+The ADB header parser also has an isolated cargo-fuzz target:
+
+```console
+cd fuzz
+cargo +nightly fuzz run adb-header
+```
+
+Tagging a version such as `v1.1.0` builds a self-contained WinUI 3 application and MSI for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
+
+The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md).
+
+## Project lineage
+
+Sensitivity fully consolidates the useful parts of [MiAssistantFork](https://github.com/Has-X/MiAssistantFork). The separate MAF implementation is retired: both front ends use Sensitivity's single tested core, while unsafe or redundant MAF behavior is intentionally absent. See the [consolidation ledger](docs/MAF_CONSOLIDATION.md).
+
+## License
+
+Copyright (C) 2025 HasX and contributors. Sensitivity is licensed under the [GNU Affero General Public License v3.0](LICENSE), SPDX identifier `AGPL-3.0-only`.
+
+Commercial use is not categorically prohibited by the AGPL. Distribution or network use of a modified version must satisfy the license's corresponding-source and licensing requirements. No Xiaomi proprietary components are included.

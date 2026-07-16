@@ -1,2 +1,5 @@
 /other
 /target
+/fuzz/target
+/apps/windows/**/bin
+/apps/windows/**/obj

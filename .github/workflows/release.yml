@@ -1,0 +1,130 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Package (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-22.04
+            archive: sensitivity-linux-x86_64.tar.gz
+          - name: windows-x86_64
+            os: windows-latest
+            archive: sensitivity-windows-x86_64.zip
+          - name: macos-x86_64
+            os: macos-15-intel
+            archive: sensitivity-macos-x86_64.tar.gz
+          - name: macos-aarch64
+            os: macos-14
+            archive: sensitivity-macos-aarch64.tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-dotnet@v4
+        if: runner.os == 'Windows'
+        with:
+          dotnet-version: 8.0.x
+      - uses: Swatinem/rust-cache@v2
+      - name: Test Rust workspace
+        if: runner.os != 'Windows'
+        run: cargo test --workspace --locked
+      - name: Build Rust workspace
+        if: runner.os != 'Windows'
+        run: cargo build --workspace --release --locked
+      - name: Test Windows backend
+        if: runner.os == 'Windows'
+        run: cargo test -p sensitivity --locked
+      - name: Build Windows backend
+        if: runner.os == 'Windows'
+        run: cargo build -p sensitivity --release --locked
+      - name: Publish native Windows app
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item target/release/sensitivity.exe native-publish/sensitivity.exe
+      - name: Package Unix
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir package
+          cp target/release/sensitivity package/sensitivity
+          cp target/release/sensitivity-gui package/sensitivity-gui
+          cp README.md LICENSE package/
+          cp -R docs package/docs
+          mkdir package/completions
+          target/release/sensitivity completions bash > package/completions/sensitivity.bash
+          target/release/sensitivity completions zsh > package/completions/_sensitivity
+          target/release/sensitivity completions fish > package/completions/sensitivity.fish
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            cp packaging/linux/70-sensitivity.rules packaging/linux/install-udev-rule.sh package/
+            chmod +x package/install-udev-rule.sh
+          else
+            mkdir -p package/Sensitivity.app/Contents/MacOS
+            cp target/release/sensitivity-gui package/Sensitivity.app/Contents/MacOS/
+            cp packaging/macos/Info.plist package/Sensitivity.app/Contents/
+            VERSION="$(cargo metadata --format-version 1 --no-deps | sed -n 's/.*\"name\":\"sensitivity\",\"version\":\"\([^\"]*\)\".*/\1/p')"
+            sed -i.bak "s/@VERSION@/$VERSION/g" package/Sensitivity.app/Contents/Info.plist
+            rm package/Sensitivity.app/Contents/Info.plist.bak
+          fi
+          tar -C package -czf "${{ matrix.archive }}" .
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory package | Out-Null
+          Copy-Item native-publish/* package -Recurse
+          Copy-Item README.md, LICENSE package/
+          Copy-Item docs package/docs -Recurse
+          Copy-Item packaging/windows/README-WINDOWS.md package/
+          New-Item -ItemType Directory -Force package/completions | Out-Null
+          & target/release/sensitivity.exe completions powershell | Out-File -Encoding utf8 package/completions/_sensitivity.ps1
+          Compress-Archive -Path package/* -DestinationPath "${{ matrix.archive }}"
+      - name: Build Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install wixtoolset --no-progress -y
+          $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
+          $wixBin = (Resolve-Path "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" | Select-Object -Last 1).Path
+          & "$wixBin\heat.exe" dir package -cg AppFiles -dr INSTALLFOLDER -srd -gg -var var.PublishDir -out sensitivity-files.wxs
+          & "$wixBin\candle.exe" -arch x64 -dVersion=$version -dPublishDir="$PWD\package" packaging/windows/sensitivity.wxs sensitivity-files.wxs
+          & "$wixBin\light.exe" sensitivity.wixobj sensitivity-files.wixobj -out sensitivity-windows-x86_64.msi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: |
+            ${{ matrix.archive }}
+            sensitivity-*.msi
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'push'
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create checksums
+        working-directory: dist
+        run: sha256sum sensitivity-* > SHA256SUMS
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes

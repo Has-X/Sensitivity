@@ -5,7 +5,6 @@
 use anyhow::{anyhow, bail, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
 use cbc::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
-// (no-op)
 use reqwest::blocking::Client;
 use serde::Deserialize;
 use std::time::Duration;
@@ -15,30 +14,33 @@ use crate::mi::DeviceInfo;
 type Aes128CbcEnc = cbc::Encryptor<aes::Aes128>;
 type Aes128CbcDec = cbc::Decryptor<aes::Aes128>;
 
-// Hardcoded key/iv placeholders; replace with values from original C if needed.
-// AES-128-CBC key/iv as in original C (miasst.c)
+// AES-128-CBC key and IV used by Xiaomi's Mi Assistant validation protocol.
 const DEFAULT_KEY: [u8; 16] = [
-    0x6D, 0x69, 0x75, 0x69, 0x6F, 0x74, 0x61, 0x76,
-    0x61, 0x6C, 0x69, 0x64, 0x65, 0x64, 0x31, 0x31,
+    0x6D, 0x69, 0x75, 0x69, 0x6F, 0x74, 0x61, 0x76, 0x61, 0x6C, 0x69, 0x64, 0x65, 0x64, 0x31, 0x31,
 ];
 const DEFAULT_IV: [u8; 16] = [
-    0x30, 0x31, 0x30, 0x32, 0x30, 0x33, 0x30, 0x34,
-    0x30, 0x35, 0x30, 0x36, 0x30, 0x37, 0x30, 0x38,
+    0x30, 0x31, 0x30, 0x32, 0x30, 0x33, 0x30, 0x34, 0x30, 0x35, 0x30, 0x36, 0x30, 0x37, 0x30, 0x38,
 ];
 
 fn get_key_iv() -> ([u8; 16], [u8; 16]) {
     fn parse_hex_16(s: &str) -> Option<[u8; 16]> {
         let s = s.trim();
-        if s.len() != 32 { return None; }
+        if s.len() != 32 {
+            return None;
+        }
         let mut out = [0u8; 16];
         for i in 0..16 {
-            let byte = u8::from_str_radix(&s[i*2..i*2+2], 16).ok()?;
+            let byte = u8::from_str_radix(&s[i * 2..i * 2 + 2], 16).ok()?;
             out[i] = byte;
         }
         Some(out)
     }
-    let key = std::env::var("SENSITIVITY_AES_KEY").ok().and_then(|v| parse_hex_16(&v));
-    let iv = std::env::var("SENSITIVITY_AES_IV").ok().and_then(|v| parse_hex_16(&v));
+    let key = std::env::var("SENSITIVITY_AES_KEY")
+        .ok()
+        .and_then(|v| parse_hex_16(&v));
+    let iv = std::env::var("SENSITIVITY_AES_IV")
+        .ok()
+        .and_then(|v| parse_hex_16(&v));
     (key.unwrap_or(DEFAULT_KEY), iv.unwrap_or(DEFAULT_IV))
 }
 
@@ -48,12 +50,11 @@ pub struct ValidateResult {
     pub pkgrom_erase: Option<i32>,
     pub code_message: Option<String>,
     pub validate_token: Option<String>,
-    pub raw_plaintext_head: Option<String>,
     pub full_json: Option<String>,
 }
 
 pub fn build_request_json(info: &DeviceInfo, md5_opt: Option<String>) -> Result<String> {
-    let md5 = md5_opt.unwrap_or_else(|| "".to_string());
+    let md5 = md5_opt.unwrap_or_default();
     // Replicate C behavior exactly: inject romzone verbatim (may be non-numeric like F)
     let zone_field = info.romzone.trim().to_string();
     let esc = |s: &str| s.replace('"', "\\\"");
@@ -70,18 +71,13 @@ pub fn build_request_json(info: &DeviceInfo, md5_opt: Option<String>) -> Result<
     Ok(json)
 }
 
-// Expose encoder so CLI can print base64 `q` payload like forked C
-pub fn encode_request_b64(json_body: &str) -> Result<String> {
-    aes128_cbc_encrypt_b64(json_body.as_bytes())
-}
-
 fn aes128_cbc_encrypt_b64(plain: &[u8]) -> Result<String> {
     let (key, iv) = get_key_iv();
     let mut buf = plain.to_vec();
     // reserve space for padding to next multiple of block size
     let bs = 16;
     let pad_len = bs - (buf.len() % bs);
-    buf.extend(std::iter::repeat(0u8).take(pad_len));
+    buf.extend(std::iter::repeat_n(0u8, pad_len));
     let enc_slice = Aes128CbcEnc::new(&key.into(), &iv.into())
         .encrypt_padded_mut::<Pkcs7>(&mut buf, plain.len())?;
     let ciphertext = enc_slice.to_vec();
@@ -97,14 +93,22 @@ fn aes128_cbc_decrypt_b64(b64: &str) -> Result<Vec<u8>> {
     let mut buf = cipher.clone();
     let dec = Aes128CbcDec::new(&key.into(), &iv.into())
         .decrypt_padded_mut::<Pkcs7>(&mut buf)
-        .map_err(|e| anyhow!("AES-128-CBC decrypt failed: {} (cipher {} bytes)", e, cipher.len()))?;
+        .map_err(|e| {
+            anyhow!(
+                "AES-128-CBC decrypt failed: {} (cipher {} bytes)",
+                e,
+                cipher.len()
+            )
+        })?;
     Ok(dec.to_vec())
 }
 
 fn extract_json_braces(text: &str) -> Option<String> {
     let start = text.find('{')?;
     let end = text.rfind('}')?;
-    if end <= start { return None; }
+    if end <= start {
+        return None;
+    }
     Some(text[start..=end].to_string())
 }
 
@@ -117,87 +121,102 @@ enum ValidateField {
 
 #[derive(Debug, Deserialize)]
 struct ResponsePkgRom {
-    #[serde(default)]
-    Validate: Option<ValidateField>,
-    #[serde(default)]
-    Erase: Option<i32>,
-    #[serde(default)]
-    Token: Option<String>,
+    #[serde(default, rename = "Validate")]
+    validate: Option<ValidateField>,
+    #[serde(default, rename = "Erase")]
+    erase: Option<i32>,
+    #[serde(default, rename = "Token")]
+    token: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
-struct ResponseCode { #[serde(default)] message: String }
+struct ResponseCode {
+    #[serde(default)]
+    message: String,
+}
 
 #[derive(Debug, Deserialize)]
-struct ResponseRoot { #[serde(default)] PkgRom: Option<ResponsePkgRom>, #[serde(default)] Code: Option<ResponseCode> }
+struct ResponseRoot {
+    #[serde(default, rename = "PkgRom")]
+    pkg_rom: Option<ResponsePkgRom>,
+    #[serde(default, rename = "Code")]
+    code: Option<ResponseCode>,
+}
 
 pub fn validate(server_url: &str, json_body: &str) -> Result<ValidateResult> {
     let enc = aes128_cbc_encrypt_b64(json_body.as_bytes())?;
-    let form = [
-        ("q", enc.as_str()),
-        ("t", ""),
-        ("s", "1"),
-    ];
-    let client = Client::builder()
-        .timeout(Duration::from_secs(30))
-        .build()?;
+    let form = [("q", enc.as_str()), ("t", ""), ("s", "1")];
+    let client = Client::builder().timeout(Duration::from_secs(30)).build()?;
     let resp = client
         .post(server_url)
         .header("User-Agent", "MiTunes_UserAgent_v3.0")
         .form(&form)
         .send();
-    let resp = match resp { Ok(r) => r, Err(e) => bail!("HTTP request failed: {}", e) };
+    let resp = match resp {
+        Ok(r) => r,
+        Err(e) => bail!("HTTP request failed: {}", e),
+    };
     let status = resp.status();
     let text = resp.text().unwrap_or_default();
     if !status.is_success() {
         let head = text.bytes().take(200).collect::<Vec<_>>();
         let head_hex = hex::encode(&head);
-        bail!("Validation failed: HTTP {}. First {} bytes: {}", status.as_u16(), head.len(), head_hex);
+        bail!(
+            "Validation failed: HTTP {}. First {} bytes: {}",
+            status.as_u16(),
+            head.len(),
+            head_hex
+        );
     }
     if text.trim().is_empty() {
         bail!("Validation failed: empty response body");
     }
     let plain = aes128_cbc_decrypt_b64(&text).context("Decrypting server response")?;
     let preview = String::from_utf8_lossy(&plain);
-    let json_text = extract_json_braces(&preview).ok_or_else(|| anyhow!("No JSON object found in plaintext (len {})", plain.len()))?;
-    let root: ResponseRoot = serde_json::from_str(&json_text).context("Parsing JSON in server response")?;
+    let json_text = extract_json_braces(&preview)
+        .ok_or_else(|| anyhow!("No JSON object found in plaintext (len {})", plain.len()))?;
+    let root: ResponseRoot =
+        serde_json::from_str(&json_text).context("Parsing JSON in server response")?;
     let mut out = ValidateResult::default();
-    if let Some(pkg) = root.PkgRom {
-        if let Some(v) = pkg.Validate {
+    if let Some(pkg) = root.pkg_rom {
+        if let Some(v) = pkg.validate {
             match v {
                 ValidateField::Arr(list) => out.pkgrom_validate = Some(list),
                 ValidateField::Str(s) => out.validate_token = Some(s),
             }
         }
         if out.validate_token.is_none() {
-            if let Some(tok) = pkg.Token { out.validate_token = Some(tok); }
+            if let Some(tok) = pkg.token {
+                out.validate_token = Some(tok);
+            }
         }
-        out.pkgrom_erase = pkg.Erase;
+        out.pkgrom_erase = pkg.erase;
     }
-    if let Some(code) = root.Code { if !code.message.is_empty() { out.code_message = Some(code.message); } }
-    out.raw_plaintext_head = Some(preview.chars().take(200).collect());
+    if let Some(code) = root.code {
+        if !code.message.is_empty() {
+            out.code_message = Some(code.message);
+        }
+    }
     out.full_json = Some(json_text.clone());
     if out.pkgrom_validate.is_none() && out.code_message.is_none() {
         bail!(
-            "Validation response missing expected keys (PkgRom.Validate or Code.message). Plaintext length {}. Head: {}",
-            plain.len(),
-            out.raw_plaintext_head.clone().unwrap_or_default()
+            "Validation response missing expected keys (PkgRom.Validate or Code.message); decrypted payload was {} bytes",
+            plain.len()
         );
     }
     Ok(out)
 }
 
-pub fn print_allowed_with_options(res: &ValidateResult, dump_json: bool) {
-    if dump_json {
-        if let Some(j) = &res.full_json { println!("{}", j); return; }
-    }
+pub fn print_allowed(res: &ValidateResult) {
     // Prefer explicit allowed list (PkgRom.Validate)
     if let Some(list) = &res.pkgrom_validate {
         if list.is_empty() {
             println!("No allowed ROMs reported by server.");
         } else {
             println!("Allowed ROMs:");
-            for s in list { println!("- {}", s); }
+            for s in list {
+                println!("- {}", s);
+            }
         }
         return;
     }
@@ -213,7 +232,9 @@ pub fn print_allowed_with_options(res: &ValidateResult, dump_json: bool) {
                 }
                 let mut printed = false;
                 for (k, v) in obj {
-                    if k == "Icon" { continue; }
+                    if k == "Icon" {
+                        continue;
+                    }
                     if let Some(o) = v.as_object() {
                         let name = o.get("name").and_then(|x| x.as_str());
                         let md5 = o.get("md5").and_then(|x| x.as_str());
@@ -223,17 +244,21 @@ pub fn print_allowed_with_options(res: &ValidateResult, dump_json: bool) {
                         }
                     }
                 }
-                if printed { return; }
+                if printed {
+                    return;
+                }
             }
         }
     }
 
     // Last resort: print server message if any
-    if let Some(msg) = &res.code_message { println!("{}", msg); }
-    else { println!("Server did not include allowed ROM list."); }
+    if let Some(msg) = &res.code_message {
+        println!("{}", msg);
+    } else {
+        println!("Server did not include allowed ROM list.");
+    }
 }
 
-pub fn print_allowed(res: &ValidateResult) { print_allowed_with_options(res, false) }
 #[cfg(test)]
 mod tests {
     use super::*;
