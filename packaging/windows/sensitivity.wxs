@@ -5,7 +5,8 @@
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64"/>
     <MajorUpgrade DowngradeErrorMessage="A newer version of Sensitivity is already installed."/>
     <MediaTemplate EmbedCab="yes"/>
-    <UIRef Id="WixUI_ProgressOnly"/>
+    <WixVariable Id="WixUILicenseRtf" Value="packaging/windows/LICENSE.rtf"/>
+    <UIRef Id="WixUI_Minimal"/>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="Sensitivity">
