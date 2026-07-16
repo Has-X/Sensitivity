@@ -1,0 +1,3 @@
+# Xiaomi Communications Co., Ltd. USB devices.
+# Restrict access to the active desktop user through systemd-logind/seatd.
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="2717", TAG+="uaccess"

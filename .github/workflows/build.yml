@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-14]
 
     steps:
       - name: Checkout
@@ -41,25 +41,79 @@ jobs:
             ${{ runner.os }}-target-
 
       - name: Build (release)
-        run: cargo build --release --locked
+        run: cargo build --workspace --release --locked
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --locked
 
       - name: Prepare artifact (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           mkdir -p dist
-          cp target/release/miassistant dist/miassistant-linux-x86_64
+          cp target/release/sensitivity dist/sensitivity-linux-x86_64
+          cp target/release/sensitivity-gui dist/sensitivity-gui-linux-x86_64
 
-      - name: Prepare artifact (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
+      - name: Prepare artifact (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
         run: |
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Copy-Item target/release/miassistant.exe dist/miassistant-windows-x86_64.exe
+          mkdir -p dist
+          cp target/release/sensitivity dist/sensitivity-macos-aarch64
+          cp target/release/sensitivity-gui dist/sensitivity-gui-macos-aarch64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: miassistant-${{ runner.os }}-x86_64
+          name: sensitivity-${{ runner.os }}-${{ runner.arch }}
           path: dist/*
 
+  windows-native:
+    name: Build native Windows app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test -p sensitivity --locked
+      - run: cargo clippy -p sensitivity --all-targets --locked -- -D warnings
+      - run: cargo build -p sensitivity --release --locked
+      - name: Publish WinUI 3 app
+        shell: pwsh
+        run: |
+          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
+          Copy-Item target/release/sensitivity.exe native-publish/sensitivity.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sensitivity-Windows-X64
+          path: native-publish/*
+          if-no-files-found: error
+
+  msrv:
+    name: Minimum Rust 1.88
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.88.0
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace --locked
+
+  fuzz-target:
+    name: Fuzz target compiles
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: fuzz
+      - run: cargo check --manifest-path fuzz/Cargo.toml --locked

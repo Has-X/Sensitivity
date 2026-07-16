@@ -8,7 +8,7 @@ use crate::adb::{connect, AdbConnection};
 use crate::usb::UsbTransport;
 pub mod profile;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct DeviceInfo {
     pub device: String,
     pub sn: String,
@@ -39,25 +39,38 @@ impl MiClient {
         let language = self.simple_query("getlanguage:")?;
         let region = self.simple_query("getregion:")?;
         let romzone = self.simple_query("getromzone:")?;
-        Ok(DeviceInfo { device, sn, version, codebase, branch, language, region, romzone })
+        Ok(DeviceInfo {
+            device,
+            sn,
+            version,
+            codebase,
+            branch,
+            language,
+            region,
+            romzone,
+        })
     }
 
     pub fn simple_query(&mut self, cmd: &str) -> Result<String> {
-        let text = self.adb.query_text(cmd).with_context(|| format!("query_text {}", cmd))?;
+        let text = self
+            .adb
+            .query_text(cmd)
+            .with_context(|| format!("query_text {}", cmd))?;
         Ok(text)
     }
 
     pub fn simple_command(&mut self, cmd: &str) -> Result<()> {
         let mut s = self.adb.open_service(cmd)?;
+        // Reboot and format-data can deliberately drop USB before CLSE. A
+        // successfully opened service is the recovery's acknowledgement.
         let _ = s.read_to_end();
         Ok(())
     }
 
-    pub fn open_service(&mut self, name: &str) -> Result<crate::adb::AdbStream<'_>> {
-        self.adb.open_service(name)
-    }
-
-    pub fn open_sideload(&mut self, name: &str) -> Result<(crate::adb::AdbStream<'_>, Option<crate::adb::AdbPacket>)> {
+    pub fn open_sideload(
+        &mut self,
+        name: &str,
+    ) -> Result<(crate::adb::AdbStream<'_>, Option<crate::adb::AdbPacket>)> {
         self.adb.open_sideload(name)
     }
 }
