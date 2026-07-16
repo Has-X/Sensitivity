@@ -6,7 +6,7 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of Sensitivity is already installed."/>
     <MediaTemplate EmbedCab="yes"/>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="Sensitivity">
           <Component Id="ApplicationShortcut" Guid="*" Win64="yes">
             <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder"
