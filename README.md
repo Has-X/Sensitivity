@@ -5,7 +5,7 @@
 <h1 align="center"><img src="assets/sensitivity-icon.png" alt="Sensitivity icon" width="42" height="42" align="absmiddle"> Sensitivity</h1>
 
 <p align="center">
-  Direct USB recovery tooling for Xiaomi devices, with a safe CLI and native desktop interfaces.
+  Sensitivity — Take care of your Mi.
 </p>
 
 <p align="center">
