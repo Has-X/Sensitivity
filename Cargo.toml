@@ -8,7 +8,7 @@ license = "AGPL-3.0-only"
 repository = "https://github.com/Has-X/Sensitivity"
 homepage = "https://github.com/Has-X/Sensitivity"
 readme = "README.md"
-rust-version = "1.88"
+rust-version = "1.95"
 
 [workspace]
 members = [".", "crates/gui"]
