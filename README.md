@@ -1,4 +1,19 @@
-# Sensitivity
+<p align="center">
+  <img src="assets/sensitivity-background.png" alt="Sensitivity Xiaomi recovery artwork" width="100%">
+</p>
+
+<h1 align="center"><img src="assets/sensitivity-mark.svg" alt="" width="42" height="42" align="absmiddle"> Sensitivity</h1>
+
+<p align="center">
+  Direct USB recovery tooling for Xiaomi devices, with a safe CLI and native desktop interfaces.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/build-release%20verified-FF6900" alt="release build verified">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-444444" alt="Windows Linux macOS">
+  <img src="https://img.shields.io/badge/license-AGPL--3.0-000000" alt="AGPL-3.0 license">
+  <img src="https://img.shields.io/badge/Made%20in-the%20EU-003399" alt="Made in the EU">
+</p>
 
 Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, native WinUI 3 on Windows, and a lightweight portable GUI on Linux and macOS.
 
@@ -47,6 +62,14 @@ For the CLI:
    ```
 
 Sensitivity calculates the package MD5, asks Xiaomi's service for approval and the validation token, warns when the response requires a data wipe, and then starts sideloading. Review the displayed device and wipe information before continuing.
+
+## Showcase
+
+<p align="center">
+  <img src="assets/sensitivity-showcase.png" alt="Sensitivity recovery connection screen in dark mode" width="900">
+</p>
+
+The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the system colour theme, with Xiaomi Orange used for actions and status accents.
 
 Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
 
@@ -127,6 +150,6 @@ Sensitivity fully consolidates the useful parts of [MiAssistantFork](https://git
 
 ## License
 
-Copyright (C) 2025 HasX and contributors. Sensitivity is licensed under the [GNU Affero General Public License v3.0](LICENSE), SPDX identifier `AGPL-3.0-only`.
+Copyright (C) 2026 HasX and contributors. Sensitivity is licensed under the [GNU Affero General Public License v3.0](LICENSE), SPDX identifier `AGPL-3.0-only`.
 
 Commercial use is not categorically prohibited by the AGPL. Distribution or network use of a modified version must satisfy the license's corresponding-source and licensing requirements. No Xiaomi proprietary components are included.
