@@ -1,0 +1,3 @@
+# Has-X reviews all repository changes. Keep this file small so CODEOWNERS does not
+# create duplicate review requests for every path.
+* @Has-X

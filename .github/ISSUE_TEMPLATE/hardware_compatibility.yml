@@ -1,0 +1,45 @@
+name: Hardware compatibility report
+description: Report a device or recovery combination that works or fails
+title: "hardware: "
+labels: ["hardware", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report only redacted device metadata. Never attach serial numbers, tokens, or private ROM links.
+  - type: input
+    id: codename
+    attributes:
+      label: Device codename
+      placeholder: "garnet"
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: Region and build
+      placeholder: "EEA, OS3.0.302.0.WNREUXM"
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Works
+        - Fails
+        - Partially works
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Recovery and connection context
+      description: Include stock recovery mode, USB topology, and the command or GUI action used. Redact sensitive fields.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Redacted output
+      render: text

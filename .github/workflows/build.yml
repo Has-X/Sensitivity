@@ -3,8 +3,28 @@ name: build
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "fuzz/**"
+      - "src/**"
+      - "crates/**"
+      - "apps/**"
+      - ".github/workflows/build.yml"
   pull_request:
     branches: [ main, master ]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "fuzz/**"
+      - "src/**"
+      - "crates/**"
+      - "apps/**"
+      - ".github/workflows/build.yml"
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
