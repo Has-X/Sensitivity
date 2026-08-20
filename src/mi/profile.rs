@@ -1,8 +1,9 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
 use anyhow::Result;
+use std::str::FromStr;
 
 use crate::mi::DeviceInfo;
 
@@ -18,21 +19,25 @@ pub enum RegionProfile {
     Cn,
 }
 
-impl RegionProfile {
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for RegionProfile {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
-            "global" | "mi" => Some(Self::Global),
-            "eea" | "eu" => Some(Self::Eea),
-            "in" | "india" => Some(Self::In),
-            "ru" | "russia" => Some(Self::Ru),
-            "id" | "indo" | "indonesia" => Some(Self::Id),
-            "tr" | "turkey" => Some(Self::Tr),
-            "tw" | "taiwan" => Some(Self::Tw),
-            "cn" | "china" => Some(Self::Cn),
-            _ => None,
+            "global" | "mi" => Ok(Self::Global),
+            "eea" | "eu" => Ok(Self::Eea),
+            "in" | "india" => Ok(Self::In),
+            "ru" | "russia" => Ok(Self::Ru),
+            "id" | "indo" | "indonesia" => Ok(Self::Id),
+            "tr" | "turkey" => Ok(Self::Tr),
+            "tw" | "taiwan" => Ok(Self::Tw),
+            "cn" | "china" => Ok(Self::Cn),
+            _ => Err(()),
         }
     }
+}
 
+impl RegionProfile {
     fn device_name(&self, codename: &str) -> String {
         match self {
             RegionProfile::Global => format!("{}_global", codename),
@@ -78,8 +83,15 @@ fn replace_version_region_suffix(version: &str, new_suffix: &str) -> String {
     version.to_string()
 }
 
-pub fn apply_profile(info: &DeviceInfo, profile: RegionProfile, codename_override: Option<&str>, keep_codebase: bool) -> Result<DeviceInfo> {
-    let codename = codename_override.map(|s| s.to_string()).unwrap_or_else(|| derive_codename(&info.device));
+pub fn apply_profile(
+    info: &DeviceInfo,
+    profile: RegionProfile,
+    codename_override: Option<&str>,
+    keep_codebase: bool,
+) -> Result<DeviceInfo> {
+    let codename = codename_override
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| derive_codename(&info.device));
     let device = profile.device_name(&codename);
     let version = replace_version_region_suffix(&info.version, profile.version_suffix());
     let mut out = info.clone();
@@ -91,4 +103,3 @@ pub fn apply_profile(info: &DeviceInfo, profile: RegionProfile, codename_overrid
     }
     Ok(out)
 }
-

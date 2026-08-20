@@ -1,4 +1,4 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
@@ -38,4 +38,3 @@ mod tests {
         assert_eq!(got, "5eb63bbbe01eeed093cb22bb8f5acdc3");
     }
 }
-

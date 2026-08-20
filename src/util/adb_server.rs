@@ -1,10 +1,12 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
 use anyhow::{Context, Result};
 use std::io::{Read, Write};
-use std::net::{Shutdown, TcpListener, TcpStream};
+#[cfg(windows)]
+use std::net::TcpListener;
+use std::net::{Shutdown, TcpStream};
 use std::time::Duration;
 
 fn connect(port: u16, timeout: Duration) -> Result<TcpStream> {
@@ -30,10 +32,7 @@ fn read_status(stream: &mut TcpStream) -> Result<String> {
 }
 
 pub fn kill_adb_server(timeout: Duration) -> Result<()> {
-    let mut s = match connect(5037, timeout) {
-        Ok(s) => s,
-        Err(e) => return Err(e),
-    };
+    let mut s = connect(5037, timeout)?;
     // Try host:kill
     send_request(&mut s, "host:kill")?;
     // Read status; server may close immediately on success.
@@ -57,6 +56,26 @@ pub fn kill_adb_server(timeout: Duration) -> Result<()> {
     Ok(())
 }
 
+/// Stops the local ADB server before opening the exclusive Mi Assistant USB
+/// interface. Returns whether an ADB server was detected before stopping it.
+pub fn stop_for_usb(timeout: Duration) -> Result<bool> {
+    #[cfg(windows)]
+    let was_running = is_running(timeout);
+    #[cfg(not(windows))]
+    let was_running = kill_adb_server(timeout).is_ok();
+
+    #[cfg(windows)]
+    {
+        if was_running {
+            let _ = kill_adb_server(timeout);
+        }
+        kill_adb_process();
+    }
+
+    Ok(was_running)
+}
+
+#[cfg(windows)]
 pub fn is_running(timeout: Duration) -> bool {
     match connect(5037, timeout) {
         Ok(mut s) => {
@@ -84,9 +103,7 @@ pub fn kill_adb_process() {
 
 // Bind to 127.0.0.1:5037 to prevent adb server from reappearing during our session.
 // Return the listener so the caller can keep it alive (drop releases the port).
+#[cfg(windows)]
 pub fn block_port_5037() -> Option<TcpListener> {
-    match TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 5037)) {
-        Ok(l) => Some(l),
-        Err(_) => None,
-    }
+    TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 5037)).ok()
 }

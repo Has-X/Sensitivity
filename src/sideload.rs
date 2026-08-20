@@ -1,4 +1,4 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
@@ -19,6 +19,51 @@ pub fn sideload_zip(
     validate_token: &str,
     allow_wipe: bool,
 ) -> Result<()> {
+    sideload_zip_inner(
+        client,
+        path,
+        chunk_size,
+        validate_token,
+        allow_wipe,
+        true,
+        |_, _| {},
+    )
+}
+
+pub fn sideload_zip_with_progress<F>(
+    client: &mut MiClient,
+    path: &Path,
+    chunk_size: usize,
+    validate_token: &str,
+    allow_wipe: bool,
+    on_progress: F,
+) -> Result<()>
+where
+    F: FnMut(u64, u64),
+{
+    sideload_zip_inner(
+        client,
+        path,
+        chunk_size,
+        validate_token,
+        allow_wipe,
+        false,
+        on_progress,
+    )
+}
+
+fn sideload_zip_inner<F>(
+    client: &mut MiClient,
+    path: &Path,
+    chunk_size: usize,
+    validate_token: &str,
+    allow_wipe: bool,
+    show_terminal_progress: bool,
+    mut on_progress: F,
+) -> Result<()>
+where
+    F: FnMut(u64, u64),
+{
     let file = File::open(path).with_context(|| format!("Opening {}", path.display()))?;
     let total = file.metadata()?.len();
     if chunk_size == 0 || chunk_size > 1024 * 1024 {
@@ -34,48 +79,58 @@ pub fn sideload_zip(
         validate_token,
         if allow_wipe { 1 } else { 0 }
     );
-    let (mut stream, pending) = client.open_sideload(&host_str).context("Opening sideload-host service")?;
+    let (mut stream, pending) = client
+        .open_sideload(&host_str)
+        .context("Opening sideload-host service")?;
     // Give the device more time between requests during sideload
     // (some recoveries take >5s before first WRTE)
     stream.set_timeout(std::time::Duration::from_secs(30));
 
-    let pb = ProgressBar::new(total);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({percent}%)")
-        .unwrap()
-        .progress_chars("=>-"));
-
-    let mut reader = BufReader::new(file);
-    let mut send_block = |index: u64, s: &mut AdbStream<'_>, pkt_arg0: u32, pkt_arg1: u32| -> Result<usize> {
-        let offset = index * (chunk_size as u64);
-        if offset >= total {
-            // Always acknowledge the device's WRTE, even if there's no more data.
-            // Some recoveries request one extra block to signal completion.
-            s.send_okay_mirror(pkt_arg0, pkt_arg1)?;
-            return Ok(0);
-        }
-        let to_send = std::cmp::min(chunk_size as u64, total - offset) as usize;
-        let mut buf = vec![0u8; to_send];
-        reader.seek(SeekFrom::Start(offset))?;
-        reader.read_exact(&mut buf)?;
-        // C tool: send WRTE(arg1,arg0) with data, then OKAY(arg1,arg0)
-        s.send_wrte_mirror(pkt_arg0, pkt_arg1, buf)?;
-        s.send_okay_mirror(pkt_arg0, pkt_arg1)?;
-        pb.inc(to_send as u64);
-        Ok(to_send)
+    let pb = if show_terminal_progress {
+        let progress = ProgressBar::new(total);
+        progress.set_style(
+            ProgressStyle::default_bar()
+                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({percent}%)")
+                .expect("static progress-bar template is valid")
+                .progress_chars("=>-"),
+        );
+        progress
+    } else {
+        ProgressBar::hidden()
     };
 
+    let mut reader = BufReader::new(file);
+    let mut send_block =
+        |index: u64, s: &mut AdbStream<'_>, pkt_arg0: u32, pkt_arg1: u32| -> Result<usize> {
+            let offset = index * (chunk_size as u64);
+            if offset >= total {
+                // Always acknowledge the device's WRTE, even if there's no more data.
+                // Some recoveries request one extra block to signal completion.
+                s.send_okay_mirror(pkt_arg0, pkt_arg1)?;
+                return Ok(0);
+            }
+            let to_send = std::cmp::min(chunk_size as u64, total - offset) as usize;
+            let mut buf = vec![0u8; to_send];
+            reader.seek(SeekFrom::Start(offset))?;
+            reader.read_exact(&mut buf)?;
+            // C tool: send WRTE(arg1,arg0) with data, then OKAY(arg1,arg0)
+            s.send_wrte_mirror(pkt_arg0, pkt_arg1, buf)?;
+            s.send_okay_mirror(pkt_arg0, pkt_arg1)?;
+            pb.inc(to_send as u64);
+            Ok(to_send)
+        };
+
     // Protocol: device sends OKAY/WRTE cycles. For WRTE, payload is ASCII block index. We mirror OKAYs and for WRTE we send the requested chunk + OKAY.
-    let mut finished = false;
     let mut bytes_sent: u64 = 0;
+    on_progress(bytes_sent, total);
     let mut final_status: Option<String> = None;
     // Handle pending first packet if WRTE arrived during open
     if let Some(pkt) = pending {
         if pkt.cmd == A_WRTE {
             if let Ok(idx) = String::from_utf8_lossy(&pkt.payload).trim().parse::<u64>() {
                 let n = send_block(idx, &mut stream, pkt.arg0, pkt.arg1)?;
-                if n == 0 { finished = true; }
                 bytes_sent = std::cmp::min(total, (idx * chunk_size as u64) + (n as u64));
+                on_progress(bytes_sent, total);
             }
         } else if pkt.cmd == A_OKAY {
             stream.send_okay_mirror(pkt.arg0, pkt.arg1)?;
@@ -106,8 +161,8 @@ pub fn sideload_zip(
                 let trimmed = text.trim();
                 if let Ok(idx) = trimmed.parse::<u64>() {
                     let n = send_block(idx, &mut stream, pkt.arg0, pkt.arg1)?;
-                    if n == 0 { finished = true; }
                     bytes_sent = std::cmp::min(total, (idx * chunk_size as u64) + (n as u64));
+                    on_progress(bytes_sent, total);
                 } else {
                     // Treat as final status message. Ack it, record, and proactively end the session.
                     final_status = Some(trimmed.to_string());
@@ -138,7 +193,11 @@ pub fn sideload_zip(
     if let Some(status) = final_status.as_deref() {
         let s = status.to_ascii_lowercase();
         // Conservative failure heuristics: common stock recovery texts
-        if s.contains("aborted") || s.contains("failed") || s.contains("failure") || s.contains("error") {
+        if s.contains("aborted")
+            || s.contains("failed")
+            || s.contains("failure")
+            || s.contains("error")
+        {
             bail!("Sideload reported failure: {}", status);
         }
     }

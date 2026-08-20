@@ -1,10 +1,9 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
 use anyhow::{bail, Context, Result};
 use byteorder::{ByteOrder, LittleEndian};
-use std::cmp;
 use std::time::Duration;
 
 use crate::usb::UsbTransport;
@@ -12,10 +11,7 @@ use crate::usb::UsbTransport;
 const MAX_PAYLOAD: usize = 1 << 20; // 1 MiB cap for safety
 
 const fn adb_cmd(b: [u8; 4]) -> u32 {
-    (b[0] as u32)
-        | ((b[1] as u32) << 8)
-        | ((b[2] as u32) << 16)
-        | ((b[3] as u32) << 24)
+    (b[0] as u32) | ((b[1] as u32) << 8) | ((b[2] as u32) << 16) | ((b[3] as u32) << 24)
 }
 
 pub const A_CNXN: u32 = adb_cmd(*b"CNXN");
@@ -34,27 +30,26 @@ pub struct AdbPacket {
 
 impl AdbPacket {
     pub fn new(cmd: u32, arg0: u32, arg1: u32, payload: Vec<u8>) -> Self {
-        Self { cmd, arg0, arg1, payload }
+        Self {
+            cmd,
+            arg0,
+            arg1,
+            payload,
+        }
     }
 }
 
 pub struct AdbConnection {
     usb: UsbTransport,
-    // Some recoveries assume local-id is always 1 (matches miasst.c)
-    local_id_counter: u32,
 }
 
 impl AdbConnection {
     pub fn new(usb: UsbTransport) -> Result<Self> {
-        let mut conn = Self { usb, local_id_counter: 1 };
+        let mut conn = Self { usb };
         // Small settle delay after claiming interface to reduce race on Windows
         std::thread::sleep(Duration::from_millis(200));
         conn.handshake()?;
         Ok(conn)
-    }
-
-    fn checksum(data: &[u8]) -> u32 {
-        data.iter().fold(0u32, |acc, &b| acc.wrapping_add(b as u32))
     }
 
     fn send_packet(&mut self, pkt: &AdbPacket) -> Result<()> {
@@ -94,7 +89,12 @@ impl AdbConnection {
             self.usb.read_exact(&mut payload)?;
             // Xiaomi's Mi Assistant mode sets checksum to 0 and does not verify; skip checksum validation here.
         }
-        Ok(AdbPacket { cmd, arg0, arg1, payload })
+        Ok(AdbPacket {
+            cmd,
+            arg0,
+            arg1,
+            payload,
+        })
     }
 
     fn handshake(&mut self) -> Result<()> {
@@ -105,7 +105,9 @@ impl AdbConnection {
 
         // Accept either CNXN or a WRTE with "sideload::" as success, mirroring miasst.c
         for _ in 0..10 {
-            let reply = self.recv_packet().context("Waiting for device reply after CONNECT")?;
+            let reply = self
+                .recv_packet()
+                .context("Waiting for device reply after CONNECT")?;
             match reply.cmd {
                 x if x == A_CNXN => {
                     return Ok(());
@@ -125,7 +127,7 @@ impl AdbConnection {
         bail!("Did not receive expected reply (CNXN/WRTE sideload::) from device after CONNECT");
     }
 
-    pub fn open_service(&mut self, name: &str) -> Result<AdbStream> {
+    pub fn open_service(&mut self, name: &str) -> Result<AdbStream<'_>> {
         let local_id = self.alloc_local_id();
         let mut payload = Vec::from(name.as_bytes());
         if !payload.ends_with(&[0]) {
@@ -137,7 +139,11 @@ impl AdbConnection {
             match pkt.cmd {
                 A_OKAY => {
                     let remote_id = pkt.arg0; // remote sends its id in arg0
-                    return Ok(AdbStream { conn: self, local_id, remote_id });
+                    return Ok(AdbStream {
+                        conn: self,
+                        local_id,
+                        remote_id,
+                    });
                 }
                 A_CLSE => bail!("Stream closed by device while opening {}", name),
                 A_WRTE => {
@@ -151,10 +157,12 @@ impl AdbConnection {
 
     // Open sideload-host service without consuming the first WRTE request.
     // Returns the stream and an optional pending packet (first WRTE or OKAY already read).
-    pub fn open_sideload(&mut self, name: &str) -> Result<(AdbStream, Option<AdbPacket>)> {
+    pub fn open_sideload(&mut self, name: &str) -> Result<(AdbStream<'_>, Option<AdbPacket>)> {
         let local_id = self.alloc_local_id();
         let mut payload = Vec::from(name.as_bytes());
-        if !payload.ends_with(&[0]) { payload.push(0); }
+        if !payload.ends_with(&[0]) {
+            payload.push(0);
+        }
         self.send_packet(&AdbPacket::new(A_OPEN, local_id, 0, payload))?;
 
         // We need the device's remote id. It can arrive in OKAY or in WRTE.arg0
@@ -168,7 +176,11 @@ impl AdbConnection {
                 }
                 x if x == A_WRTE => {
                     let rid = remote_id.unwrap_or(pkt.arg0);
-                    let stream = AdbStream { conn: self, local_id, remote_id: rid };
+                    let stream = AdbStream {
+                        conn: self,
+                        local_id,
+                        remote_id: rid,
+                    };
                     return Ok((stream, Some(pkt)));
                 }
                 x if x == A_CLSE => bail!("Stream closed by device while opening sideload-host"),
@@ -208,11 +220,15 @@ impl AdbConnection {
         let _ = self.recv_packet();
 
         let mut s = text.unwrap_or_default();
-        while s.ends_with('\n') || s.ends_with('\r') { s.pop(); }
+        while s.ends_with('\n') || s.ends_with('\r') {
+            s.pop();
+        }
         Ok(s)
     }
 
-    fn alloc_local_id(&mut self) -> u32 { 1 }
+    fn alloc_local_id(&self) -> u32 {
+        1
+    }
 
     pub fn set_timeout(&mut self, dur: Duration) {
         self.usb.set_timeout(dur);
@@ -239,52 +255,16 @@ impl<'a> AdbStream<'a> {
             .send_packet(&AdbPacket::new(A_OKAY, pkt_arg1, pkt_arg0, Vec::new()))
     }
 
-    pub fn send_wrte_mirror(&mut self, pkt_arg0: u32, pkt_arg1: u32, payload: Vec<u8>) -> Result<()> {
+    pub fn send_wrte_mirror(
+        &mut self,
+        pkt_arg0: u32,
+        pkt_arg1: u32,
+        payload: Vec<u8>,
+    ) -> Result<()> {
         // Mirror WRTE with swapped ids like the C tool
         self.conn
             .send_packet(&AdbPacket::new(A_WRTE, pkt_arg1, pkt_arg0, payload))
     }
-    pub fn read_write_or_close(&mut self) -> Result<Option<Vec<u8>>> {
-        loop {
-            let pkt = self.conn.recv_packet()?;
-            match pkt.cmd {
-                A_WRTE => {
-                    // ack and return this chunk
-                    self.conn.send_packet(&AdbPacket::new(A_OKAY, self.local_id, pkt.arg0, Vec::new()))?;
-                    return Ok(Some(pkt.payload));
-                }
-                A_OKAY => {
-                    // ignore keepalive/ack
-                }
-                A_CLSE => return Ok(None),
-                _ => {}
-            }
-        }
-    }
-    pub fn write(&mut self, data: &[u8]) -> Result<()> {
-        let mut off = 0;
-        while off < data.len() {
-            let chunk = cmp::min(64 * 1024, data.len() - off);
-            let payload = data[off..off + chunk].to_vec();
-            self.conn.send_packet(&AdbPacket::new(A_WRTE, self.local_id, self.remote_id, payload))?;
-            // Expect OKAY
-            loop {
-                let pkt = self.conn.recv_packet()?;
-                match pkt.cmd {
-                    A_OKAY => break,
-                    A_WRTE => {
-                        // Reader first, ack it
-                        self.conn.send_packet(&AdbPacket::new(A_OKAY, self.local_id, pkt.arg0, Vec::new()))?;
-                    }
-                    A_CLSE => bail!("Stream closed by device during write"),
-                    _ => {}
-                }
-            }
-            off += chunk;
-        }
-        Ok(())
-    }
-
     pub fn read_to_end(&mut self) -> Result<Vec<u8>> {
         let mut out = Vec::new();
         loop {
@@ -293,14 +273,24 @@ impl<'a> AdbStream<'a> {
                 A_WRTE => {
                     out.extend_from_slice(&pkt.payload);
                     // Ack
-                    self.conn.send_packet(&AdbPacket::new(A_OKAY, self.local_id, pkt.arg0, Vec::new()))?;
+                    self.conn.send_packet(&AdbPacket::new(
+                        A_OKAY,
+                        self.local_id,
+                        pkt.arg0,
+                        Vec::new(),
+                    ))?;
                 }
                 A_OKAY => {
                     // ignore
                 }
                 A_CLSE => {
                     // Mirror close
-                    self.conn.send_packet(&AdbPacket::new(A_CLSE, self.local_id, pkt.arg0, Vec::new()))?;
+                    self.conn.send_packet(&AdbPacket::new(
+                        A_CLSE,
+                        self.local_id,
+                        pkt.arg0,
+                        Vec::new(),
+                    ))?;
                     break;
                 }
                 _ => {}
@@ -310,8 +300,12 @@ impl<'a> AdbStream<'a> {
     }
 
     pub fn close(self) -> Result<()> {
-        self.conn
-            .send_packet(&AdbPacket::new(A_CLSE, self.local_id, self.remote_id, Vec::new()))
+        self.conn.send_packet(&AdbPacket::new(
+            A_CLSE,
+            self.local_id,
+            self.remote_id,
+            Vec::new(),
+        ))
     }
 }
 

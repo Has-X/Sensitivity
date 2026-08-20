@@ -1,4 +1,4 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
@@ -32,8 +32,9 @@ pub fn load_state() -> State {
 
 pub fn save_state(state: &State) -> Result<()> {
     let path = config_path();
-    if let Some(parent) = path.parent() { fs::create_dir_all(parent).ok(); }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).ok();
+    }
     let bytes = serde_json::to_vec_pretty(state)?;
     fs::write(&path, bytes).with_context(|| format!("writing {}", path.display()))
 }
-

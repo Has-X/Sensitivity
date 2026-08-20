@@ -21,6 +21,9 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
 
       - name: Cache cargo registry
         uses: actions/cache@v4
@@ -40,26 +43,42 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-target-
 
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run tests
+        run: cargo test --all-targets --all-features --locked
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+
       - name: Build (release)
         run: cargo build --release --locked
+
+      - name: Build GUI (release)
+        run: cargo build --release --locked --features gui --bin sensitivity-gui
 
       - name: Prepare artifact (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           mkdir -p dist
-          cp target/release/miassistant dist/miassistant-linux-x86_64
+          cp target/release/sensitivity dist/sensitivity-linux-x86_64
+          cp target/release/sensitivity-gui dist/sensitivity-gui-linux-x86_64
+          cp README.md LICENSE dist/
 
       - name: Prepare artifact (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Copy-Item target/release/miassistant.exe dist/miassistant-windows-x86_64.exe
+          Copy-Item target/release/sensitivity.exe dist/sensitivity-windows-x86_64.exe
+          Copy-Item target/release/sensitivity-gui.exe dist/sensitivity-gui-windows-x86_64.exe
+          Copy-Item scripts/install-windows.ps1 dist/install-sensitivity.ps1
+          Copy-Item README.md, LICENSE dist/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: miassistant-${{ runner.os }}-x86_64
+          name: sensitivity-${{ runner.os }}-x86_64
           path: dist/*
-

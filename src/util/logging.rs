@@ -1,4 +1,4 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
@@ -20,4 +20,3 @@ pub fn init_logger(verbosity: LogVerbosity) {
         .format_timestamp_millis()
         .try_init();
 }
-

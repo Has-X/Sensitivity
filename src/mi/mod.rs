@@ -1,4 +1,4 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
@@ -39,11 +39,23 @@ impl MiClient {
         let language = self.simple_query("getlanguage:")?;
         let region = self.simple_query("getregion:")?;
         let romzone = self.simple_query("getromzone:")?;
-        Ok(DeviceInfo { device, sn, version, codebase, branch, language, region, romzone })
+        Ok(DeviceInfo {
+            device,
+            sn,
+            version,
+            codebase,
+            branch,
+            language,
+            region,
+            romzone,
+        })
     }
 
     pub fn simple_query(&mut self, cmd: &str) -> Result<String> {
-        let text = self.adb.query_text(cmd).with_context(|| format!("query_text {}", cmd))?;
+        let text = self
+            .adb
+            .query_text(cmd)
+            .with_context(|| format!("query_text {}", cmd))?;
         Ok(text)
     }
 
@@ -53,11 +65,10 @@ impl MiClient {
         Ok(())
     }
 
-    pub fn open_service(&mut self, name: &str) -> Result<crate::adb::AdbStream<'_>> {
-        self.adb.open_service(name)
-    }
-
-    pub fn open_sideload(&mut self, name: &str) -> Result<(crate::adb::AdbStream<'_>, Option<crate::adb::AdbPacket>)> {
+    pub fn open_sideload(
+        &mut self,
+        name: &str,
+    ) -> Result<(crate::adb::AdbStream<'_>, Option<crate::adb::AdbPacket>)> {
         self.adb.open_sideload(name)
     }
 }
