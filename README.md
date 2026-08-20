@@ -10,9 +10,11 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/build-release%20verified-FF6900" alt="release build verified">
+  <img src="https://img.shields.io/badge/security-CodeQL%20Advanced-2EA44F" alt="CodeQL Advanced">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-444444" alt="Windows Linux macOS">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-000000" alt="AGPL-3.0 license">
   <img src="https://img.shields.io/badge/Made%20in-the%20EU-003399" alt="Made in the EU">
+  <span>Made in the EU 🇪🇺</span>
 </p>
 
 Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, native WinUI 3 on Windows, and a lightweight portable GUI on Linux and macOS.
@@ -70,6 +72,8 @@ Sensitivity calculates the package MD5, asks Xiaomi's service for approval and t
 </p>
 
 The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the system colour theme, with Xiaomi Orange used for actions and status accents.
+
+The maintained documentation starts at the [Wiki source](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
 
 Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
 

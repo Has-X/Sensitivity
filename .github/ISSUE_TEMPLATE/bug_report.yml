@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible problem in Sensitivity
+title: "bug: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Do not include serial numbers, validation tokens, private ROM URLs, or raw diagnostic dumps.
+  - type: input
+    id: version
+    attributes:
+      label: Sensitivity version
+      placeholder: "v1.1.2 or commit SHA"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: device
+    attributes:
+      label: Device and recovery context
+      description: Share codename, region, OS or recovery version, and whether this is stock Mi Assistant recovery. Redact serials and tokens.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Boot to...
+        2. Run...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted logs
+      description: Include only the smallest relevant output. Remove serial numbers, tokens, private paths, and personal data.
+      render: text

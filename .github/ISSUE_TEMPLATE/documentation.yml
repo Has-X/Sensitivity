@@ -1,0 +1,22 @@
+name: Documentation improvement
+description: Report unclear, missing, or incorrect documentation
+title: "docs: "
+labels: ["documentation", "triage"]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Documentation location
+      placeholder: "README.md, docs/WINDOWS_ARCHITECTURE.md, Wiki"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear or incorrect?
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Suggested correction
