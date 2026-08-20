@@ -123,7 +123,7 @@ Hardware behavior varies between recovery versions. Offline CI proves builds, pa
 
 ## Development
 
-Requirements: Rust 1.88 or newer. `libusb` is built from vendored sources.
+Requirements: Rust 1.95 or newer. `libusb` is built from vendored sources.
 
 ```console
 cargo fmt --all -- --check
