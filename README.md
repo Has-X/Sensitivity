@@ -2,11 +2,7 @@
   <img src="assets/sensitivity-background.png" alt="Sensitivity Xiaomi recovery artwork" width="100%">
 </p>
 
-<h1 align="center"><img src="assets/sensitivity-icon.png" alt="Sensitivity icon" width="42" height="42" align="absmiddle"> Sensitivity</h1>
-
-<p align="center">
-  Sensitivity — Take care of your Mi.
-</p>
+<h1 align="center"><img src="assets/sensitivity-icon.png" alt="Sensitivity icon" width="42" height="42" align="absmiddle"> Sensitivity — Take care of your Mi 💖</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/build-release%20verified-FF6900" alt="release build verified">
