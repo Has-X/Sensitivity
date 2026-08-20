@@ -1,10 +1,10 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
 use anyhow::{anyhow, bail, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
-use cbc::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use cbc::cipher::{block_padding::Pkcs7, BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
 use reqwest::blocking::Client;
 use serde::Deserialize;
 use std::time::Duration;
@@ -79,7 +79,7 @@ fn aes128_cbc_encrypt_b64(plain: &[u8]) -> Result<String> {
     let pad_len = bs - (buf.len() % bs);
     buf.extend(std::iter::repeat_n(0u8, pad_len));
     let enc_slice = Aes128CbcEnc::new(&key.into(), &iv.into())
-        .encrypt_padded_mut::<Pkcs7>(&mut buf, plain.len())?;
+        .encrypt_padded::<Pkcs7>(&mut buf, plain.len())?;
     let ciphertext = enc_slice.to_vec();
     Ok(general_purpose::STANDARD.encode(&ciphertext))
 }
@@ -92,7 +92,7 @@ fn aes128_cbc_decrypt_b64(b64: &str) -> Result<Vec<u8>> {
     };
     let mut buf = cipher.clone();
     let dec = Aes128CbcDec::new(&key.into(), &iv.into())
-        .decrypt_padded_mut::<Pkcs7>(&mut buf)
+        .decrypt_padded::<Pkcs7>(&mut buf)
         .map_err(|e| {
             anyhow!(
                 "AES-128-CBC decrypt failed: {} (cipher {} bytes)",
