@@ -2,11 +2,7 @@
   <img src="assets/sensitivity-background.png" alt="Sensitivity Xiaomi recovery artwork" width="100%">
 </p>
 
-<h1 align="center"><img src="assets/sensitivity-icon.png" alt="Sensitivity icon" width="42" height="42" align="absmiddle"> Sensitivity</h1>
-
-<p align="center">
-  Direct USB recovery tooling for Xiaomi devices, with a safe CLI and native desktop interfaces.
-</p>
+<h1 align="center"><img src="assets/sensitivity-icon.png" alt="Sensitivity icon" width="42" height="42" align="absmiddle"> Sensitivity — Take care of your Mi.</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/build-release%20verified-FF6900" alt="release build verified">
@@ -72,7 +68,7 @@ Sensitivity calculates the package MD5, asks Xiaomi's service for approval and t
 
 The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the system colour theme, with Xiaomi Orange used for actions and status accents.
 
-The maintained documentation starts at the [Wiki source](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
+The maintained documentation is available in the [Sensitivity Wiki](https://github.com/Has-X/Sensitivity/wiki); its source pages remain in [`docs/wiki`](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
 
 Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
 

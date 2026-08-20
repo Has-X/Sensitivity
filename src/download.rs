@@ -1,4 +1,4 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 // Website: https://hasx.dev
 
@@ -122,7 +122,7 @@ pub fn download_with_md5(
             }
         }
         file.flush()?;
-        Ok(format!("{:x}", hasher.finalize()))
+        Ok(hex::encode(hasher.finalize()))
     })();
     pb.finish_and_clear();
     let got = match transfer {

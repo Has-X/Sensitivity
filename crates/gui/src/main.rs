@@ -1,4 +1,4 @@
-// Copyright (C) 2025 HasX
+// Copyright (C) 2026 HasX
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
