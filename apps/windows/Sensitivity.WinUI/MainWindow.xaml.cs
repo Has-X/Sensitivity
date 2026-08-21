@@ -19,6 +19,7 @@ public sealed partial class MainWindow : Window
     private readonly SensitivityBackend _backend = new();
     private CancellationTokenSource? _operationCancellation;
     private string? _romPath;
+    private string? _detectedCodename;
     private bool _busy;
 
     private static string L(string key) => LocalizationService.Get(key);
@@ -57,9 +58,9 @@ public sealed partial class MainWindow : Window
             .FirstOrDefault(item => (item.Tag as string ?? string.Empty) == (settings.LanguageOverride ?? string.Empty));
         if (settings.LastRomPath is { } lastRom && File.Exists(lastRom))
         {
-            _romPath = lastRom;
-            RomPathText.Text = lastRom;
+            SelectRomPath(lastRom);
         }
+        else TrySelectDownloadedRom();
         Navigation.SelectedItem = Navigation.MenuItems[0];
         Root.Loaded += Root_Loaded;
         Closed += (_, _) =>
@@ -243,11 +244,13 @@ public sealed partial class MainWindow : Window
             }
 
             DeviceNameText.Text = info.Device;
+            _detectedCodename = DeriveCodename(info.Device);
             VersionText.Text = info.Version;
             RegionText.Text = string.IsNullOrWhiteSpace(info.Region) ? info.RomZone : info.Region;
             SerialText.Text = info.Serial;
             ConnectionTitle.Text = L("connection.ready", ("device", info.Device));
             ConnectionSubtitle.Text = L("connection.details", ("version", info.Version), ("region", info.Region), ("romzone", info.RomZone)).Trim();
+            TrySelectDownloadedRom();
             ShowStatus(L("status.recovery_ready"), L("status.handshake_ok"), InfoBarSeverity.Success);
         }, L("status.reading_recovery"));
     }
@@ -280,11 +283,7 @@ public sealed partial class MainWindow : Window
         {
             return;
         }
-        _romPath = file.Path;
-        RomPathText.Text = file.Path;
-        FlashProgress.Value = 0;
-        ProgressPercentText.Text = string.Empty;
-        OperationStatusText.Text = L("status.ready_to_flash");
+        SelectRomPath(file.Path);
     }
 
     private async void ChooseDownloadFolderButton_Click(object sender, RoutedEventArgs e)
@@ -293,7 +292,11 @@ public sealed partial class MainWindow : Window
         picker.FileTypeFilter.Add("*");
         InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
         var folder = await picker.PickSingleFolderAsync();
-        if (folder is not null) DownloadDirectoryText.Text = folder.Path;
+        if (folder is not null)
+        {
+            DownloadDirectoryText.Text = folder.Path;
+            TrySelectDownloadedRom();
+        }
     }
 
     private async void ListAllowedRomsButton_Click(object sender, RoutedEventArgs e)
@@ -323,8 +326,80 @@ public sealed partial class MainWindow : Window
             var result = await _backend.DownloadLatestAsync(device.Index, DownloadDirectoryText.Text, StopAdbToggle.IsOn, cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
             AllowedRomsText.Text = result.StandardOutput.Trim();
-            ShowStatus(L("status.download_complete"), result.StandardOutput.Trim(), InfoBarSeverity.Success);
+            var romPath = ExtractDownloadedRomPath(result.StandardOutput) ?? FindDownloadedRom();
+            if (romPath is not null)
+            {
+                SelectRomPath(romPath);
+                NavigateTo("flash");
+                ShowStatus(L("status.download_ready"), Path.GetFileName(romPath), InfoBarSeverity.Success);
+            }
+            else
+            {
+                ShowStatus(L("status.download_complete"), result.StandardOutput.Trim(), InfoBarSeverity.Success);
+            }
         }, L("status.downloading_latest"));
+    }
+
+    private void SelectRomPath(string path)
+    {
+        _romPath = path;
+        RomPathText.Text = path;
+        FlashProgress.Value = 0;
+        ProgressPercentText.Text = string.Empty;
+        OperationStatusText.Text = L("status.ready_to_flash");
+    }
+
+    private bool TrySelectDownloadedRom()
+    {
+        var romPath = FindDownloadedRom();
+        if (romPath is null) return false;
+        SelectRomPath(romPath);
+        return true;
+    }
+
+    private string? FindDownloadedRom()
+    {
+        var folder = DownloadDirectoryText.Text;
+        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder)) return null;
+
+        var candidates = Directory.EnumerateFiles(folder, "*.zip", SearchOption.TopDirectoryOnly)
+            .Select(path => new FileInfo(path))
+            .Where(file => file.Length > 0)
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .ToList();
+        if (candidates.Count == 0) return null;
+
+        var codename = _backend.Codename ?? _detectedCodename;
+        if (!string.IsNullOrWhiteSpace(codename))
+        {
+            var matching = candidates.FirstOrDefault(file => file.Name.Contains(codename, StringComparison.OrdinalIgnoreCase));
+            return matching?.FullName ?? (candidates.Count == 1 ? candidates[0].FullName : null);
+        }
+
+        return candidates.Count == 1 ? candidates[0].FullName : null;
+    }
+
+    private static string? ExtractDownloadedRomPath(string output)
+    {
+        const string prefix = "Downloaded to ";
+        const string suffix = " (md5 ok)";
+        var line = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault(value => value.StartsWith(prefix, StringComparison.Ordinal));
+        if (line is null) return null;
+
+        var path = line[prefix.Length..];
+        if (path.EndsWith(suffix, StringComparison.Ordinal)) path = path[..^suffix.Length];
+        return File.Exists(path) ? path : null;
+    }
+
+    private static string? DeriveCodename(string device)
+    {
+        var separator = device.IndexOf('_');
+        var codename = separator > 0 ? device[..separator] : device;
+        return !string.IsNullOrWhiteSpace(codename)
+            && codename.All(character => char.IsLetterOrDigit(character) || character is '-' or '_')
+            ? codename
+            : null;
     }
 
     private async void FlashLatestButton_Click(object sender, RoutedEventArgs e)

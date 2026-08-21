@@ -31,7 +31,7 @@ public static class LocalizationService
                 ?? new Dictionary<string, string>();
             foreach (var (id, sourceKey) in aliases)
             {
-                if (catalog.TryGetValue(sourceKey, out var value)) catalog[id] = value;
+                catalog[id] = catalog.TryGetValue(sourceKey, out var value) ? value : sourceKey;
             }
             _strings = catalog;
         }
