@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [rust]
+        language: [csharp, rust]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

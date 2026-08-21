@@ -14,7 +14,7 @@ Security fixes are applied to the latest released version and the active develop
 
 Please do not report security vulnerabilities in a public issue, pull request, discussion, or chat message.
 
-Use GitHub's [private security advisory form](https://github.com/Has-X/Sensitivity/security/advisories/new). If that form is unavailable, contact the maintainers through the private contact method listed in the repository profile and include the word `Sensitivity security` in the subject.
+Use GitHub's [private security advisory form](https://github.com/Has-X/Sensitivity/security/advisories/new). If that form is unavailable, email [feedback@chromatic.hu](mailto:feedback@chromatic.hu) with `Sensitivity security` in the subject.
 
 Please include:
 

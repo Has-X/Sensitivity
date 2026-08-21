@@ -3,7 +3,7 @@ name = "sensitivity-gui"
 version = "1.1.2"
 edition = "2021"
 rust-version = "1.97"
-authors = ["HasX <mi@hasx.dev>"]
+authors = ["Chromatic <feedback@chromatic.hu>"]
 description = "Sensitivity graphical Xiaomi Recovery flash and rescue tool"
 license = "AGPL-3.0-only"
 repository = "https://github.com/Has-X/Sensitivity"
@@ -19,7 +19,7 @@ serde_json = "1"
 
 [package.metadata.bundle]
 name = "Sensitivity"
-identifier = "dev.hasx.sensitivity"
+identifier = "hu.chromatic.sensitivity"
 category = "public.app-category.utilities"
 short_description = "Xiaomi Recovery flash and rescue tool"
-copyright = "Copyright 2026 HasX and contributors"
+copyright = "Copyright 2026 Chromatic and contributors"

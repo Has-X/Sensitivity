@@ -82,6 +82,9 @@ public static class LocalizationService
             case Button button when button.Content is not UIElement:
                 button.Content = value;
                 break;
+            case HyperlinkButton hyperlinkButton:
+                hyperlinkButton.Content = value;
+                break;
             case NavigationViewItem navigationItem:
                 navigationItem.Content = value;
                 break;

@@ -14,6 +14,8 @@
 
 Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, a native Fluent 2 WinUI 3 application on Windows, and a lightweight portable GUI on Linux and macOS.
 
+Developed and published by [Chromatic](https://chromatic.hu). For product feedback, contact [feedback@chromatic.hu](mailto:feedback@chromatic.hu).
+
 It speaks the Mi Assistant ADB-like protocol directly over USB, validates official Recovery ROMs with Xiaomi's `miotaV3` service, and streams approved packages to stock recovery. It does not require `adb`, an unlocked bootloader, or proprietary Xiaomi desktop software.
 
 > [!CAUTION]
@@ -66,9 +68,11 @@ Sensitivity calculates the package MD5, asks Xiaomi's service for approval and t
   <img src="assets/sensitivity-showcase.png" alt="Sensitivity recovery connection screen in dark mode" width="900">
 </p>
 
-The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the system colour theme, with Xiaomi Orange used for actions and status accents.
+The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the Windows system theme and accent colour.
 
 The maintained documentation is available in the [Sensitivity Wiki](https://github.com/Has-X/Sensitivity/wiki); its source pages remain in [`docs/wiki`](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
+
+Translation contributors should use the [English source and translator guide](docs/LOCALIZATION.md). It records the safety context for Windows, installer, portable GUI, and CLI messages.
 
 Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
 
@@ -123,7 +127,7 @@ Hardware behavior varies between recovery versions. Offline CI proves builds, pa
 
 ## Development
 
-Requirements: Rust 1.95 or newer. `libusb` is built from vendored sources.
+Requirements: Rust 1.97.1 or newer. `libusb` is built from vendored sources.
 
 ```console
 cargo fmt --all -- --check
@@ -149,6 +153,6 @@ Sensitivity fully consolidates the useful parts of [MiAssistantFork](https://git
 
 ## License
 
-Copyright (C) 2026 HasX and contributors. Sensitivity is licensed under the [GNU Affero General Public License v3.0](LICENSE), SPDX identifier `AGPL-3.0-only`.
+Copyright (C) 2026 Chromatic and contributors. Sensitivity is licensed under the [GNU Affero General Public License v3.0](LICENSE), SPDX identifier `AGPL-3.0-only`.
 
 Commercial use is not categorically prohibited by the AGPL. Distribution or network use of a modified version must satisfy the license's corresponding-source and licensing requirements. No Xiaomi proprietary components are included.
