@@ -58,7 +58,7 @@
   "Always stop local ADB before connecting.OffContent": "ADB futtatása",
   "Always stop local ADB before connecting.OnContent": "ADB leállítása",
   "Leave this off unless the automatic recovery prompt does not work on this computer.": "Hagyd kikapcsolva, kivéve ha az automatikus recovery-kérdés ezen a gépen nem működik.",
-  "Native WinUI 3 interface · Shared Rust recovery core · AGPL-3.0-only": "Natív WinUI 3 felület · Közös Rust recovery-mag · AGPL-3.0-only",
+  "Direct USB recovery for Xiaomi devices, with official ROM validation before transfer.": "Közvetlen USB-kapcsolat Xiaomi készülékek Recovery módjához, a hivatalos ROM-ok ellenőrzésével az átvitel előtt.",
   "Language": "Nyelv",
   "System default": "Rendszer alapértelmezése",
   "English": "Angol",

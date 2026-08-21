@@ -58,7 +58,7 @@
   "Always stop local ADB before connecting.OffContent": "Keep ADB running",
   "Always stop local ADB before connecting.OnContent": "Stop ADB",
   "Leave this off unless the automatic recovery prompt does not work on this computer.": "Leave this off unless the automatic recovery prompt does not work on this computer.",
-  "Native WinUI 3 interface · Shared Rust recovery core · AGPL-3.0-only": "Native WinUI 3 interface · Shared Rust recovery core · AGPL-3.0-only",
+  "Direct USB recovery for Xiaomi devices, with official ROM validation before transfer.": "Direct USB recovery for Xiaomi devices, with official ROM validation before transfer.",
   "Language": "Language",
   "System default": "System default",
   "English": "English",

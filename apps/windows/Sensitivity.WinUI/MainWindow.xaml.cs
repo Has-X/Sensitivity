@@ -2,6 +2,7 @@ using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Sensitivity.WinUI.Models;
@@ -133,6 +134,11 @@ public sealed partial class MainWindow : Window
         LocalizationService.Apply(RecoveryPage);
         LocalizationService.Apply(DiagnosticsPage);
         LocalizationService.Apply(SettingsPage);
+        LanguagePicker.Header = L("label.language");
+        foreach (var item in LanguagePicker.Items.OfType<ComboBoxItem>())
+        {
+            item.Content = L(AutomationProperties.GetName(item));
+        }
         AboutVersionText.Text = $"{L("app.title")} {typeof(App).Assembly.GetName().Version?.ToString(3)}";
         Title = L("app.title");
     }
