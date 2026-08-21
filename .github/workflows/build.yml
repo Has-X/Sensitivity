@@ -16,6 +16,7 @@ on:
       - "tools/check-locales.ps1"
       - ".github/workflows/build.yml"
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, master ]
     paths:
       - "Cargo.toml"
