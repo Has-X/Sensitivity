@@ -61,6 +61,7 @@ struct ValidatedRom {
 enum Language {
     #[default]
     En,
+    Hu,
     Es,
 }
 
@@ -127,10 +128,7 @@ impl SensitivityApp {
     }
 
     fn t(&self, english: &'static str) -> &'static str {
-        if self.language == Language::En {
-            return english;
-        }
-        match english {
+        let spanish = match english {
             "Xiaomi Recovery flash and rescue" => "Flasheo y rescate de Xiaomi Recovery",
             "Recovery device" => "Dispositivo en recovery",
             "Refresh USB devices" => "Actualizar dispositivos USB",
@@ -171,6 +169,55 @@ impl SensitivityApp {
             }
             "Erase all data" => "Borrar todos los datos",
             _ => english,
+        };
+        let hungarian = match english {
+            "Xiaomi Recovery flash and rescue" => "Xiaomi Recovery villogtatás és helyreállítás",
+            "Recovery device" => "Recovery eszköz",
+            "Refresh USB devices" => "USB-eszközök frissítése",
+            "No matching interface found." => "Nem található megfelelő felület.",
+            "Interface" => "Felület",
+            "Stop local ADB before opening USB" => "Helyi ADB leállítása az USB megnyitása előtt",
+            "Read device info" => "Eszközinformációk beolvasása",
+            "List allowed ROMs" => "Engedélyezett ROM-ok listázása",
+            "Official Recovery ROM" => "Hivatalos Recovery ROM",
+            "Choose ROM ZIP" => "ROM ZIP kiválasztása",
+            "Validate ROM" => "ROM ellenőrzése",
+            "Validation requires a data wipe" => "Az ellenőrzés adat törlését igényli",
+            "Validated; no wipe requested" => "Ellenőrizve, nincs kért adattörlés",
+            "Flash validated ROM" => "Ellenőrzött ROM villogtatása",
+            "Cancel flash" => "Villogtatás megszakítása",
+            "Recovery actions" => "Recovery műveletek",
+            "Reboot" => "Újraindítás",
+            "Erase data" => "Adatok törlése",
+            "Device information" => "Eszközinformációk",
+            "Read device info to begin." => "Kezdéshez olvasd be az eszközinformációkat.",
+            "Allowed ROM response" => "Engedélyezett ROM válasz",
+            "No response loaded." => "Nincs betöltött válasz.",
+            "Activity" => "Tevékenység",
+            "Confirm flash" => "Villogtatás megerősítése",
+            "Xiaomi requires this flash to permanently erase user data." => {
+                "A Xiaomi ehhez a villogtatáshoz a felhasználói adatok végleges törlését kéri."
+            }
+            "Flash the validated official ROM now?" => {
+                "Villogtatod most az ellenőrzött hivatalos ROM-ot?"
+            }
+            "Keep the phone connected until recovery reports completion." => {
+                "A telefont hagyd csatlakoztatva, amíg a recovery befejezettnek jelzi a műveletet."
+            }
+            "Cancel" => "Mégse",
+            "Erase data and flash" => "Adatok törlése és villogtatás",
+            "Flash" => "Villogtatás",
+            "Confirm data erase" => "Adattörlés megerősítése",
+            "This permanently erases all user data, then reboots the phone." => {
+                "Ez véglegesen töröl minden felhasználói adatot, majd újraindítja a telefont."
+            }
+            "Erase all data" => "Minden adat törlése",
+            _ => english,
+        };
+        match self.language {
+            Language::En => english,
+            Language::Hu => hungarian,
+            Language::Es => spanish,
         }
     }
 
@@ -492,10 +539,12 @@ impl eframe::App for SensitivityApp {
                 egui::ComboBox::from_id_salt("language")
                     .selected_text(match self.language {
                         Language::En => "EN",
+                        Language::Hu => "HU",
                         Language::Es => "ES",
                     })
                     .show_ui(ui, |ui| {
                         ui.selectable_value(&mut self.language, Language::En, "EN");
+                        ui.selectable_value(&mut self.language, Language::Hu, "HU");
                         ui.selectable_value(&mut self.language, Language::Es, "ES");
                     });
             });

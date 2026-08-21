@@ -1,6 +1,8 @@
 # Windows setup
 
-Install the MSI and open **Sensitivity** from the Start menu, or extract the portable ZIP and open `Sensitivity.exe`. The Windows interface is a self-contained WinUI 3 application; no separate .NET or Windows App SDK installation is required.
+Run `Sensitivity-Setup-x64.exe` and open **Sensitivity** from the Start menu, or extract the portable ZIP and open `Sensitivity.exe`. The installer places the application in `Program Files\Sensitivity`, creates a Start menu entry, and registers a normal Windows uninstall entry. The Windows interface is self-contained; no separate .NET or Windows App SDK installation is required.
+
+The installer follows the Windows light or dark setting and picks English, Hungarian, or Spanish from the system language when available. For unattended deployment, use `Sensitivity-Setup-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART`.
 
 The app includes diagnostics and can explain likely driver or ADB ownership problems. The separate `sensitivity-cli.exe` remains available for scripts and detailed troubleshooting.
 

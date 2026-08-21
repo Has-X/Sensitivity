@@ -3,3 +3,9 @@
 /fuzz/target
 /apps/windows/**/bin
 /apps/windows/**/obj
+/installer/out*/
+/installer/test-install.log
+/installer/*-test.log
+/native-publish
+/native-publish-test
+/package

@@ -1,6 +1,6 @@
 [package]
 name = "sensitivity-gui"
-version = "1.1.1"
+version = "1.1.2"
 edition = "2021"
 rust-version = "1.95"
 authors = ["HasX <mi@hasx.dev>"]
@@ -13,7 +13,7 @@ publish = false
 anyhow = "1"
 eframe = { version = "0.36.1", default-features = false, features = ["default_fonts", "glow", "persistence", "wayland", "x11"] }
 rfd = "0.17.2"
-sensitivity = { version = "1.1.1", path = "../.." }
+sensitivity = { version = "1.1.2", path = "../.." }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
@@ -22,4 +22,4 @@ name = "Sensitivity"
 identifier = "dev.hasx.sensitivity"
 category = "public.app-category.utilities"
 short_description = "Xiaomi Recovery flash and rescue tool"
-copyright = "Copyright 2025 HasX and contributors"
+copyright = "Copyright 2026 HasX and contributors"

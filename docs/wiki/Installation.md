@@ -4,7 +4,7 @@ Use the latest archive from [GitHub Releases](https://github.com/Has-X/Sensitivi
 
 ## Windows
 
-Install the MSI and launch **Sensitivity** from Start, or extract the portable ZIP. The archive includes the native WinUI 3 app, `sensitivity-cli.exe`, the WinUSB setup guide, and PowerShell completions.
+Run `Sensitivity-Setup-x64.exe` to install Sensitivity in Program Files and launch it from Start, or extract the portable ZIP. The archive includes the native WinUI 3 app, `sensitivity-cli.exe`, the WinUSB setup guide, and PowerShell completions. The installer follows the Windows light or dark preference and automatically selects English, Hungarian, or Spanish from the system language when available.
 
 ## Linux and macOS
 

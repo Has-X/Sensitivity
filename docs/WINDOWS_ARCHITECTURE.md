@@ -57,5 +57,5 @@ USB connection.
 The Windows CI job is the authoritative XAML compilation check because the
 Windows App SDK XAML compiler is a Windows executable. Releases publish the
 WinUI app and Rust backend together, then produce both a portable ZIP and an
-x64 MSI. The MSI shortcut launches only `Sensitivity.exe`; the CLI remains
+x64 Inno Setup installer. The Start menu shortcut launches only `Sensitivity.exe`; the CLI remains
 available for automation and diagnostics.

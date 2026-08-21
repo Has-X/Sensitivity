@@ -21,7 +21,7 @@ It speaks the Mi Assistant ADB-like protocol directly over USB, validates offici
 
 ## Install
 
-Download the archive for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, install the MSI and open **Sensitivity** from Start, or extract the portable ZIP and open `Sensitivity.exe`. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
+Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, run `Sensitivity-Setup-x64.exe` to install Sensitivity in Program Files and open it from Start, or extract the portable ZIP and open `Sensitivity.exe`. The setup follows Windows light or dark mode and is available in English, Hungarian, and Spanish. The portable GUI lets you choose the same languages. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
 
 To build or install from source:
 
@@ -139,7 +139,7 @@ cd fuzz
 cargo +nightly fuzz run adb-header
 ```
 
-Tagging a version such as `v1.1.0` builds a self-contained WinUI 3 application and MSI for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
+Tagging a version such as `v1.1.0` builds a self-contained WinUI 3 application and a native x64 Inno Setup installer for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
 
 The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md).
 

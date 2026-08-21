@@ -6,7 +6,8 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>Sensitivity.WinUI</RootNamespace>
     <AssemblyName>Sensitivity</AssemblyName>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
+    <ApplicationIcon>..\..\..\installer\assets\app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
