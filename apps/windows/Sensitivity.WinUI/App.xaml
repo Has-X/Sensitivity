@@ -11,12 +11,18 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemAccentColor}" />
+                    <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="#FFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#000000" />
+                    <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemAccentColor}" />
+                    <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="#000000" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+                    <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                    <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
@@ -48,6 +54,10 @@
             <Style x:Key="IconActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
                 <Setter Property="MinHeight" Value="36" />
                 <Setter Property="Padding" Value="12,6" />
+            </Style>
+            <Style x:Key="SensitivityAccentButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="Background" Value="{ThemeResource SensitivityAccentBrush}" />
+                <Setter Property="Foreground" Value="{ThemeResource SensitivityAccentContentForegroundBrush}" />
             </Style>
             <Style x:Key="TitleBarActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
                 <Setter Property="Width" Value="28" />

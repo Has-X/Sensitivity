@@ -1,12 +1,14 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI.ViewManagement;
 
 namespace Sensitivity.WinUI;
 
 public partial class App : Application
 {
     private static readonly Windows.UI.Color XiaomiOrange = ColorHelper.FromArgb(255, 255, 105, 0);
+    private readonly UISettings _uiSettings = new();
 
     private Window? _window;
 
@@ -27,18 +29,19 @@ public partial class App : Application
 
     public void SetXiaomiAccent(bool enabled)
     {
-        if (enabled)
-        {
-            Resources["AccentFillColorDefaultBrush"] = new SolidColorBrush(XiaomiOrange);
-            Resources["AccentFillColorSecondaryBrush"] = new SolidColorBrush(XiaomiOrange);
-            Resources["AccentFillColorTertiaryBrush"] = new SolidColorBrush(XiaomiOrange);
-            Resources["AccentContentForegroundBrush"] = new SolidColorBrush(Colors.Black);
-            return;
-        }
+        var color = enabled ? XiaomiOrange : _uiSettings.GetColorValue(UIColorType.Accent);
+        SetThemeBrushColor("SensitivityAccentBrush", color);
+    }
 
-        Resources.Remove("AccentFillColorDefaultBrush");
-        Resources.Remove("AccentFillColorSecondaryBrush");
-        Resources.Remove("AccentFillColorTertiaryBrush");
-        Resources.Remove("AccentContentForegroundBrush");
+    private void SetThemeBrushColor(string key, Windows.UI.Color color)
+    {
+        foreach (var themeName in new[] { "Light", "Dark" })
+        {
+            if (Resources.ThemeDictionaries[themeName] is ResourceDictionary theme
+                && theme[key] is SolidColorBrush brush)
+            {
+                brush.Color = color;
+            }
+        }
     }
 }
