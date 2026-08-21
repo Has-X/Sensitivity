@@ -13,7 +13,7 @@ the recovery-mode label `Connect with Mi Assistant`.
 | Windows app | `apps/windows/Sensitivity.WinUI/Resources/windows-keys.json` | `windows-en.json`, `windows-hu.json`, `windows-es.json` | The semantic key is stable. The English value is the translation source. |
 | Portable GUI | `crates/gui/locales/keys.json` | `en.json`, `hu.json`, `es.json` | Uses the same semantic-key model. |
 | Windows installer | `installer/Sensitivity.iss` | Inno Setup language files and `[CustomMessages]` | Preserve silent-install compatibility and accelerator syntax. |
-| CLI | Rust source in `src/` | Planned shared CLI catalog | Keep machine JSON unchanged. Human output and errors are translation candidates. |
+| CLI | `locales/en.json` | `locales/en.json`, `locales/hu.json`, `locales/es.json` | `SENSITIVITY_LANG`, `LC_ALL`, or `LANG` selects the human-language catalog. Keep machine JSON unchanged. |
 
 English is the source language. Do not use Hungarian or Spanish as a fallback
 source. Add a new semantic key before adding a new user-visible sentence.
@@ -67,3 +67,13 @@ not be translated as a visual camera flash.
 4. Run the platform build and check that the text fits at narrow window sizes.
 5. Keep CLI `--json` field names and machine event identifiers stable. They are
    automation contracts, not display text.
+
+## Validation
+
+Run `pwsh -File tools/check-locales.ps1` before committing. It checks that the
+CLI and portable GUI catalogs have identical key sets, and that every Windows
+semantic key has a non-empty value in English, Hungarian, and Spanish.
+
+Low-level USB protocol diagnostics intentionally retain stable English terms
+such as ADB, WinUSB, CNXN, and sideload-host. These are technical identifiers,
+not translatable UI copy.

@@ -17,7 +17,11 @@ use sensitivity::mi::profile::{apply_profile, RegionProfile};
 use sensitivity::mi::{DeviceInfo, MiClient};
 use sensitivity::sideload::{sideload_zip, sideload_zip_with_progress};
 use sensitivity::usb::UsbTransport;
-use sensitivity::{download, util, validate};
+use sensitivity::{
+    download,
+    i18n::{tr, trf},
+    util, validate,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 enum AdbPolicy {
@@ -184,7 +188,7 @@ fn main() -> ExitCode {
                     "message": format!("{error:#}")
                 }));
             }
-            eprintln!("Error: {error:#}");
+            eprintln!("{}: {error:#}", tr("error.prefix"));
             ExitCode::FAILURE
         }
     }
@@ -201,17 +205,14 @@ fn run() -> Result<()> {
         );
     }
     if cli.http && cli.server_url.starts_with("http://") {
-        eprintln!(
-            "WARNING: Using HTTP for validation endpoint: {}",
-            cli.server_url
-        );
+        eprintln!("{}", trf("warning.http", &[("{url}", &cli.server_url)]));
     }
 
     let adb_was_running = util::adb_server::is_running(std::time::Duration::from_millis(200));
     if cli.adb_policy == AdbPolicy::Stop && adb_was_running {
         util::adb_server::kill_adb_server(std::time::Duration::from_secs(2))
             .context("Stopping the local ADB server")?;
-        eprintln!("Stopped the local ADB server for direct USB access.");
+        eprintln!("{}", tr("warning.adb_stopped"));
     }
 
     // Open USB transport
@@ -233,12 +234,18 @@ fn run() -> Result<()> {
             if *json {
                 println!("{}", serde_json::to_string_pretty(&devices)?);
             } else if devices.is_empty() {
-                println!("No Mi Assistant recovery interfaces found.");
+                println!("{}", tr("status.no_devices"));
                 println!(
                     "Boot stock recovery, choose 'Connect with Mi Assistant', then reconnect USB."
                 );
             } else {
-                println!("Found {} recovery interface(s):", devices.len());
+                println!(
+                    "{}",
+                    trf(
+                        "status.devices_found",
+                        &[("{count}", &devices.len().to_string())]
+                    )
+                );
                 for device in &devices {
                     print_usb_device(device);
                 }
@@ -246,28 +253,51 @@ fn run() -> Result<()> {
             return Ok(());
         }
         Commands::Doctor => {
-            println!("Sensitivity {}", env!("CARGO_PKG_VERSION"));
             println!(
-                "Platform: {} {}",
-                std::env::consts::OS,
-                std::env::consts::ARCH
+                "{}",
+                trf(
+                    "status.sensitivity_version",
+                    &[("{version}", env!("CARGO_PKG_VERSION"))]
+                )
             );
             println!(
-                "Local ADB server: {}",
-                if adb_was_running {
-                    "running"
-                } else {
-                    "not running"
-                }
+                "{}",
+                trf(
+                    "label.platform",
+                    &[
+                        ("{platform}", std::env::consts::OS),
+                        ("{arch}", std::env::consts::ARCH)
+                    ]
+                )
+            );
+            println!(
+                "{}",
+                trf(
+                    "label.adb_server",
+                    &[(
+                        "{state}",
+                        if adb_was_running {
+                            "running"
+                        } else {
+                            "not running"
+                        }
+                    )]
+                )
             );
             let devices =
                 UsbTransport::discover().context("Discovering recovery USB interfaces")?;
-            println!("Matching recovery interfaces: {}", devices.len());
+            println!(
+                "{}",
+                trf(
+                    "status.matching_interfaces",
+                    &[("{count}", &devices.len().to_string())]
+                )
+            );
             for device in &devices {
                 print_usb_device(device);
             }
             if devices.is_empty() {
-                eprintln!("\nNo matching USB interface was detected.");
+                eprintln!("\n{}", tr("status.no_matching"));
                 #[cfg(windows)]
                 eprintln!("On Windows, the Mi Assistant interface must use the WinUSB driver.");
                 #[cfg(target_os = "linux")]
@@ -278,12 +308,12 @@ fn run() -> Result<()> {
             }
             match make_client() {
                 Ok(_) => {
-                    println!("Recovery USB: ready");
-                    println!("Result: ready to use");
+                    println!("{}", tr("status.recovery_ready"));
+                    println!("{}", tr("status.ready_result"));
                     return Ok(());
                 }
                 Err(error) => {
-                    println!("Recovery USB: unavailable");
+                    println!("{}", tr("status.recovery_unavailable"));
                     eprintln!("\n{error:#}");
                     if adb_was_running
                         && cli.adb_policy == AdbPolicy::Keep
@@ -325,21 +355,21 @@ fn run() -> Result<()> {
         Commands::Devices { .. } => unreachable!("devices returns before USB command dispatch"),
         Commands::Doctor => unreachable!("doctor returns before USB command dispatch"),
         Commands::Detect => {
-            println!("Recovery device detected; direct USB handshake succeeded.");
+            println!("{}", tr("status.device_detected"));
         }
         Commands::Info { json } => {
             let info = client.read_all_info().context("Fetching device info")?;
             if json {
                 println!("{}", serde_json::to_string_pretty(&info)?);
             } else {
-                println!("Device:   {}", info.device);
-                println!("Version:  {}", info.version);
-                println!("Serial:   {}", info.sn);
-                println!("Codebase: {}", info.codebase);
-                println!("Branch:   {}", info.branch);
-                println!("Language: {}", info.language);
-                println!("Region:   {}", info.region);
-                println!("ROM zone: {}", info.romzone);
+                println!("{}", trf("label.device", &[("{value}", &info.device)]));
+                println!("{}", trf("label.version", &[("{value}", &info.version)]));
+                println!("{}", trf("label.serial", &[("{value}", &info.sn)]));
+                println!("{}", trf("label.codebase", &[("{value}", &info.codebase)]));
+                println!("{}", trf("label.branch", &[("{value}", &info.branch)]));
+                println!("{}", trf("label.language", &[("{value}", &info.language)]));
+                println!("{}", trf("label.region", &[("{value}", &info.region)]));
+                println!("{}", trf("label.romzone", &[("{value}", &info.romzone)]));
             }
         }
         Commands::DownloadLatest { output_dir } => {
@@ -365,14 +395,20 @@ fn run() -> Result<()> {
             let out_dir = output_dir.unwrap_or_else(|| std::env::current_dir().unwrap());
             let path = download::download_with_md5(&client_http, &url, &out_dir, &latest.md5)
                 .context("Downloading LatestRom")?;
-            println!("Downloaded to {} (md5 ok)", path.display());
+            println!(
+                "{}",
+                trf(
+                    "status.downloaded",
+                    &[("{path}", &path.display().to_string())]
+                )
+            );
         }
         Commands::FlashFromLatest {
             output_dir,
             yes,
             wipe,
         } => {
-            emit_status(cli.machine, "Reading recovery information");
+            emit_status(cli.machine, &tr("status.reading_recovery"));
             let info = effective_device_info(
                 &identity,
                 client.read_all_info().context("Fetching device info")?,
@@ -391,7 +427,7 @@ fn run() -> Result<()> {
             let url = download::choose_url(&mirrors, &latest.filename)
                 .ok_or_else(|| anyhow::anyhow!("No mirror URL available"))?;
             // Step 2: Download
-            emit_status(cli.machine, "Downloading and verifying the recovery ROM");
+            emit_status(cli.machine, &tr("status.downloading"));
             let client_http = reqwest::blocking::Client::builder()
                 .user_agent("MiTunes_UserAgent_v3.0")
                 .build()?;
@@ -404,7 +440,7 @@ fn run() -> Result<()> {
             let resp2 = validate::validate(&cli.server_url, &req_json2)
                 .context("Validation HTTP call failed")?;
             if let Some(msg) = resp2.code_message.as_deref() {
-                println!("Server message: {}", msg);
+                println!("{}", trf("status.server_message", &[("{message}", msg)]));
             }
             let cancel = install_cancel_handler(cli.cancel_file.as_deref())?;
             if (resp2.pkgrom_erase == Some(1) || wipe) && !yes {
@@ -416,7 +452,7 @@ fn run() -> Result<()> {
                 .ok_or_else(|| anyhow::anyhow!("Missing Validate token in response"))?
                 .to_string();
             let allow_wipe = resp2.pkgrom_erase == Some(1) || wipe;
-            emit_status(cli.machine, "Flashing the validated recovery ROM");
+            emit_status(cli.machine, &tr("status.flashing"));
             run_sideload(
                 &mut client,
                 &local_path,
@@ -427,7 +463,7 @@ fn run() -> Result<()> {
                 cli.machine,
             )
             .context("Sideload failed")?;
-            emit_completed(cli.machine, "Flash completed");
+            emit_completed(cli.machine, &tr("status.flash_completed"));
         }
         Commands::ListAllowedRoms => {
             let info = effective_device_info(
@@ -447,14 +483,20 @@ fn run() -> Result<()> {
             wipe,
         } => {
             if !path.exists() {
-                bail!("Zip not found: {}", path.display());
+                bail!(
+                    "{}",
+                    trf(
+                        "error.zip_not_found",
+                        &[("{path}", &path.display().to_string())]
+                    )
+                );
             }
-            emit_status(cli.machine, "Reading recovery information");
+            emit_status(cli.machine, &tr("status.reading_recovery"));
             let info = effective_device_info(
                 &identity,
                 client.read_all_info().context("Fetching device info")?,
             )?;
-            emit_status(cli.machine, "Checking the ROM package");
+            emit_status(cli.machine, &tr("status.checking_package"));
             let computed_md5 = util::md5::md5_file(&path).context("Computing MD5 of zip")?;
             // An explicit one-session override is retained for protocol debugging.
             let used_md5 = if let Some(m) = &cli.md5 {
@@ -467,8 +509,11 @@ fn run() -> Result<()> {
             }
             if used_md5.to_lowercase() != computed_md5 {
                 eprintln!(
-                    "WARNING: Using overridden MD5 {} (computed {})",
-                    used_md5, computed_md5
+                    "{}",
+                    trf(
+                        "warning.md5_override",
+                        &[("{override}", &used_md5), ("{computed}", &computed_md5)]
+                    )
                 );
             }
             let req_json = validate::build_request_json(&info, Some(used_md5.clone()))
@@ -482,7 +527,7 @@ fn run() -> Result<()> {
                     let r = validate::validate(&cli.server_url, &req_json)
                         .context("Validation HTTP call failed")?;
                     if let Some(msg) = r.code_message.as_deref() {
-                        println!("Server message: {}", msg);
+                        println!("{}", trf("status.server_message", &[("{message}", msg)]));
                     }
                     let t = match r.validate_token.as_deref() {
                         Some(t) if !t.is_empty() => t.to_string(),
@@ -506,7 +551,7 @@ fn run() -> Result<()> {
             } else {
                 resp.pkgrom_erase == Some(1) || wipe
             };
-            emit_status(cli.machine, "Flashing the validated recovery ROM");
+            emit_status(cli.machine, &tr("status.flashing"));
             run_sideload(
                 &mut client,
                 &path,
@@ -517,7 +562,7 @@ fn run() -> Result<()> {
                 cli.machine,
             )
             .context("Sideload failed")?;
-            emit_completed(cli.machine, "Flash completed");
+            emit_completed(cli.machine, &tr("status.flash_completed"));
         }
         Commands::FormatData { yes } => {
             if !yes {
@@ -636,8 +681,8 @@ fn confirm_data_wipe() -> Result<()> {
     if !io::stdin().is_terminal() {
         bail!("data wipe requires an interactive terminal; pass --yes to confirm in automation");
     }
-    eprintln!("WARNING: This operation will permanently erase user data.");
-    eprint!("Type ERASE to continue: ");
+    eprintln!("{}", tr("prompt.erase_warning"));
+    eprint!("{}", tr("prompt.erase_type"));
     io::stderr().flush().ok();
     let mut answer = String::new();
     io::stdin().read_line(&mut answer)?;
@@ -652,7 +697,7 @@ fn install_cancel_handler(cancel_file: Option<&Path>) -> Result<Arc<AtomicBool>>
     let handler_flag = Arc::clone(&cancel);
     ctrlc::set_handler(move || {
         handler_flag.store(true, Ordering::Relaxed);
-        eprintln!("\nCancellation requested; closing after the current USB operation...");
+        eprintln!("\n{}", tr("status.cancel_requested"));
     })
     .context("Installing Ctrl-C handler")?;
     if let Some(path) = cancel_file {

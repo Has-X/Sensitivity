@@ -10,6 +10,7 @@
 
 pub mod adb;
 pub mod download;
+pub mod i18n;
 pub mod mi;
 pub mod sideload;
 pub mod usb;
