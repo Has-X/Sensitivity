@@ -77,6 +77,6 @@ public sealed record BackendResult(int ExitCode, string StandardOutput, string S
     public bool Succeeded => ExitCode == 0;
 
     public string ErrorMessage => string.IsNullOrWhiteSpace(StandardError)
-        ? "Sensitivity could not complete the operation."
+        ? LocalizationService.Get("error.operation_failed")
         : StandardError.Trim();
 }

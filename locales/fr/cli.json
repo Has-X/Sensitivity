@@ -57,5 +57,13 @@
   "error.sideload": "Échec du chargement latéral",
   "error.build_validation": "Demande de validation du bâtiment",
   "error.open_usb": "Ouverture de l'interface USB Mi Assistant via libusb",
-  "error.parse_latest": "Analyse de LatestRom à partir de JSON"
+  "error.parse_latest": "Analyse de LatestRom à partir de JSON",
+  "status.operation_failed": "Sensitivity n a pas pu terminer l opération.",
+  "error.wipe_terminal": "La suppression des données nécessite un terminal interactif ; utilisez --yes pour confirmer en automatisation",
+  "error.approval_file": "Une application superviseuse doit fournir --approval-file pour supprimer les données",
+  "error.doctor_setup": "Le diagnostic a détecté un problème de configuration USB",
+  "error.wipe_cancelled": "Suppression des données annulée",
+  "error.install_ctrl_c": "Installation du gestionnaire Ctrl-C",
+  "error.wipe_not_approved": "La suppression des données n a pas été approuvée",
+  "status.profile_applied": "Profil appliqué : {profile}"
 }

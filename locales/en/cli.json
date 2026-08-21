@@ -57,5 +57,13 @@
   "error.sideload": "Sideload failed",
   "error.build_validation": "Building validation request",
   "error.open_usb": "Opening USB Mi Assistant interface via libusb",
-  "error.parse_latest": "Parsing LatestRom from JSON"
+  "error.parse_latest": "Parsing LatestRom from JSON",
+  "status.operation_failed": "Sensitivity could not complete the operation.",
+  "error.wipe_terminal": "data wipe requires an interactive terminal; pass --yes to confirm in automation",
+  "error.approval_file": "A supervising application must provide --approval-file for a data wipe",
+  "error.doctor_setup": "doctor found a USB setup problem",
+  "error.wipe_cancelled": "data wipe cancelled",
+  "error.install_ctrl_c": "Installing Ctrl-C handler",
+  "error.wipe_not_approved": "Data wipe was not approved",
+  "status.profile_applied": "Applied profile: {profile}"
 }

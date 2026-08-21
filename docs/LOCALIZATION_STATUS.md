@@ -20,7 +20,7 @@ do not imply that those UI languages are supported.
 
 The previously missing 22 Hungarian and 1 Spanish Windows source entries are
 now translated and present in every catalog. The validator compares the full
-English Windows key set and reports 200 complete source entries.
+English Windows key set and reports 201 complete source entries.
 
 The completed Hungarian entries were:
 

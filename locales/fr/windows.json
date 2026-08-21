@@ -198,5 +198,6 @@
   "Download and flash latest": "Télécharger et flasher la dernière ROM",
   "Download and flash the latest ROM?": "Télécharger et flasher la dernière ROM ?",
   "Sensitivity downloads the package, verifies it, and asks again if a wipe is needed.": "Sensitivity télécharge le package, le vérifie et demande à nouveau si une suppression des données est nécessaire.",
-  "Download and flash": "Télécharger et flasher"
+  "Download and flash": "Télécharger et flasher",
+  "Sensitivity could not complete the operation.": "Sensitivity n a pas pu terminer l opération."
 }

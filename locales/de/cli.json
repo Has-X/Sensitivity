@@ -57,5 +57,13 @@
   "error.sideload": "Seitenladen ist fehlgeschlagen",
   "error.build_validation": "Anfrage zur Gebäudevalidierung",
   "error.open_usb": "Öffnen der USB Mi Assistant-Schnittstelle über libusb",
-  "error.parse_latest": "Parsen von LatestRom aus JSON"
+  "error.parse_latest": "Parsen von LatestRom aus JSON",
+  "status.operation_failed": "Sensitivity konnte den Vorgang nicht abschließen.",
+  "error.wipe_terminal": "Datenlöschung erfordert ein interaktives Terminal; in der Automatisierung mit --yes bestätigen",
+  "error.approval_file": "Eine überwachende Anwendung muss für die Datenlöschung --approval-file angeben",
+  "error.doctor_setup": "Der Doctor hat ein USB-Konfigurationsproblem gefunden",
+  "error.wipe_cancelled": "Datenlöschung abgebrochen",
+  "error.install_ctrl_c": "Ctrl-C-Handler wird installiert",
+  "error.wipe_not_approved": "Datenlöschung wurde nicht genehmigt",
+  "status.profile_applied": "Angewendetes Profil: {profile}"
 }

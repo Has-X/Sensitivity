@@ -57,5 +57,13 @@
   "error.sideload": "A sideload sikertelen",
   "error.build_validation": "Validációs kérés összeállítása",
   "error.open_usb": "Mi Assistant USB-felület megnyitása libusb segítségével",
-  "error.parse_latest": "A LatestRom feldolgozása JSON-ból"
+  "error.parse_latest": "A LatestRom feldolgozása JSON-ból",
+  "status.operation_failed": "A Sensitivity nem tudta befejezni a műveletet.",
+  "error.wipe_terminal": "Az adattörlés interaktív terminált igényel; automatizálásnál használd a --yes kapcsolót",
+  "error.approval_file": "Az adattörléshez a felügyelő alkalmazásnak --approval-file kapcsolót kell megadnia",
+  "error.doctor_setup": "A doctor USB-beállítási problémát talált",
+  "error.wipe_cancelled": "Az adattörlés megszakítva",
+  "error.install_ctrl_c": "A Ctrl-C kezelő telepítése",
+  "error.wipe_not_approved": "Az adattörlés nem kapott jóváhagyást",
+  "status.profile_applied": "Alkalmazott profil: {profile}"
 }

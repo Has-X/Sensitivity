@@ -57,5 +57,13 @@
   "error.sideload": "Falló el sideload",
   "error.build_validation": "Preparando la solicitud de validación",
   "error.open_usb": "Abriendo la interfaz USB de Mi Assistant mediante libusb",
-  "error.parse_latest": "Analizando LatestRom desde JSON"
+  "error.parse_latest": "Analizando LatestRom desde JSON",
+  "status.operation_failed": "Sensitivity no pudo completar la operación.",
+  "error.wipe_terminal": "El borrado de datos requiere un terminal interactivo; usa --yes para confirmarlo en automatización",
+  "error.approval_file": "Una aplicación supervisora debe proporcionar --approval-file para borrar datos",
+  "error.doctor_setup": "doctor detectó un problema de configuración USB",
+  "error.wipe_cancelled": "Borrado de datos cancelado",
+  "error.install_ctrl_c": "Instalando el controlador de Ctrl-C",
+  "error.wipe_not_approved": "No se aprobó el borrado de datos",
+  "status.profile_applied": "Perfil aplicado: {profile}"
 }

@@ -182,5 +182,6 @@
   "region.eea": "EEA",
   "label.recovery_device": "Recovery device",
   "language.german": "German",
-  "language.french": "French"
+  "language.french": "French",
+  "error.operation_failed": "Sensitivity could not complete the operation."
 }

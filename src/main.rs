@@ -302,7 +302,7 @@ fn run() -> Result<()> {
                 eprintln!(
                     "On Linux, reconnect the phone and check USB permissions if access is denied."
                 );
-                bail!("doctor found a USB setup problem");
+                bail!("{}", tr("error.doctor_setup"));
             }
             match make_client() {
                 Ok(_) => {
@@ -325,7 +325,7 @@ fn run() -> Result<()> {
                     eprintln!("On Windows, the Mi Assistant interface must use the WinUSB driver.");
                     #[cfg(target_os = "linux")]
                     eprintln!("On Linux, reconnect the phone and check USB permissions if access is denied.");
-                    bail!("doctor found a USB setup problem");
+                    bail!("{}", tr("error.doctor_setup"));
                 }
             }
         }
@@ -632,9 +632,7 @@ fn confirm_data_wipe_supervised(
     if !machine {
         return confirm_data_wipe();
     }
-    let approval_file = approval_file.ok_or_else(|| {
-        anyhow::anyhow!("A supervising application must provide --approval-file for a data wipe")
-    })?;
+    let approval_file = approval_file.ok_or_else(|| anyhow::anyhow!(tr("error.approval_file")))?;
     emit_machine_event(serde_json::json!({
         "event": "confirmation_required",
         "kind": "data_wipe",
@@ -642,7 +640,7 @@ fn confirm_data_wipe_supervised(
     }));
     loop {
         if cancel.load(Ordering::Relaxed) {
-            bail!("Data wipe was not approved");
+            bail!("{}", tr("error.wipe_not_approved"));
         }
         if approval_file.exists() {
             let _ = std::fs::remove_file(approval_file);
@@ -685,7 +683,7 @@ fn run_sideload(
 
 fn confirm_data_wipe() -> Result<()> {
     if !io::stdin().is_terminal() {
-        bail!("data wipe requires an interactive terminal; pass --yes to confirm in automation");
+        bail!("{}", tr("error.wipe_terminal"));
     }
     eprintln!("{}", tr("prompt.erase_warning"));
     eprint!("{}", tr("prompt.erase_type"));
@@ -693,7 +691,7 @@ fn confirm_data_wipe() -> Result<()> {
     let mut answer = String::new();
     io::stdin().read_line(&mut answer)?;
     if answer.trim() != "ERASE" {
-        bail!("data wipe cancelled");
+        bail!("{}", tr("error.wipe_cancelled"));
     }
     Ok(())
 }
@@ -705,7 +703,7 @@ fn install_cancel_handler(cancel_file: Option<&Path>) -> Result<Arc<AtomicBool>>
         handler_flag.store(true, Ordering::Relaxed);
         eprintln!("\n{}", tr("status.cancel_requested"));
     })
-    .context("Installing Ctrl-C handler")?;
+    .context(tr("error.install_ctrl_c"))?;
     if let Some(path) = cancel_file {
         let path = path.to_path_buf();
         let file_flag = Arc::clone(&cancel);
@@ -768,7 +766,13 @@ impl From<&Cli> for IdentityOptions {
 fn effective_device_info(options: &IdentityOptions, mut info: DeviceInfo) -> Result<DeviceInfo> {
     if let Some(profile) = options.profile {
         info = apply_profile(&info, profile, options.codename.as_deref())?;
-        eprintln!("Applied profile: {profile:?}");
+        eprintln!(
+            "{}",
+            trf(
+                "status.profile_applied",
+                &[("{profile}", &format!("{profile:?}"))]
+            )
+        );
     }
     if let Some(value) = &options.device {
         info.device = value.clone();
