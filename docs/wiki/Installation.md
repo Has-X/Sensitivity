@@ -16,4 +16,4 @@ Extract the platform archive and launch `sensitivity-gui` for the desktop interf
 cargo build --workspace --release --locked
 ```
 
-The minimum supported Rust toolchain is 1.88.
+The minimum supported Rust toolchain is 1.95.

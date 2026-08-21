@@ -2,7 +2,7 @@
 name = "sensitivity-gui"
 version = "1.1.1"
 edition = "2021"
-rust-version = "1.88"
+rust-version = "1.95"
 authors = ["HasX <mi@hasx.dev>"]
 description = "Sensitivity graphical Xiaomi Recovery flash and rescue tool"
 license = "AGPL-3.0-only"
@@ -11,7 +11,7 @@ publish = false
 
 [dependencies]
 anyhow = "1"
-eframe = { version = "0.33.3", default-features = false, features = ["default_fonts", "glow", "persistence", "wayland", "x11"] }
+eframe = { version = "0.36.1", default-features = false, features = ["default_fonts", "glow", "persistence", "wayland", "x11"] }
 rfd = "0.17.2"
 sensitivity = { version = "1.1.1", path = "../.." }
 serde = { version = "1", features = ["derive"] }

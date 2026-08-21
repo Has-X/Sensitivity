@@ -479,11 +479,11 @@ impl eframe::App for SensitivityApp {
         }
     }
 
-    fn update(&mut self, context: &egui::Context, _frame: &mut eframe::Frame) {
-        context.set_visuals(egui::Visuals::dark());
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        ui.ctx().set_visuals(egui::Visuals::dark());
         self.drain_messages();
 
-        egui::TopBottomPanel::top("header").show(context, |ui| {
+        egui::Panel::top("header").show(ui, |ui| {
             ui.horizontal(|ui| {
                 ui.heading("Sensitivity");
                 ui.separator();
@@ -502,10 +502,10 @@ impl eframe::App for SensitivityApp {
             ui.label(&self.status);
         });
 
-        egui::SidePanel::left("actions")
+        egui::Panel::left("actions")
             .resizable(false)
-            .default_width(300.0)
-            .show(context, |ui| {
+            .default_size(300.0)
+            .show(ui, |ui| {
                 ui.heading(format!("1. {}", self.t("Recovery device")));
                 if ui.button(self.t("Refresh USB devices")).clicked() && !self.busy {
                     self.refresh_devices();
@@ -634,7 +634,7 @@ impl eframe::App for SensitivityApp {
                 });
             });
 
-        egui::CentralPanel::default().show(context, |ui| {
+        egui::CentralPanel::default().show(ui, |ui| {
             ui.heading(self.t("Device information"));
             if let Some(info) = &self.device_info {
                 egui::Grid::new("device-info").striped(true).show(ui, |ui| {
@@ -684,7 +684,7 @@ impl eframe::App for SensitivityApp {
                 .collapsible(false)
                 .resizable(false)
                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
-                .show(context, |ui| {
+                .show(ui.ctx(), |ui| {
                     if erase {
                         ui.colored_label(
                             egui::Color32::RED,
@@ -715,7 +715,7 @@ impl eframe::App for SensitivityApp {
                 .collapsible(false)
                 .resizable(false)
                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
-                .show(context, |ui| {
+                .show(ui.ctx(), |ui| {
                     ui.colored_label(
                         egui::Color32::RED,
                         self.t("This permanently erases all user data, then reboots the phone."),
@@ -731,6 +731,7 @@ impl eframe::App for SensitivityApp {
                 });
         }
 
-        context.request_repaint_after(std::time::Duration::from_millis(50));
+        ui.ctx()
+            .request_repaint_after(std::time::Duration::from_millis(50));
     }
 }
