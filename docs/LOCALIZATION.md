@@ -10,10 +10,16 @@ the recovery-mode label `Connect with Mi Assistant`.
 
 | Surface | English source | Runtime files | Notes |
 | --- | --- | --- | --- |
-| Windows app | `apps/windows/Sensitivity.WinUI/Resources/windows-keys.json` | `windows-en.json`, `windows-hu.json`, `windows-es.json` | The semantic key is stable. The English value is the translation source. |
-| Portable GUI | `crates/gui/locales/keys.json` | `en.json`, `hu.json`, `es.json` | Uses the same semantic-key model. |
+| Windows app | `locales/_keys/windows.json` | `locales/en/windows.json`, `locales/hu/windows.json`, `locales/es/windows.json` | The semantic key is stable. The English value is the translation source. |
+| Portable GUI | `locales/_keys/gui.json` | `locales/en/gui.json`, `locales/hu/gui.json`, `locales/es/gui.json` | Uses the same semantic-key model. |
 | Windows installer | `installer/Sensitivity.iss` | Inno Setup language files and `[CustomMessages]` | Preserve silent-install compatibility and accelerator syntax. |
-| CLI | `locales/en.json` | `locales/en.json`, `locales/hu.json`, `locales/es.json` | `SENSITIVITY_LANG`, `LC_ALL`, or `LANG` selects the human-language catalog. Keep machine JSON unchanged. |
+| CLI | `locales/en/cli.json` | `locales/en/cli.json`, `locales/hu/cli.json`, `locales/es/cli.json` | `SENSITIVITY_LANG`, `LC_ALL`, or `LANG` selects the human-language catalog. Keep machine JSON unchanged. |
+
+All supported languages live under `locales/<language>/`. Each language keeps
+the same three surface files: `cli.json`, `gui.json`, and `windows.json`.
+Platform code reads its surface file directly, so translations stay together
+without mixing unrelated keys. Shared semantic alias maps live in
+`locales/_keys/`.
 
 English is the source language. Do not use Hungarian or Spanish as a fallback
 source. Add a new semantic key before adding a new user-visible sentence.

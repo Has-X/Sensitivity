@@ -34,9 +34,9 @@ impl Language {
         static HU: OnceLock<HashMap<String, String>> = OnceLock::new();
         static ES: OnceLock<HashMap<String, String>> = OnceLock::new();
         let (slot, source) = match self {
-            Self::English => (&EN, include_str!("../locales/en.json")),
-            Self::Hungarian => (&HU, include_str!("../locales/hu.json")),
-            Self::Spanish => (&ES, include_str!("../locales/es.json")),
+            Self::English => (&EN, include_str!("../locales/en/cli.json")),
+            Self::Hungarian => (&HU, include_str!("../locales/hu/cli.json")),
+            Self::Spanish => (&ES, include_str!("../locales/es/cli.json")),
         };
         slot.get_or_init(|| serde_json::from_str(source).expect("valid embedded CLI locale"))
     }

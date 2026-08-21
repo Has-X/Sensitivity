@@ -27,18 +27,13 @@ function Assert-Catalog([string] $Name, [string[]] $Paths) {
     Write-Host "${Name}: $($expected.Count) keys, all locales complete"
 }
 
-Assert-Catalog 'CLI' @('locales/en.json', 'locales/hu.json', 'locales/es.json')
-Assert-Catalog 'Portable GUI' @('crates/gui/locales/en.json', 'crates/gui/locales/hu.json', 'crates/gui/locales/es.json')
+Assert-Catalog 'CLI' @('locales/en/cli.json', 'locales/hu/cli.json', 'locales/es/cli.json')
+Assert-Catalog 'Portable GUI' @('locales/en/gui.json', 'locales/hu/gui.json', 'locales/es/gui.json')
 
-$aliases = Read-Json 'apps/windows/Sensitivity.WinUI/Resources/windows-keys.json'
+$aliases = Read-Json 'locales/_keys/windows.json'
 $sources = @(Properties $aliases | ForEach-Object Value | Sort-Object -Unique)
 foreach ($lang in 'en', 'hu', 'es') {
-    $catalog = Read-Json "apps/windows/Sensitivity.WinUI/Resources/windows-$lang.json"
-    $extraPath = "apps/windows/Sensitivity.WinUI/Resources/windows-$lang-extra.json"
-    if (Test-Path (Join-Path $root $extraPath)) {
-        $extra = Read-Json $extraPath
-        foreach ($property in Properties $extra) { $catalog | Add-Member -NotePropertyName $property.Name -NotePropertyValue $property.Value -Force }
-    }
+    $catalog = Read-Json "locales/$lang/windows.json"
     $missing = @($sources | Where-Object { $_ -notin @(Properties $catalog | ForEach-Object Name) })
     if ($missing.Count) { throw "Windows locale $lang is missing: $($missing -join '; ')" }
     $empty = @(Properties $catalog | Where-Object { [string]::IsNullOrWhiteSpace([string]$_.Value) } | ForEach-Object Name)

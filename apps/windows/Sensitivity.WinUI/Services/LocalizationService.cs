@@ -21,21 +21,13 @@ public static class LocalizationService
             ? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
             : overrideLanguage;
         CurrentLanguage = requested is "hu" or "es" ? requested : "en";
-        var path = Path.Combine(AppContext.BaseDirectory, "Resources", $"windows-{CurrentLanguage}.json");
+        var path = Path.Combine(AppContext.BaseDirectory, "Resources", "locales", CurrentLanguage, "windows.json");
         try
         {
             var catalog = JsonSerializer.Deserialize(File.ReadAllText(path), SensitivityJsonContext.Default.DictionaryStringString)
                 ?? new Dictionary<string, string>();
-            var extraPath = Path.Combine(AppContext.BaseDirectory, "Resources", $"windows-{CurrentLanguage}-extra.json");
-            if (File.Exists(extraPath))
-            {
-                var extra = JsonSerializer.Deserialize(File.ReadAllText(extraPath), SensitivityJsonContext.Default.DictionaryStringString)
-                    ?? new Dictionary<string, string>();
-                foreach (var (key, value) in extra)
-                    catalog[key] = value;
-            }
             var aliases = JsonSerializer.Deserialize(
-                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Resources", "windows-keys.json")),
+                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Resources", "locales", "_keys", "windows.json")),
                 SensitivityJsonContext.Default.DictionaryStringString)
                 ?? new Dictionary<string, string>();
             foreach (var (id, sourceKey) in aliases)

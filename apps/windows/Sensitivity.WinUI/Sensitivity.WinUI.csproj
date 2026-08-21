@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
-    <Content Include="Resources\windows-*.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\locales\**\*.json" Link="Resources\locales\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\..\assets\sensitivity-icon.png" Link="Assets\SensitivityIcon.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

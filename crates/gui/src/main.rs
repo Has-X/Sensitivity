@@ -82,13 +82,13 @@ impl Default for Language {
 
 fn load_catalog(language: Language) -> HashMap<String, String> {
     let source = match language {
-        Language::En => include_str!("../locales/en.json"),
-        Language::Hu => include_str!("../locales/hu.json"),
-        Language::Es => include_str!("../locales/es.json"),
+        Language::En => include_str!("../../../locales/en/gui.json"),
+        Language::Hu => include_str!("../../../locales/hu/gui.json"),
+        Language::Es => include_str!("../../../locales/es/gui.json"),
     };
     let mut catalog: HashMap<String, String> = serde_json::from_str(source).unwrap_or_default();
     let aliases: HashMap<String, String> =
-        serde_json::from_str(include_str!("../locales/keys.json")).unwrap_or_default();
+        serde_json::from_str(include_str!("../../../locales/_keys/gui.json")).unwrap_or_default();
     for (id, source_key) in aliases {
         if let Some(value) = catalog.get(&source_key).cloned() {
             catalog.insert(id, value);
