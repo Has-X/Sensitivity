@@ -73,6 +73,16 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[InstallDelete]
+; A self-contained WinUI publish changes its runtime file set between releases.
+; Remove only files owned by the application so superseded framework binaries do
+; not survive an upgrade. User-provided ROM archives are intentionally untouched.
+Type: files; Name: "{app}\*.dll"
+Type: files; Name: "{app}\*.exe"
+Type: files; Name: "{app}\*.json"
+Type: files; Name: "{app}\*.pri"
+Type: files; Name: "{app}\*.winmd"
+
 [Icons]
 Name: "{autoprograms}\Sensitivity"; Filename: "{app}\Sensitivity.exe"; WorkingDir: "{app}"
 

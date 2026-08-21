@@ -24,10 +24,11 @@ public static class LocalizationService
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", $"windows-{CurrentLanguage}.json");
         try
         {
-            var catalog = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path))
+            var catalog = JsonSerializer.Deserialize(File.ReadAllText(path), SensitivityJsonContext.Default.DictionaryStringString)
                 ?? new Dictionary<string, string>();
-            var aliases = JsonSerializer.Deserialize<Dictionary<string, string>>(
-                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Resources", "windows-keys.json")))
+            var aliases = JsonSerializer.Deserialize(
+                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Resources", "windows-keys.json")),
+                SensitivityJsonContext.Default.DictionaryStringString)
                 ?? new Dictionary<string, string>();
             foreach (var (id, sourceKey) in aliases)
             {

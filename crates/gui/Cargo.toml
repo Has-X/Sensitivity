@@ -2,7 +2,7 @@
 name = "sensitivity-gui"
 version = "1.1.2"
 edition = "2021"
-rust-version = "1.95"
+rust-version = "1.97"
 authors = ["HasX <mi@hasx.dev>"]
 description = "Sensitivity graphical Xiaomi Recovery flash and rescue tool"
 license = "AGPL-3.0-only"

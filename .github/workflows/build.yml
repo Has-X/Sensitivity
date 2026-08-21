@@ -116,7 +116,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
       - uses: Swatinem/rust-cache@v2
       - run: rustup target add ${{ matrix.rust_target }}
       - run: cargo test -p sensitivity --locked
@@ -139,11 +139,11 @@ jobs:
           if-no-files-found: error
 
   msrv:
-    name: Minimum Rust 1.95
+    name: Minimum Rust 1.97
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: dtolnay/rust-toolchain@1.97.1
       - uses: Swatinem/rust-cache@v2
       - run: cargo check --workspace --locked
 

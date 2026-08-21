@@ -7,11 +7,6 @@ namespace Sensitivity.WinUI.Services;
 
 public sealed class SensitivityBackend
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     public string ExecutablePath { get; }
     public string? Profile { get; set; }
     public string? Codename { get; set; }
@@ -27,7 +22,7 @@ public sealed class SensitivityBackend
     {
         var result = await RunAsync(["devices", "--json"], cancellationToken);
         EnsureSuccess(result);
-        return JsonSerializer.Deserialize<List<UsbDevice>>(result.StandardOutput, JsonOptions) ?? [];
+        return JsonSerializer.Deserialize(result.StandardOutput, SensitivityJsonContext.Default.ListUsbDevice) ?? [];
     }
 
     public async Task<DeviceInfo> GetDeviceInfoAsync(
@@ -40,7 +35,7 @@ public sealed class SensitivityBackend
         arguments.Add("--json");
         var result = await RunAsync(arguments, cancellationToken);
         EnsureSuccess(result);
-        return JsonSerializer.Deserialize<DeviceInfo>(result.StandardOutput, JsonOptions)
+        return JsonSerializer.Deserialize(result.StandardOutput, SensitivityJsonContext.Default.DeviceInfo)
             ?? throw new InvalidOperationException("Sensitivity returned incomplete device information.");
     }
 
@@ -291,7 +286,7 @@ public sealed class SensitivityBackend
             }
             try
             {
-                var backendEvent = JsonSerializer.Deserialize<BackendEvent>(line, JsonOptions);
+                var backendEvent = JsonSerializer.Deserialize(line, SensitivityJsonContext.Default.BackendEvent);
                 if (backendEvent is not null)
                 {
                     await onEvent(backendEvent);

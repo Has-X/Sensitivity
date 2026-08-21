@@ -25,7 +25,7 @@ public static class SettingsStore
         try
         {
             return File.Exists(SettingsPath)
-                ? JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings()
+                ? JsonSerializer.Deserialize(File.ReadAllText(SettingsPath), SensitivityJsonContext.Default.AppSettings) ?? new AppSettings()
                 : new AppSettings();
         }
         catch
@@ -40,7 +40,7 @@ public static class SettingsStore
         {
             Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
             var temporaryPath = SettingsPath + ".tmp";
-            File.WriteAllText(temporaryPath, JsonSerializer.Serialize(settings));
+            File.WriteAllText(temporaryPath, JsonSerializer.Serialize(settings, SensitivityJsonContext.Default.AppSettings));
             File.Move(temporaryPath, SettingsPath, true);
         }
         catch
