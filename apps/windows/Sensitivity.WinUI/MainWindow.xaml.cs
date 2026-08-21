@@ -91,6 +91,15 @@ public sealed partial class MainWindow : Window
         RecoveryPage.Visibility = tag == "recovery" ? Visibility.Visible : Visibility.Collapsed;
         DiagnosticsPage.Visibility = tag == "diagnostics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPage.Visibility = tag == "settings" ? Visibility.Visible : Visibility.Collapsed;
+        var page = tag switch
+        {
+            "flash" => FlashPage,
+            "recovery" => RecoveryPage,
+            "diagnostics" => DiagnosticsPage,
+            "settings" => SettingsPage,
+            _ => OverviewPage
+        };
+        LocalizationService.Apply(page);
     }
 
     private void UpdateTitleBarLayout()
@@ -112,6 +121,11 @@ public sealed partial class MainWindow : Window
     private void ApplyLocalization()
     {
         LocalizationService.Apply(Root);
+        LocalizationService.Apply(OverviewPage);
+        LocalizationService.Apply(FlashPage);
+        LocalizationService.Apply(RecoveryPage);
+        LocalizationService.Apply(DiagnosticsPage);
+        LocalizationService.Apply(SettingsPage);
         AboutVersionText.Text = $"{L("app.title")} {typeof(App).Assembly.GetName().Version?.ToString(3)}";
         Title = L("app.title");
     }
