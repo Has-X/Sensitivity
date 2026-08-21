@@ -1,6 +1,6 @@
 # Windows installer
 
-`Sensitivity.iss` builds native x64 or ARM64 installers with Inno Setup 7.1 or newer. It uses Inno's Windows 11 style, follows the system light or dark appearance, and includes English, Hungarian, and Spanish setup resources without adding a language-selection page.
+`Sensitivity.iss` builds native x64 or ARM64 installers with Inno Setup 7.1 or newer. It uses Inno's Windows 11 style, follows the system light or dark appearance, and includes English, Hungarian, Spanish, German, and French setup resources without adding a language-selection page.
 
 Build a self-contained Windows publish first, then compile it:
 

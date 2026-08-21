@@ -4,15 +4,15 @@ Status date: 2026-08-22
 
 ## Current support
 
-| Surface | English | Hungarian | Spanish | Selection |
-| --- | --- | --- | --- | --- |
-| WinUI 3 app | complete | complete | complete | Windows UI culture or in-app override |
-| Portable egui GUI | complete | complete | complete | Settings picker or `LC_ALL` / `LANG` |
-| CLI human output | complete | complete | complete | `SENSITIVITY_LANG`, `LC_ALL`, or `LANG` |
-| Inno Setup UI | built-in | built-in | built-in | Windows installer language detection |
-| Documentation and wiki | English | not translated | not translated | Manual translation |
+| Surface | English | Hungarian | Spanish | German | French | Selection |
+| --- | --- | --- | --- | --- | --- |
+| WinUI 3 app | complete | complete | complete | translated | translated | Windows UI culture or in-app override |
+| Portable egui GUI | complete | complete | complete | translated | translated | Settings picker or `LC_ALL` / `LANG` |
+| CLI human output | complete | complete | complete | translated | translated | `SENSITIVITY_LANG`, `LC_ALL`, or `LANG` |
+| Inno Setup UI | built-in | built-in | built-in | built-in | built-in | Windows installer language detection |
+| Documentation and wiki | English | not translated | not translated | not translated | not translated | Manual translation |
 
-The supported locale set is currently `en`, `hu`, and `es`. A region profile is
+The supported locale set is currently `en`, `hu`, `es`, `de`, and `fr`. A region profile is
 not a language. The existing `in`, `ru`, `id`, `tr`, `tw`, and `cn` ROM profiles
 do not imply that those UI languages are supported.
 
@@ -20,7 +20,7 @@ do not imply that those UI languages are supported.
 
 The previously missing 22 Hungarian and 1 Spanish Windows source entries are
 now translated and present in every catalog. The validator compares the full
-English Windows key set and reports 198 complete source entries.
+English Windows key set and reports 200 complete source entries.
 
 The completed Hungarian entries were:
 
@@ -50,6 +50,11 @@ The completed Hungarian entries were:
 Spanish `No recovery connected` was also added. The locale validator now fails
 on any full source-key difference, not only on semantic alias differences.
 
+German (`de`) and French (`fr`) were added across CLI, portable GUI, WinUI, and
+the Inno Setup language list. The runtime catalogs have the same key sets as
+English, and the critical recovery, flash, erase, and validation terms were
+reviewed after the initial machine translation passes.
+
 ## Remaining engineering work
 
 1. Complete CLI error localization. Human status output and the main command
@@ -75,7 +80,7 @@ Prioritize based on existing Xiaomi region profiles and likely user reach:
 
 ### Tier 1
 
-German (`de`), French (`fr`), Italian (`it`), Polish (`pl`), Czech (`cs`),
+Italian (`it`), Polish (`pl`), Czech (`cs`),
 Slovak (`sk`), Romanian (`ro`), Turkish (`tr`), Russian (`ru`), Ukrainian (`uk`),
 Portuguese (`pt-BR`, then `pt-PT`).
 

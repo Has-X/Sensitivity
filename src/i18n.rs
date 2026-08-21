@@ -10,6 +10,8 @@ pub enum Language {
     English,
     Hungarian,
     Spanish,
+    German,
+    French,
 }
 
 impl Language {
@@ -24,6 +26,10 @@ impl Language {
             Self::Hungarian
         } else if requested.starts_with("es") {
             Self::Spanish
+        } else if requested.starts_with("de") {
+            Self::German
+        } else if requested.starts_with("fr") {
+            Self::French
         } else {
             Self::English
         }
@@ -33,10 +39,14 @@ impl Language {
         static EN: OnceLock<HashMap<String, String>> = OnceLock::new();
         static HU: OnceLock<HashMap<String, String>> = OnceLock::new();
         static ES: OnceLock<HashMap<String, String>> = OnceLock::new();
+        static DE: OnceLock<HashMap<String, String>> = OnceLock::new();
+        static FR: OnceLock<HashMap<String, String>> = OnceLock::new();
         let (slot, source) = match self {
             Self::English => (&EN, include_str!("../locales/en/cli.json")),
             Self::Hungarian => (&HU, include_str!("../locales/hu/cli.json")),
             Self::Spanish => (&ES, include_str!("../locales/es/cli.json")),
+            Self::German => (&DE, include_str!("../locales/de/cli.json")),
+            Self::French => (&FR, include_str!("../locales/fr/cli.json")),
         };
         slot.get_or_init(|| serde_json::from_str(source).expect("valid embedded CLI locale"))
     }
@@ -71,11 +81,17 @@ mod tests {
         let en = Language::English.catalog();
         let hu = Language::Hungarian.catalog();
         let es = Language::Spanish.catalog();
+        let de = Language::German.catalog();
+        let fr = Language::French.catalog();
         assert_eq!(en.len(), hu.len());
         assert_eq!(en.len(), es.len());
+        assert_eq!(en.len(), de.len());
+        assert_eq!(en.len(), fr.len());
         for key in en.keys() {
             assert!(hu.contains_key(key), "missing Hungarian key {key}");
             assert!(es.contains_key(key), "missing Spanish key {key}");
+            assert!(de.contains_key(key), "missing German key {key}");
+            assert!(fr.contains_key(key), "missing French key {key}");
         }
     }
 }

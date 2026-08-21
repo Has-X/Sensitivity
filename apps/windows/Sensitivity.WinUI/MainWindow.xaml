@@ -48,6 +48,8 @@
                     <ComboBoxItem Tag="en" AutomationProperties.Name="language.english" />
                     <ComboBoxItem Tag="hu" AutomationProperties.Name="language.hungarian" />
                     <ComboBoxItem Tag="es" AutomationProperties.Name="language.spanish" />
+                    <ComboBoxItem Tag="de" AutomationProperties.Name="language.german" />
+                    <ComboBoxItem Tag="fr" AutomationProperties.Name="language.french" />
                 </ComboBox>
             </StackPanel>
         </Border>

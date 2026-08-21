@@ -20,7 +20,7 @@ public static class LocalizationService
         var requested = string.IsNullOrWhiteSpace(overrideLanguage)
             ? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
             : overrideLanguage;
-        CurrentLanguage = requested is "hu" or "es" ? requested : "en";
+        CurrentLanguage = requested is "hu" or "es" or "de" or "fr" ? requested : "en";
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", "locales", CurrentLanguage, "windows.json");
         try
         {

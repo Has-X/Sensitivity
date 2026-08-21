@@ -180,5 +180,7 @@
   "region.india": "India",
   "region.turkey": "Türkiye",
   "region.eea": "EEA",
-  "label.recovery_device": "Recovery device"
+  "label.recovery_device": "Recovery device",
+  "language.german": "German",
+  "language.french": "French"
 }

@@ -63,6 +63,8 @@ enum Language {
     En,
     Hu,
     Es,
+    De,
+    Fr,
 }
 
 impl Default for Language {
@@ -74,6 +76,10 @@ impl Default for Language {
             Self::Hu
         } else if locale.starts_with("es") {
             Self::Es
+        } else if locale.starts_with("de") {
+            Self::De
+        } else if locale.starts_with("fr") {
+            Self::Fr
         } else {
             Self::En
         }
@@ -85,6 +91,8 @@ fn load_catalog(language: Language) -> HashMap<String, String> {
         Language::En => include_str!("../../../locales/en/gui.json"),
         Language::Hu => include_str!("../../../locales/hu/gui.json"),
         Language::Es => include_str!("../../../locales/es/gui.json"),
+        Language::De => include_str!("../../../locales/de/gui.json"),
+        Language::Fr => include_str!("../../../locales/fr/gui.json"),
     };
     let mut catalog: HashMap<String, String> = serde_json::from_str(source).unwrap_or_default();
     let aliases: HashMap<String, String> =
@@ -515,11 +523,15 @@ impl eframe::App for SensitivityApp {
                         Language::En => "EN",
                         Language::Hu => "HU",
                         Language::Es => "ES",
+                        Language::De => "DE",
+                        Language::Fr => "FR",
                     })
                     .show_ui(ui, |ui| {
                         ui.selectable_value(&mut self.language, Language::En, "EN");
                         ui.selectable_value(&mut self.language, Language::Hu, "HU");
                         ui.selectable_value(&mut self.language, Language::Es, "ES");
+                        ui.selectable_value(&mut self.language, Language::De, "DE");
+                        ui.selectable_value(&mut self.language, Language::Fr, "FR");
                     });
                 if self.language != previous_language {
                     self.catalog = load_catalog(self.language);
