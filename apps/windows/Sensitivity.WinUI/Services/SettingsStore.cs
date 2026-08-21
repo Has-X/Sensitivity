@@ -6,6 +6,7 @@ public sealed class AppSettings
 {
     public bool OfferAdbResolution { get; set; } = true;
     public bool AlwaysStopAdb { get; set; }
+    public bool UseXiaomiAccent { get; set; }
     public string? LastRomPath { get; set; }
     public string? DownloadDirectory { get; set; }
     public string? RegionProfile { get; set; }
