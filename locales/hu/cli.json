@@ -65,5 +65,8 @@
   "error.wipe_cancelled": "Az adattörlés megszakítva",
   "error.install_ctrl_c": "A Ctrl-C kezelő telepítése",
   "error.wipe_not_approved": "Az adattörlés nem kapott jóváhagyást",
-  "status.profile_applied": "Alkalmazott profil: {profile}"
+  "status.profile_applied": "Alkalmazott profil: {profile}",
+  "error.no_full_json": "A válasz nem tartalmaz teljes JSON-t",
+  "error.missing_token": "Hiányzik a Validate-token a válaszból",
+  "error.no_mirror": "Nem érhető el tükör-URL"
 }

@@ -65,5 +65,8 @@
   "error.wipe_cancelled": "Datenlöschung abgebrochen",
   "error.install_ctrl_c": "Ctrl-C-Handler wird installiert",
   "error.wipe_not_approved": "Datenlöschung wurde nicht genehmigt",
-  "status.profile_applied": "Angewendetes Profil: {profile}"
+  "status.profile_applied": "Angewendetes Profil: {profile}",
+  "error.no_full_json": "Die Antwort enthält kein vollständiges JSON",
+  "error.missing_token": "Validate-Token in der Antwort fehlt",
+  "error.no_mirror": "Keine Spiegel-URL verfügbar"
 }

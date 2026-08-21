@@ -65,5 +65,8 @@
   "error.wipe_cancelled": "Suppression des données annulée",
   "error.install_ctrl_c": "Installation du gestionnaire Ctrl-C",
   "error.wipe_not_approved": "La suppression des données n a pas été approuvée",
-  "status.profile_applied": "Profil appliqué : {profile}"
+  "status.profile_applied": "Profil appliqué : {profile}",
+  "error.no_full_json": "La réponse ne contient pas de JSON complet",
+  "error.missing_token": "Le token Validate est absent de la réponse",
+  "error.no_mirror": "Aucune URL miroir disponible"
 }

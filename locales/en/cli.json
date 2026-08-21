@@ -65,5 +65,8 @@
   "error.wipe_cancelled": "data wipe cancelled",
   "error.install_ctrl_c": "Installing Ctrl-C handler",
   "error.wipe_not_approved": "Data wipe was not approved",
-  "status.profile_applied": "Applied profile: {profile}"
+  "status.profile_applied": "Applied profile: {profile}",
+  "error.no_full_json": "No full JSON in response",
+  "error.missing_token": "Missing Validate token in response",
+  "error.no_mirror": "No mirror URL available"
 }

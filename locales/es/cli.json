@@ -65,5 +65,8 @@
   "error.wipe_cancelled": "Borrado de datos cancelado",
   "error.install_ctrl_c": "Instalando el controlador de Ctrl-C",
   "error.wipe_not_approved": "No se aprobó el borrado de datos",
-  "status.profile_applied": "Perfil aplicado: {profile}"
+  "status.profile_applied": "Perfil aplicado: {profile}",
+  "error.no_full_json": "La respuesta no contiene JSON completo",
+  "error.missing_token": "Falta el token Validate en la respuesta",
+  "error.no_mirror": "No hay una URL de espejo disponible"
 }

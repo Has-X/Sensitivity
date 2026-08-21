@@ -382,11 +382,11 @@ fn run() -> Result<()> {
             let json = resp
                 .full_json
                 .clone()
-                .ok_or_else(|| anyhow::anyhow!("No full JSON in response"))?;
+                .ok_or_else(|| anyhow::anyhow!(tr("error.no_full_json")))?;
             let (latest, mirrors) =
                 download::parse_latest_from_json(&json).context(tr("error.parse_latest"))?;
             let url = download::choose_url(&mirrors, &latest.filename)
-                .ok_or_else(|| anyhow::anyhow!("No mirror URL available"))?;
+                .ok_or_else(|| anyhow::anyhow!(tr("error.no_mirror")))?;
             let client_http = reqwest::blocking::Client::builder()
                 .user_agent("MiTunes_UserAgent_v3.0")
                 .build()?;
@@ -427,11 +427,11 @@ fn run() -> Result<()> {
             let json = resp1
                 .full_json
                 .clone()
-                .ok_or_else(|| anyhow::anyhow!("No full JSON in response"))?;
+                .ok_or_else(|| anyhow::anyhow!(tr("error.no_full_json")))?;
             let (latest, mirrors) =
                 download::parse_latest_from_json(&json).context(tr("error.parse_latest"))?;
             let url = download::choose_url(&mirrors, &latest.filename)
-                .ok_or_else(|| anyhow::anyhow!("No mirror URL available"))?;
+                .ok_or_else(|| anyhow::anyhow!(tr("error.no_mirror")))?;
             // Step 2: Download
             emit_status(cli.machine, &tr("status.downloading"));
             let client_http = reqwest::blocking::Client::builder()
@@ -455,7 +455,7 @@ fn run() -> Result<()> {
             let token = resp2
                 .validate_token
                 .as_deref()
-                .ok_or_else(|| anyhow::anyhow!("Missing Validate token in response"))?
+                .ok_or_else(|| anyhow::anyhow!(tr("error.missing_token")))?
                 .to_string();
             let allow_wipe = resp2.pkgrom_erase == Some(1) || wipe;
             emit_status(cli.machine, &tr("status.flashing"));
