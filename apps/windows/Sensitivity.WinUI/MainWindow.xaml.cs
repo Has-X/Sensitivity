@@ -83,7 +83,9 @@ public sealed partial class MainWindow : Window
     {
         var tag = args.IsSettingsSelected
             ? "settings"
-            : (args.SelectedItemContainer?.Tag?.ToString() ?? "overview");
+            : ((args.SelectedItem as NavigationViewItem)?.Tag?.ToString()
+                ?? args.SelectedItemContainer?.Tag?.ToString()
+                ?? "overview");
         OverviewPage.Visibility = tag == "overview" ? Visibility.Visible : Visibility.Collapsed;
         FlashPage.Visibility = tag == "flash" ? Visibility.Visible : Visibility.Collapsed;
         RecoveryPage.Visibility = tag == "recovery" ? Visibility.Visible : Visibility.Collapsed;
