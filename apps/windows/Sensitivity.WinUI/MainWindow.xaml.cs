@@ -182,9 +182,11 @@ public sealed partial class MainWindow : Window
         await RunBusyAsync(async cancellationToken =>
         {
             var devices = await _backend.GetDevicesAsync(cancellationToken);
-            DevicePicker.ItemsSource = devices;
-            DevicePicker.SelectedIndex = devices.Count > 0 ? 0 : -1;
             _hasRecoveryDevice = devices.Count > 0;
+            DevicePicker.ItemsSource = devices.Count > 0
+                ? devices.Cast<object>().ToList()
+                : new List<object> { new NoDeviceOption(L("connection.none")) };
+            DevicePicker.SelectedIndex = 0;
             UpdateDeviceActionState();
             ConnectionTitle.Text = devices.Count switch
             {
@@ -665,7 +667,7 @@ public sealed partial class MainWindow : Window
         TitleRefreshButton.IsEnabled = !busy;
         UpdateDeviceActionState();
         CancelFlashButton.IsEnabled = busy && _operationCancellation is not null;
-        DevicePicker.IsEnabled = !busy;
+        DevicePicker.IsEnabled = !busy && _hasRecoveryDevice;
         RegionProfilePicker.IsEnabled = !busy;
         CodenameText.IsEnabled = !busy;
         if (status is not null) OperationStatusText.Text = status;
@@ -685,6 +687,8 @@ public sealed partial class MainWindow : Window
         DownloadLatestButton.IsEnabled = enabled;
         FlashLatestButton.IsEnabled = enabled;
     }
+
+    private sealed record NoDeviceOption(string DisplayName);
 
     private void ClearDeviceInfo()
     {
