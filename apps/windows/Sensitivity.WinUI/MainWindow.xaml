@@ -10,7 +10,7 @@
             <Border Width="28" Height="28" CornerRadius="9" VerticalAlignment="Center" Background="{ThemeResource AccentFillColorDefaultBrush}"><Image Source="ms-appx:///Assets/SensitivityIcon.png" Stretch="Uniform" Margin="4" /></Border>
             <TextBlock Grid.Column="1" Margin="10,0,0,0" Tag="app.title" FontWeight="SemiBold" VerticalAlignment="Center" />
             <TextBlock Grid.Column="2" Margin="8,0,0,0" Tag="app.tagline" Style="{StaticResource CaptionStyle}" VerticalAlignment="Center" />
-            <Button Grid.Column="3" x:Name="TitleRefreshButton" Click="RefreshButton_Click" Style="{StaticResource IconActionButtonStyle}" AutomationProperties.Name="action.refresh"><FontIcon Glyph="&#xE72C;" /></Button>
+            <Button Grid.Column="3" x:Name="TitleRefreshButton" Click="RefreshButton_Click" Style="{StaticResource IconActionButtonStyle}" Width="32" Height="32" Padding="0" AutomationProperties.Name="action.refresh"><FontIcon Glyph="&#xE72C;" FontSize="14" /></Button>
         </Grid>
         <controls:NavigationView x:Name="Navigation" Grid.Row="1" IsBackButtonVisible="Collapsed" IsSettingsVisible="True" PaneDisplayMode="Auto" CompactModeThresholdWidth="820" ExpandedModeThresholdWidth="1180" OpenPaneLength="256" SelectionChanged="Navigation_SelectionChanged">
             <controls:NavigationView.MenuItems>

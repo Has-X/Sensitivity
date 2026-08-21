@@ -34,4 +34,15 @@
       DestinationFolder="$(PublishDir)"
       Condition="Exists('$(TargetDir)$(AssemblyName).pri')" />
   </Target>
+
+  <!-- Keep the unpackaged developer build runnable: the WinUI shell invokes
+       the shared Rust CLI beside Sensitivity.exe. Release packaging still
+       replaces this file with the matching target-built binary. -->
+  <Target Name="CopyNativeBackendAfterBuild" AfterTargets="Build">
+    <PropertyGroup>
+      <NativeBackendPath Condition="'$(Platform)' == 'ARM64'">$(MSBuildProjectDirectory)\..\..\..\target\aarch64-pc-windows-msvc\release\sensitivity.exe</NativeBackendPath>
+      <NativeBackendPath Condition="'$(Platform)' != 'ARM64'">$(MSBuildProjectDirectory)\..\..\..\target\x86_64-pc-windows-msvc\release\sensitivity.exe</NativeBackendPath>
+    </PropertyGroup>
+    <Copy SourceFiles="$(NativeBackendPath)" DestinationFiles="$(TargetDir)sensitivity-cli.exe" Condition="Exists('$(NativeBackendPath)')" />
+  </Target>
 </Project>
