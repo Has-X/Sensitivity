@@ -52,19 +52,20 @@ on any full source-key difference, not only on semantic alias differences.
 
 ## Remaining engineering work
 
-1. Move remaining user-facing WinUI literals into catalogs: region profile
-   labels, the `garnet` placeholder where appropriate, backend startup errors,
-   and the recovery device display label.
-2. Complete CLI error localization. Human status output is catalogued, but
-   `anyhow` contexts and protocol diagnostics in `src/` are still English.
-   Protocol tokens such as ADB, WinUSB, CNXN, and sideload-host must remain
-   unchanged.
-3. Decide whether documentation and the wiki should be translated. This is a
+1. Complete CLI error localization. Human status output and the main command
+   contexts are catalogued, but lower-level `anyhow` contexts and protocol
+   diagnostics in `src/` are still English.
+2. Review the remaining WinUI technical placeholder text, especially the
+   example codename `garnet`, and decide whether it should remain as an example
+   or use a localized placeholder.
+3. Keep protocol tokens such as ADB, WinUSB, CNXN, and sideload-host unchanged
+   while translating the remaining user-facing diagnostic context.
+4. Decide whether documentation and the wiki should be translated. This is a
    separate content task, not a runtime locale task.
-4. Add a language metadata manifest so every new locale automatically appears
+5. Add a language metadata manifest so every new locale automatically appears
    in the WinUI and portable GUI selectors instead of requiring enum and XAML
    edits in multiple places.
-5. Add locale smoke tests for system detection, explicit override, missing-file
+6. Add locale smoke tests for system detection, explicit override, missing-file
    fallback, placeholders, narrow-window layout, and installer language
    resources.
 
