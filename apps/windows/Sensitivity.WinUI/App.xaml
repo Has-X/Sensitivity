@@ -11,28 +11,12 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#FFFFFF" />
-                    <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemAccentColor}" />
-                    <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="#FFFFFF" />
-                    <StaticResource x:Key="AccentFillColorDefaultBrush" ResourceKey="SensitivityAccentBrush" />
-                    <StaticResource x:Key="AccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentBrush" />
-                    <StaticResource x:Key="AccentFillColorTertiaryBrush" ResourceKey="SensitivityAccentBrush" />
-                    <StaticResource x:Key="TextOnAccentFillColorPrimaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
-                    <StaticResource x:Key="TextOnAccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#000000" />
-                    <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemAccentColor}" />
-                    <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="#000000" />
-                    <StaticResource x:Key="AccentFillColorDefaultBrush" ResourceKey="SensitivityAccentBrush" />
-                    <StaticResource x:Key="AccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentBrush" />
-                    <StaticResource x:Key="AccentFillColorTertiaryBrush" ResourceKey="SensitivityAccentBrush" />
-                    <StaticResource x:Key="TextOnAccentFillColorPrimaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
-                    <StaticResource x:Key="TextOnAccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-                    <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-                    <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 

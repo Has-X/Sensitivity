@@ -1,29 +1,17 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI;
-using Microsoft.UI.Xaml.Media;
-using Windows.UI.ViewManagement;
+using Sensitivity.WinUI.Services;
 
 namespace Sensitivity.WinUI;
 
 public partial class App : Application
 {
     private static readonly Windows.UI.Color XiaomiOrange = ColorHelper.FromArgb(255, 255, 105, 0);
-    private readonly UISettings _uiSettings = new();
-    private bool _useXiaomiAccent;
-
     private Window? _window;
 
     public App()
     {
         InitializeComponent();
-        _uiSettings.ColorValuesChanged += (_, _) =>
-        {
-            if (!_useXiaomiAccent)
-            {
-                _window?.DispatcherQueue.TryEnqueue(() =>
-                    SetThemeBrushColor("SensitivityAccentBrush", _uiSettings.GetColorValue(UIColorType.Accent)));
-            }
-        };
         UnhandledException += (_, args) =>
         {
             System.Diagnostics.Debug.WriteLine(args.Exception);
@@ -32,26 +20,25 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        SetXiaomiAccent(SettingsStore.Load().UseXiaomiAccent);
         _window = new MainWindow();
         _window.Activate();
     }
 
     public void SetXiaomiAccent(bool enabled)
     {
-        _useXiaomiAccent = enabled;
-        var color = enabled ? XiaomiOrange : _uiSettings.GetColorValue(UIColorType.Accent);
-        SetThemeBrushColor("SensitivityAccentBrush", color);
+        if (enabled) Resources["SystemAccentColor"] = XiaomiOrange;
+        else Resources.Remove("SystemAccentColor");
     }
 
-    private void SetThemeBrushColor(string key, Windows.UI.Color color)
+    public void ApplyXiaomiAccent(bool enabled)
     {
-        foreach (var themeName in new[] { "Light", "Dark" })
-        {
-            if (Resources.ThemeDictionaries[themeName] is ResourceDictionary theme
-                && theme[key] is SolidColorBrush brush)
-            {
-                brush.Color = color;
-            }
-        }
+        SetXiaomiAccent(enabled);
+        if (_window is null) return;
+        var previousWindow = _window;
+        _window = null;
+        previousWindow.Close();
+        _window = new MainWindow();
+        _window.Activate();
     }
 }

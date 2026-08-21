@@ -69,17 +69,7 @@ public sealed partial class MainWindow : Window
         Closed += (_, _) =>
         {
             _operationCancellation?.Cancel();
-            SettingsStore.Save(new AppSettings
-            {
-                OfferAdbResolution = AutoResolveAdbToggle.IsOn,
-                AlwaysStopAdb = StopAdbToggle.IsOn,
-                UseXiaomiAccent = XiaomiAccentToggle.IsOn,
-                LastRomPath = _romPath,
-                DownloadDirectory = DownloadDirectoryText.Text,
-                RegionProfile = _backend.Profile,
-                Codename = _backend.Codename,
-                LanguageOverride = LocalizationService.OverrideLanguage
-            });
+            SaveSettings();
         };
     }
 
@@ -176,7 +166,25 @@ public sealed partial class MainWindow : Window
     }
 
     private void XiaomiAccentToggle_Toggled(object sender, RoutedEventArgs e)
-        => (Application.Current as App)?.SetXiaomiAccent(XiaomiAccentToggle.IsOn);
+    {
+        SaveSettings();
+        (Application.Current as App)?.ApplyXiaomiAccent(XiaomiAccentToggle.IsOn);
+    }
+
+    private void SaveSettings()
+    {
+        SettingsStore.Save(new AppSettings
+        {
+            OfferAdbResolution = AutoResolveAdbToggle.IsOn,
+            AlwaysStopAdb = StopAdbToggle.IsOn,
+            UseXiaomiAccent = XiaomiAccentToggle.IsOn,
+            LastRomPath = _romPath,
+            DownloadDirectory = DownloadDirectoryText.Text,
+            RegionProfile = _backend.Profile,
+            Codename = _backend.Codename,
+            LanguageOverride = LocalizationService.OverrideLanguage
+        });
+    }
 
     private void CodenameText_TextChanged(object sender, TextChangedEventArgs e)
         => _backend.Codename = string.IsNullOrWhiteSpace(CodenameText.Text) ? null : CodenameText.Text.Trim();
