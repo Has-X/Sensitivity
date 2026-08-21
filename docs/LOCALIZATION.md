@@ -6,6 +6,9 @@ the individual English words. Never translate protocol literals, command names,
 file extensions, option names, JSON fields, product names, device codenames, or
 the recovery-mode label `Connect with Mi Assistant`.
 
+For the live coverage matrix, missing translations, and prioritized language
+backlog, see [LOCALIZATION_STATUS.md](LOCALIZATION_STATUS.md).
+
 ## Canonical sources
 
 | Surface | English source | Runtime files | Notes |
