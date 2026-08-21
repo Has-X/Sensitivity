@@ -10,10 +10,10 @@
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#000000" />
+                    <StaticResource x:Key="AccentContentForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#FFFFFF" />
+                    <StaticResource x:Key="AccentContentForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
