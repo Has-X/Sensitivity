@@ -20,18 +20,30 @@ public sealed partial class MainWindow : Window
     private string? _romPath;
     private bool _busy;
 
+    private static string L(string key) => LocalizationService.Get(key);
+
+    private static string L(string key, params (string Name, string Value)[] values)
+    {
+        var text = LocalizationService.Get(key);
+        foreach (var (name, value) in values) text = text.Replace($"{{{name}}}", value, StringComparison.Ordinal);
+        return text;
+    }
+
     public MainWindow()
     {
         InitializeComponent();
-        Title = "Sensitivity";
-        AboutVersionText.Text = $"Sensitivity {typeof(App).Assembly.GetName().Version?.ToString(3)}";
+        var settings = SettingsStore.Load();
+        LocalizationService.Initialize(settings.LanguageOverride);
+        ApplyLocalization();
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         SystemBackdrop = new MicaBackdrop { Kind = MicaKind.BaseAlt };
         AppWindow.Resize(new SizeInt32(1120, 760));
-        var settings = SettingsStore.Load();
         AutoResolveAdbToggle.IsOn = settings.OfferAdbResolution;
         StopAdbToggle.IsOn = settings.AlwaysStopAdb;
+        LanguagePicker.SelectedItem = LanguagePicker.Items
+            .OfType<ComboBoxItem>()
+            .FirstOrDefault(item => (item.Tag as string ?? string.Empty) == (settings.LanguageOverride ?? string.Empty));
         if (settings.LastRomPath is { } lastRom && File.Exists(lastRom))
         {
             _romPath = lastRom;
@@ -46,16 +58,18 @@ public sealed partial class MainWindow : Window
             {
                 OfferAdbResolution = AutoResolveAdbToggle.IsOn,
                 AlwaysStopAdb = StopAdbToggle.IsOn,
-                LastRomPath = _romPath
+                LastRomPath = _romPath,
+                LanguageOverride = LocalizationService.OverrideLanguage
             });
         };
     }
 
     private async void Root_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyLocalization();
         if (!_backend.IsAvailable)
         {
-            ShowStatus("Backend missing", "sensitivity-cli.exe was not found beside the application.", InfoBarSeverity.Error);
+            ShowStatus(L("error.backend_missing"), L("error.backend_missing_detail"), InfoBarSeverity.Error);
             SetInteractive(false);
             return;
         }
@@ -74,6 +88,23 @@ public sealed partial class MainWindow : Window
         SettingsPage.Visibility = tag == "settings" ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    private void LanguagePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (LanguagePicker.SelectedItem is not ComboBoxItem item || item.Tag is not string language) return;
+        LocalizationService.Initialize(string.IsNullOrWhiteSpace(language) ? null : language);
+        ApplyLocalization();
+        LanguagePicker.SelectedItem = LanguagePicker.Items
+            .OfType<ComboBoxItem>()
+            .FirstOrDefault(candidate => (candidate.Tag as string ?? string.Empty) == (LocalizationService.OverrideLanguage ?? string.Empty));
+    }
+
+    private void ApplyLocalization()
+    {
+        LocalizationService.Apply(Root);
+        AboutVersionText.Text = $"{L("app.title")} {typeof(App).Assembly.GetName().Version?.ToString(3)}";
+        Title = L("app.title");
+    }
+
     private async void RefreshButton_Click(object sender, RoutedEventArgs e) => await RefreshDevicesAsync();
 
     private async Task RefreshDevicesAsync()
@@ -85,22 +116,22 @@ public sealed partial class MainWindow : Window
             DevicePicker.SelectedIndex = devices.Count > 0 ? 0 : -1;
             ConnectionTitle.Text = devices.Count switch
             {
-                0 => "No recovery connected",
-                1 => "Recovery interface found",
-                _ => $"{devices.Count} recovery interfaces found"
+                0 => L("connection.none"),
+                1 => L("connection.found"),
+                _ => L("connection.count", ("count", devices.Count.ToString()))
             };
             ConnectionSubtitle.Text = devices.Count == 0
-                ? "On the phone, open Connect with Mi Assistant and reconnect USB."
-                : "Select the interface, then read its device information.";
+                ? L("connection.phone_hint")
+                : L("connection.select_hint");
             if (devices.Count == 0)
             {
-                ShowStatus("No recovery found", "Check recovery mode, the cable, and the WinUSB driver.", InfoBarSeverity.Warning);
+                ShowStatus(L("error.no_recovery"), L("error.no_recovery_detail"), InfoBarSeverity.Warning);
             }
             else
             {
                 StatusBar.IsOpen = false;
             }
-        }, "Refreshing USB devices…");
+        }, L("status.refreshing"));
     }
 
     private async void DevicePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -118,7 +149,7 @@ public sealed partial class MainWindow : Window
     {
         if (DevicePicker.SelectedItem is not UsbDevice device)
         {
-            ShowStatus("Select a recovery", "Refresh USB devices and select one first.", InfoBarSeverity.Warning);
+            ShowStatus(L("dialog.select_recovery"), L("connection.refresh_hint"), InfoBarSeverity.Warning);
             return;
         }
 
@@ -134,10 +165,10 @@ public sealed partial class MainWindow : Window
                 && SensitivityBackend.IsUsbOwnershipError(error))
             {
                 var retry = await ShowChoiceAsync(
-                    "ADB may be using this interface",
-                    "Sensitivity can stop the local ADB server once and retry. Other Android debugging sessions on this computer will disconnect.",
-                    "Stop ADB and retry",
-                    "Keep it running");
+                    L("dialog.adb_owns"),
+                    L("dialog.adb_owns_detail"),
+                    L("action.stop_adb_retry"),
+                    L("action.keep_adb"));
                 if (!retry)
                 {
                     throw;
@@ -149,10 +180,10 @@ public sealed partial class MainWindow : Window
             VersionText.Text = info.Version;
             RegionText.Text = string.IsNullOrWhiteSpace(info.Region) ? info.RomZone : info.Region;
             SerialText.Text = info.Serial;
-            ConnectionTitle.Text = $"{info.Device} is ready";
-            ConnectionSubtitle.Text = $"Recovery {info.Version} · {info.Region} {info.RomZone}".Trim();
-            ShowStatus("Recovery ready", "The direct USB handshake and device queries succeeded.", InfoBarSeverity.Success);
-        }, "Reading recovery information…");
+            ConnectionTitle.Text = L("connection.ready", ("device", info.Device));
+            ConnectionSubtitle.Text = L("connection.details", ("version", info.Version), ("region", info.Region), ("romzone", info.RomZone)).Trim();
+            ShowStatus(L("status.recovery_ready"), L("status.handshake_ok"), InfoBarSeverity.Success);
+        }, L("status.reading_recovery"));
     }
 
     private void GoToFlash_Click(object sender, RoutedEventArgs e)
@@ -178,32 +209,32 @@ public sealed partial class MainWindow : Window
         RomPathText.Text = file.Path;
         FlashProgress.Value = 0;
         ProgressPercentText.Text = string.Empty;
-        OperationStatusText.Text = "Ready to validate and flash";
+        OperationStatusText.Text = L("status.ready_to_flash");
     }
 
     private async void StartFlashButton_Click(object sender, RoutedEventArgs e)
     {
         if (_romPath is null || !File.Exists(_romPath))
         {
-            ShowStatus("Choose a ROM", "Select an official Recovery ROM ZIP before continuing.", InfoBarSeverity.Warning);
+            ShowStatus(L("dialog.choose_rom"), L("dialog.choose_rom_detail"), InfoBarSeverity.Warning);
             return;
         }
         if (DevicePicker.SelectedItem is not UsbDevice device)
         {
-            ShowStatus("No recovery selected", "Connect and select a recovery device first.", InfoBarSeverity.Warning);
+            ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
             return;
         }
         if (!await ShowChoiceAsync(
-            "Validate and flash this ROM?",
-            "Sensitivity will verify the package with Xiaomi before starting the transfer. You will get another warning if validation requires a data wipe.",
-            "Validate and flash",
-            "Cancel"))
+            L("dialog.validate_flash"),
+            L("dialog.validate_flash_detail"),
+            L("action.validate_flash"),
+            L("action.cancel")))
         {
             return;
         }
 
         _operationCancellation = new CancellationTokenSource();
-        SetBusy(true, "Preparing the flash…");
+        SetBusy(true, L("status.preparing_flash"));
         FlashProgress.Value = 0;
         try
         {
@@ -223,17 +254,17 @@ public sealed partial class MainWindow : Window
             }
             FlashProgress.Value = 100;
             ProgressPercentText.Text = "100%";
-            OperationStatusText.Text = "Flash completed";
-            ShowStatus("Flash completed", "Recovery accepted the complete ROM transfer.", InfoBarSeverity.Success);
+            OperationStatusText.Text = L("status.flash_completed");
+            ShowStatus(L("status.flash_completed"), L("status.transfer_ok"), InfoBarSeverity.Success);
         }
         catch (OperationCanceledException)
         {
-            OperationStatusText.Text = "Cancelled safely";
-            ShowStatus("Flash cancelled", "Sensitivity requested a graceful close of the USB session.", InfoBarSeverity.Warning);
+            OperationStatusText.Text = L("status.cancelled");
+            ShowStatus(L("status.flash_cancelled"), L("status.cancelled_detail"), InfoBarSeverity.Warning);
         }
         catch (Exception error)
         {
-            OperationStatusText.Text = "Flash stopped";
+            OperationStatusText.Text = L("status.flash_stopped");
             ShowStatus("Flash failed", CleanError(error.Message), InfoBarSeverity.Error);
         }
         finally
@@ -251,7 +282,7 @@ public sealed partial class MainWindow : Window
             switch (backendEvent.Event)
             {
                 case "status":
-                    OperationStatusText.Text = backendEvent.Message ?? "Working…";
+                    OperationStatusText.Text = backendEvent.Message ?? L("status.working");
                     break;
                 case "progress" when backendEvent.Total > 0:
                     var percent = Math.Clamp(backendEvent.Current * 100d / backendEvent.Total, 0, 100);
@@ -259,16 +290,16 @@ public sealed partial class MainWindow : Window
                     ProgressPercentText.Text = $"{percent:0}%";
                     break;
                 case "completed":
-                    OperationStatusText.Text = backendEvent.Message ?? "Completed";
+                    OperationStatusText.Text = backendEvent.Message ?? L("status.completed");
                     break;
                 case "confirmation_required" when backendEvent.Kind == "data_wipe":
                     return await ShowChoiceAsync(
-                        "This flash will erase all user data",
-                        backendEvent.Message ?? "Xiaomi requires a permanent data wipe for this package.",
-                        "Erase data and continue",
-                        "Cancel flash");
+                        L("dialog.wipe_required"),
+                        backendEvent.Message ?? L("dialog.wipe_required_detail"),
+                        L("action.erase_continue"),
+                        L("action.cancel_flash"));
                 case "error":
-                    OperationStatusText.Text = backendEvent.Message ?? "Operation failed";
+                    OperationStatusText.Text = backendEvent.Message ?? L("status.operation_failed");
                     break;
             }
             return null;
@@ -277,7 +308,7 @@ public sealed partial class MainWindow : Window
 
     private void CancelFlashButton_Click(object sender, RoutedEventArgs e)
     {
-        OperationStatusText.Text = "Requesting safe cancellation…";
+        OperationStatusText.Text = L("status.cancel_request");
         CancelFlashButton.IsEnabled = false;
         _operationCancellation?.Cancel();
     }
@@ -286,29 +317,29 @@ public sealed partial class MainWindow : Window
     {
         if (DevicePicker.SelectedItem is not UsbDevice device)
         {
-            ShowStatus("No recovery selected", "Connect and select a recovery device first.", InfoBarSeverity.Warning);
+            ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
             return;
         }
         await RunBusyAsync(async cancellationToken =>
         {
             var result = await _backend.RebootAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
-            ShowStatus("Reboot requested", "The phone should leave recovery shortly.", InfoBarSeverity.Success);
-        }, "Sending reboot command…");
+            ShowStatus(L("status.reboot_requested"), L("status.reboot_detail"), InfoBarSeverity.Success);
+        }, L("status.sending_reboot"));
     }
 
     private async void EraseDataButton_Click(object sender, RoutedEventArgs e)
     {
         if (DevicePicker.SelectedItem is not UsbDevice device)
         {
-            ShowStatus("No recovery selected", "Connect and select a recovery device first.", InfoBarSeverity.Warning);
+            ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
             return;
         }
         if (!await ShowChoiceAsync(
-            "Permanently erase all user data?",
-            "This cannot be undone. Sensitivity will format the phone and request a reboot.",
-            "Erase all data",
-            "Cancel"))
+            L("dialog.erase_confirm"),
+            L("dialog.erase_confirm_detail"),
+            L("action.erase_data"),
+            L("action.cancel")))
         {
             return;
         }
@@ -316,8 +347,8 @@ public sealed partial class MainWindow : Window
         {
             var result = await _backend.FormatDataAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
-            ShowStatus("Erase requested", "Recovery accepted the format and reboot commands.", InfoBarSeverity.Success);
-        }, "Erasing user data…");
+            ShowStatus(L("status.erase_requested"), L("status.erase_detail"), InfoBarSeverity.Success);
+        }, L("status.erasing"));
     }
 
     private async void RunDoctorButton_Click(object sender, RoutedEventArgs e)
@@ -331,10 +362,10 @@ public sealed partial class MainWindow : Window
                 new[] { result.StandardOutput.Trim(), result.StandardError.Trim() }
                     .Where(value => !string.IsNullOrWhiteSpace(value)));
             ShowStatus(
-                result.Succeeded ? "Diagnostics passed" : "Diagnostics found a problem",
-                result.Succeeded ? "USB and recovery communication are ready." : "Review the report for the corrective action.",
+                result.Succeeded ? L("status.diagnostics_passed") : L("status.diagnostics_problem"),
+                result.Succeeded ? L("status.diagnostics_ready") : L("status.diagnostics_review"),
                 result.Succeeded ? InfoBarSeverity.Success : InfoBarSeverity.Warning);
-        }, "Running diagnostics…");
+        }, L("status.running_diagnostics"));
     }
 
     private void CopyDiagnosticsButton_Click(object sender, RoutedEventArgs e)
@@ -343,7 +374,7 @@ public sealed partial class MainWindow : Window
         var package = new DataPackage();
         package.SetText(DiagnosticsText.Text);
         Clipboard.SetContent(package);
-        ShowStatus("Report copied", "The diagnostic report is on the clipboard.", InfoBarSeverity.Success);
+        ShowStatus(L("status.report_copied"), L("status.report_copied_detail"), InfoBarSeverity.Success);
     }
 
     private async Task RunBusyAsync(Func<CancellationToken, Task> operation, string status)
@@ -357,7 +388,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception error)
         {
-            ShowStatus("Operation failed", CleanError(error.Message), InfoBarSeverity.Error);
+            ShowStatus(L("status.operation_failed"), CleanError(error.Message), InfoBarSeverity.Error);
         }
         finally
         {
@@ -426,7 +457,7 @@ public sealed partial class MainWindow : Window
             catch (Exception error) { completion.SetException(error); }
         }))
         {
-            completion.SetException(new InvalidOperationException("The application window is closing."));
+            completion.SetException(new InvalidOperationException(L("error.window_closing")));
         }
         return completion.Task;
     }
@@ -440,17 +471,17 @@ public sealed partial class MainWindow : Window
             : cleaned;
         if (cleaned.Contains("No Mi Assistant ADB interface", StringComparison.OrdinalIgnoreCase))
         {
-            return "No Mi Assistant recovery interface was found. Reconnect the phone after opening Connect with Mi Assistant.";
+            return L("error.no_interface_detail");
         }
         if (cleaned.Contains("Claiming interface", StringComparison.OrdinalIgnoreCase)
             || cleaned.Contains("Opening USB device", StringComparison.OrdinalIgnoreCase))
         {
-            return "Windows could not open the recovery interface. Check WinUSB setup, close other phone tools, or allow Sensitivity to stop local ADB.";
+            return L("error.usb_open_detail");
         }
         if (cleaned.Contains("Validation HTTP", StringComparison.OrdinalIgnoreCase)
             || cleaned.Contains("HTTP request failed", StringComparison.OrdinalIgnoreCase))
         {
-            return "Xiaomi validation could not be reached. Check the internet connection and try again without changing the ROM.";
+            return L("error.validation_http_detail");
         }
         return cleaned;
     }

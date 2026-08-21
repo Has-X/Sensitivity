@@ -1,0 +1,97 @@
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Automation;
+
+namespace Sensitivity.WinUI.Services;
+
+public static class LocalizationService
+{
+    private static IReadOnlyDictionary<string, string> _strings = new Dictionary<string, string>();
+
+    public static string CurrentLanguage { get; private set; } = "en";
+    public static string? OverrideLanguage { get; private set; }
+
+    public static void Initialize(string? overrideLanguage)
+    {
+        OverrideLanguage = string.IsNullOrWhiteSpace(overrideLanguage) ? null : overrideLanguage;
+        var requested = string.IsNullOrWhiteSpace(overrideLanguage)
+            ? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
+            : overrideLanguage;
+        CurrentLanguage = requested is "hu" or "es" ? requested : "en";
+        var path = Path.Combine(AppContext.BaseDirectory, "Resources", $"windows-{CurrentLanguage}.json");
+        try
+        {
+            var catalog = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path))
+                ?? new Dictionary<string, string>();
+            var aliases = JsonSerializer.Deserialize<Dictionary<string, string>>(
+                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Resources", "windows-keys.json")))
+                ?? new Dictionary<string, string>();
+            foreach (var (id, sourceKey) in aliases)
+            {
+                if (catalog.TryGetValue(sourceKey, out var value)) catalog[id] = value;
+            }
+            _strings = catalog;
+        }
+        catch
+        {
+            _strings = new Dictionary<string, string>();
+        }
+    }
+
+    public static string Get(string key) => _strings.TryGetValue(key, out var value) ? value : key;
+
+    public static void Apply(FrameworkElement root)
+    {
+        ApplyElement(root);
+        ApplyChildren(root);
+    }
+
+    private static void ApplyChildren(DependencyObject parent)
+    {
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(parent); index++)
+        {
+            if (VisualTreeHelper.GetChild(parent, index) is FrameworkElement child)
+            {
+                ApplyElement(child);
+                ApplyChildren(child);
+            }
+        }
+    }
+
+    private static void ApplyElement(FrameworkElement element)
+    {
+        var key = AutomationProperties.GetName(element);
+        if (string.IsNullOrWhiteSpace(key)) key = element.Tag as string;
+        if (string.IsNullOrWhiteSpace(key)) return;
+        var value = Get(key);
+        switch (element)
+        {
+            case TextBlock textBlock:
+                textBlock.Text = value;
+                break;
+            case Button button:
+                button.Content = value;
+                break;
+            case NavigationViewItem navigationItem:
+                navigationItem.Content = value;
+                break;
+            case ToggleSwitch toggle:
+                toggle.Header = value;
+                toggle.OffContent = Get($"{key}.off");
+                toggle.OnContent = Get($"{key}.on");
+                break;
+            case ComboBox comboBox:
+                comboBox.Header = value;
+                break;
+            case ComboBoxItem comboBoxItem:
+                comboBoxItem.Content = value;
+                break;
+            case TextBox textBox:
+                textBox.PlaceholderText = value;
+                break;
+        }
+    }
+}

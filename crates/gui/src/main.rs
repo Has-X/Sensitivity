@@ -3,6 +3,7 @@
 
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, Receiver, Sender};
@@ -57,12 +58,43 @@ struct ValidatedRom {
     md5: String,
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 enum Language {
-    #[default]
     En,
     Hu,
     Es,
+}
+
+impl Default for Language {
+    fn default() -> Self {
+        let locale = std::env::var("LC_ALL")
+            .or_else(|_| std::env::var("LANG"))
+            .unwrap_or_default();
+        if locale.starts_with("hu") {
+            Self::Hu
+        } else if locale.starts_with("es") {
+            Self::Es
+        } else {
+            Self::En
+        }
+    }
+}
+
+fn load_catalog(language: Language) -> HashMap<String, String> {
+    let source = match language {
+        Language::En => include_str!("../locales/en.json"),
+        Language::Hu => include_str!("../locales/hu.json"),
+        Language::Es => include_str!("../locales/es.json"),
+    };
+    let mut catalog: HashMap<String, String> = serde_json::from_str(source).unwrap_or_default();
+    let aliases: HashMap<String, String> =
+        serde_json::from_str(include_str!("../locales/keys.json")).unwrap_or_default();
+    for (id, source_key) in aliases {
+        if let Some(value) = catalog.get(&source_key).cloned() {
+            catalog.insert(id, value);
+        }
+    }
+    catalog
 }
 
 #[derive(Default, serde::Serialize, serde::Deserialize)]
@@ -85,6 +117,7 @@ struct SensitivityApp {
     busy: bool,
     stop_adb: bool,
     language: Language,
+    catalog: HashMap<String, String>,
     receiver: Option<Receiver<Message>>,
     cancel: Option<Arc<AtomicBool>>,
     confirm_flash: bool,
@@ -106,16 +139,18 @@ impl SensitivityApp {
             validated: None,
             rom_listing: String::new(),
             logs: Vec::new(),
-            status: "Connect a phone in Mi Assistant recovery mode.".into(),
+            status: String::new(),
             progress: None,
             busy: false,
             stop_adb: persisted.stop_adb,
             language: persisted.language,
+            catalog: load_catalog(persisted.language),
             receiver: None,
             cancel: None,
             confirm_flash: false,
             confirm_format: false,
         };
+        app.status = app.t("status.initial");
         app.refresh_devices();
         app
     }
@@ -127,98 +162,11 @@ impl SensitivityApp {
         }
     }
 
-    fn t(&self, english: &'static str) -> &'static str {
-        let spanish = match english {
-            "Xiaomi Recovery flash and rescue" => "Flasheo y rescate de Xiaomi Recovery",
-            "Recovery device" => "Dispositivo en recovery",
-            "Refresh USB devices" => "Actualizar dispositivos USB",
-            "No matching interface found." => "No se encontró una interfaz compatible.",
-            "Interface" => "Interfaz",
-            "Stop local ADB before opening USB" => "Detener ADB local antes de abrir USB",
-            "Read device info" => "Leer información del dispositivo",
-            "List allowed ROMs" => "Listar ROMs permitidas",
-            "Official Recovery ROM" => "ROM Recovery oficial",
-            "Choose ROM ZIP" => "Elegir ZIP de ROM",
-            "Validate ROM" => "Validar ROM",
-            "Validation requires a data wipe" => "La validación requiere borrar los datos",
-            "Validated; no wipe requested" => "Validada; no se solicita borrado",
-            "Flash validated ROM" => "Flashear ROM validada",
-            "Cancel flash" => "Cancelar flasheo",
-            "Recovery actions" => "Acciones de recovery",
-            "Reboot" => "Reiniciar",
-            "Erase data" => "Borrar datos",
-            "Device information" => "Información del dispositivo",
-            "Read device info to begin." => "Lee la información del dispositivo para comenzar.",
-            "Allowed ROM response" => "Respuesta de ROMs permitidas",
-            "No response loaded." => "No se ha cargado una respuesta.",
-            "Activity" => "Actividad",
-            "Confirm flash" => "Confirmar flasheo",
-            "Xiaomi requires this flash to permanently erase user data." => {
-                "Xiaomi requiere que este flasheo borre permanentemente los datos."
-            }
-            "Flash the validated official ROM now?" => "¿Flashear ahora la ROM oficial validada?",
-            "Keep the phone connected until recovery reports completion." => {
-                "Mantén el teléfono conectado hasta que recovery indique que terminó."
-            }
-            "Cancel" => "Cancelar",
-            "Erase data and flash" => "Borrar datos y flashear",
-            "Flash" => "Flashear",
-            "Confirm data erase" => "Confirmar borrado de datos",
-            "This permanently erases all user data, then reboots the phone." => {
-                "Esto borra permanentemente todos los datos y reinicia el teléfono."
-            }
-            "Erase all data" => "Borrar todos los datos",
-            _ => english,
-        };
-        let hungarian = match english {
-            "Xiaomi Recovery flash and rescue" => "Xiaomi Recovery villogtatás és helyreállítás",
-            "Recovery device" => "Recovery eszköz",
-            "Refresh USB devices" => "USB-eszközök frissítése",
-            "No matching interface found." => "Nem található megfelelő felület.",
-            "Interface" => "Felület",
-            "Stop local ADB before opening USB" => "Helyi ADB leállítása az USB megnyitása előtt",
-            "Read device info" => "Eszközinformációk beolvasása",
-            "List allowed ROMs" => "Engedélyezett ROM-ok listázása",
-            "Official Recovery ROM" => "Hivatalos Recovery ROM",
-            "Choose ROM ZIP" => "ROM ZIP kiválasztása",
-            "Validate ROM" => "ROM ellenőrzése",
-            "Validation requires a data wipe" => "Az ellenőrzés adat törlését igényli",
-            "Validated; no wipe requested" => "Ellenőrizve, nincs kért adattörlés",
-            "Flash validated ROM" => "Ellenőrzött ROM villogtatása",
-            "Cancel flash" => "Villogtatás megszakítása",
-            "Recovery actions" => "Recovery műveletek",
-            "Reboot" => "Újraindítás",
-            "Erase data" => "Adatok törlése",
-            "Device information" => "Eszközinformációk",
-            "Read device info to begin." => "Kezdéshez olvasd be az eszközinformációkat.",
-            "Allowed ROM response" => "Engedélyezett ROM válasz",
-            "No response loaded." => "Nincs betöltött válasz.",
-            "Activity" => "Tevékenység",
-            "Confirm flash" => "Villogtatás megerősítése",
-            "Xiaomi requires this flash to permanently erase user data." => {
-                "A Xiaomi ehhez a villogtatáshoz a felhasználói adatok végleges törlését kéri."
-            }
-            "Flash the validated official ROM now?" => {
-                "Villogtatod most az ellenőrzött hivatalos ROM-ot?"
-            }
-            "Keep the phone connected until recovery reports completion." => {
-                "A telefont hagyd csatlakoztatva, amíg a recovery befejezettnek jelzi a műveletet."
-            }
-            "Cancel" => "Mégse",
-            "Erase data and flash" => "Adatok törlése és villogtatás",
-            "Flash" => "Villogtatás",
-            "Confirm data erase" => "Adattörlés megerősítése",
-            "This permanently erases all user data, then reboots the phone." => {
-                "Ez véglegesen töröl minden felhasználói adatot, majd újraindítja a telefont."
-            }
-            "Erase all data" => "Minden adat törlése",
-            _ => english,
-        };
-        match self.language {
-            Language::En => english,
-            Language::Hu => hungarian,
-            Language::Es => spanish,
-        }
+    fn t(&self, key: &str) -> String {
+        self.catalog
+            .get(key)
+            .cloned()
+            .unwrap_or_else(|| key.to_owned())
     }
 
     fn refresh_devices(&mut self) {
@@ -229,15 +177,20 @@ impl SensitivityApp {
                     self.selected_device = 0;
                 }
                 self.status = match self.devices.len() {
-                    0 => "No Mi Assistant recovery interface found.".into(),
-                    1 => "One recovery interface found. Read device info to continue.".into(),
-                    count => format!("{count} recovery interfaces found. Select one to continue."),
+                    0 => self.t("status.no_recovery"),
+                    1 => self.t("status.one_recovery"),
+                    count => self
+                        .t("status.recovery_count")
+                        .replace("{count}", &count.to_string()),
                 };
             }
             Err(error) => {
                 self.devices.clear();
-                self.status = "USB discovery failed.".into();
-                self.log(format!("USB discovery failed: {error:#}"));
+                self.status = self.t("status.usb_discovery_failed");
+                self.log(format!(
+                    "{}: {error:#}",
+                    self.t("status.usb_discovery_failed")
+                ));
             }
         }
     }
@@ -268,13 +221,13 @@ impl SensitivityApp {
     fn read_device_info(&mut self) {
         let index = self.selected_device;
         let stop_adb = self.stop_adb;
-        self.start_task("Reading device information...", move |sender| {
+        self.start_task(self.t("status.reading_device"), move |sender| {
             let result =
                 Self::open_client(index, stop_adb).and_then(|mut client| client.read_all_info());
             match result {
                 Ok(info) => {
                     let _ = sender.send(Message::DeviceInfo(info));
-                    let _ = sender.send(Message::Status("Device is ready.".into()));
+                    let _ = sender.send(Message::Status("status.device_ready".into()));
                 }
                 Err(error) => {
                     let _ = sender.send(Message::Error(format!("{error:#}")));
@@ -285,17 +238,17 @@ impl SensitivityApp {
 
     fn list_roms(&mut self) {
         let Some(info) = self.device_info.clone() else {
-            self.log("Read device info before querying ROMs.");
+            self.log(self.t("log.read_info_first_roms"));
             return;
         };
-        self.start_task("Querying Xiaomi validation service...", move |sender| {
+        self.start_task(self.t("status.querying_xiaomi"), move |sender| {
             let result = (|| -> anyhow::Result<String> {
                 let request = validate::build_request_json(&info, None)?;
                 let response = validate::validate(SERVER_URL, &request)?;
                 Ok(response.full_json.unwrap_or_else(|| {
                     response
                         .code_message
-                        .unwrap_or_else(|| "No ROM listing returned.".into())
+                        .unwrap_or_else(|| "status.no_rom_listing".into())
                 }))
             })();
             match result {
@@ -304,10 +257,11 @@ impl SensitivityApp {
                         .and_then(|value| serde_json::to_string_pretty(&value))
                         .unwrap_or(listing);
                     let _ = sender.send(Message::Roms(pretty));
-                    let _ = sender.send(Message::Status("ROM query complete.".into()));
+                    let _ = sender.send(Message::Status("status.rom_query_complete".into()));
                 }
                 Err(error) => {
-                    let _ = sender.send(Message::Error(format!("ROM query failed: {error:#}")));
+                    let _ =
+                        sender.send(Message::Error(format!("status.rom_query_failed|{error:#}")));
                 }
             }
         });
@@ -315,25 +269,25 @@ impl SensitivityApp {
 
     fn choose_rom(&mut self) {
         if let Some(path) = rfd::FileDialog::new()
-            .add_filter("Recovery ROM", &["zip"])
+            .add_filter(self.t("section.official_rom").as_str(), &["zip"])
             .pick_file()
         {
             self.rom_path = Some(path);
             self.validated = None;
-            self.status = "ROM selected. Validate it before flashing.".into();
+            self.status = self.t("status.rom_selected");
         }
     }
 
     fn validate_rom(&mut self) {
         let Some(info) = self.device_info.clone() else {
-            self.log("Read device info before validating a ROM.");
+            self.log(self.t("log.read_info_first_validate"));
             return;
         };
         let Some(path) = self.rom_path.clone() else {
-            self.log("Choose an official Recovery ROM ZIP first.");
+            self.log(self.t("log.choose_rom_first"));
             return;
         };
-        self.start_task("Hashing and validating ROM...", move |sender| {
+        self.start_task(self.t("status.hashing_rom"), move |sender| {
             let result = (|| -> anyhow::Result<ValidatedRom> {
                 let md5 = sensitivity::util::md5::md5_file(&path)?;
                 let request = validate::build_request_json(&info, Some(md5.clone()))?;
@@ -341,7 +295,7 @@ impl SensitivityApp {
                 let token = response
                     .validate_token
                     .filter(|token| !token.is_empty())
-                    .ok_or_else(|| anyhow::anyhow!("Xiaomi did not return a validation token"))?;
+                    .ok_or_else(|| anyhow::anyhow!("error.no_validation_token"))?;
                 Ok(ValidatedRom {
                     path,
                     token,
@@ -357,11 +311,12 @@ impl SensitivityApp {
                         erase: validated.erase,
                         md5: validated.md5,
                     });
-                    let _ =
-                        sender.send(Message::Status("ROM validated and ready to flash.".into()));
+                    let _ = sender.send(Message::Status("status.rom_validated".into()));
                 }
                 Err(error) => {
-                    let _ = sender.send(Message::Error(format!("Validation failed: {error:#}")));
+                    let _ = sender.send(Message::Error(format!(
+                        "status.validation_failed|{error:#}"
+                    )));
                 }
             }
         });
@@ -369,7 +324,7 @@ impl SensitivityApp {
 
     fn request_flash(&mut self) {
         if self.validated.is_none() {
-            self.log("Validate the selected ROM before flashing.");
+            self.log(self.t("log.validate_first"));
             return;
         }
         self.confirm_flash = true;
@@ -384,57 +339,59 @@ impl SensitivityApp {
         let cancel = Arc::new(AtomicBool::new(false));
         self.cancel = Some(Arc::clone(&cancel));
         self.confirm_flash = false;
+        self.start_task(self.t("status.flashing_rom"), move |sender| {
+            let result = (|| -> anyhow::Result<()> {
+                let mut client = Self::open_client(index, stop_adb)?;
+                sideload::sideload_zip_with_progress(
+                    &mut client,
+                    &validated.path,
+                    64 * 1024,
+                    &validated.token,
+                    validated.erase,
+                    &cancel,
+                    |sent, total| {
+                        let _ = sender.send(Message::Progress { sent, total });
+                    },
+                )
+            })();
+            match result {
+                Ok(()) => {
+                    let _ = sender.send(Message::Finished("status.flash_completed".into()));
+                }
+                Err(error) => {
+                    let _ = sender.send(Message::Error(format!("status.flash_failed|{error:#}")));
+                }
+            }
+        });
+    }
+
+    fn send_recovery_command(&mut self, command: &'static str, success: &'static str) {
+        let index = self.selected_device;
+        let stop_adb = self.stop_adb;
         self.start_task(
-            "Flashing ROM. Do not disconnect the phone...",
+            self.t("status.sending_command")
+                .replace("{command}", command),
             move |sender| {
-                let result = (|| -> anyhow::Result<()> {
-                    let mut client = Self::open_client(index, stop_adb)?;
-                    sideload::sideload_zip_with_progress(
-                        &mut client,
-                        &validated.path,
-                        64 * 1024,
-                        &validated.token,
-                        validated.erase,
-                        &cancel,
-                        |sent, total| {
-                            let _ = sender.send(Message::Progress { sent, total });
-                        },
-                    )
-                })();
+                let result = Self::open_client(index, stop_adb)
+                    .and_then(|mut client| client.simple_command(command));
                 match result {
                     Ok(()) => {
-                        let _ = sender.send(Message::Finished("Flash completed.".into()));
+                        let _ = sender.send(Message::Finished(success.into()));
                     }
                     Err(error) => {
-                        let _ = sender.send(Message::Error(format!("Flash failed: {error:#}")));
+                        let _ =
+                            sender.send(Message::Error(format!("status.command_failed|{error:#}")));
                     }
                 }
             },
         );
     }
 
-    fn send_recovery_command(&mut self, command: &'static str, success: &'static str) {
-        let index = self.selected_device;
-        let stop_adb = self.stop_adb;
-        self.start_task(format!("Sending {command}..."), move |sender| {
-            let result = Self::open_client(index, stop_adb)
-                .and_then(|mut client| client.simple_command(command));
-            match result {
-                Ok(()) => {
-                    let _ = sender.send(Message::Finished(success.into()));
-                }
-                Err(error) => {
-                    let _ = sender.send(Message::Error(format!("Command failed: {error:#}")));
-                }
-            }
-        });
-    }
-
     fn format_data(&mut self) {
         let index = self.selected_device;
         let stop_adb = self.stop_adb;
         self.confirm_format = false;
-        self.start_task("Erasing user data...", move |sender| {
+        self.start_task(self.t("status.erasing_data"), move |sender| {
             let result = (|| -> anyhow::Result<()> {
                 let mut client = Self::open_client(index, stop_adb)?;
                 client.simple_command("format-data:")?;
@@ -443,10 +400,10 @@ impl SensitivityApp {
             })();
             match result {
                 Ok(()) => {
-                    let _ = sender.send(Message::Finished("Data erased; reboot requested.".into()));
+                    let _ = sender.send(Message::Finished("status.data_erased".into()));
                 }
                 Err(error) => {
-                    let _ = sender.send(Message::Error(format!("Format failed: {error:#}")));
+                    let _ = sender.send(Message::Error(format!("status.format_failed|{error:#}")));
                 }
             }
         });
@@ -460,21 +417,33 @@ impl SensitivityApp {
             .unwrap_or_default();
         for message in messages {
             match message {
-                Message::Status(status) => self.status = status,
+                Message::Status(status) => self.status = self.t(&status),
                 Message::Error(error) => {
-                    self.status = "Operation failed.".into();
-                    self.log(error);
+                    self.status = self.t("status.operation_failed");
+                    let display_error = error
+                        .split_once('|')
+                        .map(|(key, detail)| self.t(key).replace("{error}", detail))
+                        .unwrap_or(error);
+                    self.log(display_error);
                     self.busy = false;
                     self.cancel = None;
                 }
                 Message::DeviceInfo(info) => {
-                    self.log(format!("Detected {} ({})", info.device, info.version));
+                    self.log(
+                        self.t("log.detected_device")
+                            .replace("{device}", &info.device)
+                            .replace("{version}", &info.version),
+                    );
                     self.device_info = Some(info);
                     self.validated = None;
                     self.busy = false;
                 }
                 Message::Roms(roms) => {
-                    self.rom_listing = roms;
+                    self.rom_listing = if roms == "status.no_rom_listing" {
+                        self.t("status.no_rom_listing")
+                    } else {
+                        roms
+                    };
                     self.busy = false;
                 }
                 Message::Validated {
@@ -483,9 +452,13 @@ impl SensitivityApp {
                     erase,
                     md5,
                 } => {
-                    self.log(format!("Validated {} (MD5 {md5})", path.display()));
+                    self.log(
+                        self.t("log.validated_file")
+                            .replace("{path}", &path.display().to_string())
+                            .replace("{md5}", &md5),
+                    );
                     if erase {
-                        self.log("Xiaomi requires a data wipe for this package.");
+                        self.log(self.t("log.package_wipe"));
                     }
                     self.validated = Some(ValidatedRom {
                         path,
@@ -497,8 +470,8 @@ impl SensitivityApp {
                 }
                 Message::Progress { sent, total } => self.progress = Some((sent, total)),
                 Message::Finished(message) => {
-                    self.status = message.clone();
-                    self.log(message);
+                    self.status = self.t(&message);
+                    self.log(self.t(&message));
                     self.busy = false;
                     self.cancel = None;
                 }
@@ -532,10 +505,11 @@ impl eframe::App for SensitivityApp {
 
         egui::Panel::top("header").show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.heading("Sensitivity");
+                ui.heading(self.t("app.title"));
                 ui.separator();
-                ui.label(self.t("Xiaomi Recovery flash and rescue"));
+                ui.label(self.t("app.subtitle"));
                 ui.separator();
+                let previous_language = self.language;
                 egui::ComboBox::from_id_salt("language")
                     .selected_text(match self.language {
                         Language::En => "EN",
@@ -547,6 +521,9 @@ impl eframe::App for SensitivityApp {
                         ui.selectable_value(&mut self.language, Language::Hu, "HU");
                         ui.selectable_value(&mut self.language, Language::Es, "ES");
                     });
+                if self.language != previous_language {
+                    self.catalog = load_catalog(self.language);
+                }
             });
             ui.label(&self.status);
         });
@@ -555,14 +532,14 @@ impl eframe::App for SensitivityApp {
             .resizable(false)
             .default_size(300.0)
             .show(ui, |ui| {
-                ui.heading(format!("1. {}", self.t("Recovery device")));
-                if ui.button(self.t("Refresh USB devices")).clicked() && !self.busy {
+                ui.heading(format!("1. {}", self.t("section.recovery_device")));
+                if ui.button(self.t("action.refresh_usb")).clicked() && !self.busy {
                     self.refresh_devices();
                 }
                 if self.devices.is_empty() {
-                    ui.label(self.t("No matching interface found."));
+                    ui.label(self.t("status.no_matching_interface"));
                 } else {
-                    egui::ComboBox::from_label(self.t("Interface"))
+                    egui::ComboBox::from_label(self.t("label.interface"))
                         .selected_text(Self::device_label(
                             self.devices
                                 .get(self.selected_device)
@@ -578,13 +555,13 @@ impl eframe::App for SensitivityApp {
                             }
                         });
                 }
-                let stop_adb_label = self.t("Stop local ADB before opening USB");
+                let stop_adb_label = self.t("setting.stop_adb");
                 ui.checkbox(&mut self.stop_adb, stop_adb_label)
-                    .on_hover_text("Opt in only if ADB owns the Mi Assistant interface.");
+                    .on_hover_text(self.t("log.adb_hint"));
                 if ui
                     .add_enabled(
                         !self.busy && !self.devices.is_empty(),
-                        egui::Button::new(self.t("Read device info")),
+                        egui::Button::new(self.t("action.read_device_info")),
                     )
                     .clicked()
                 {
@@ -593,7 +570,7 @@ impl eframe::App for SensitivityApp {
                 if ui
                     .add_enabled(
                         !self.busy && self.device_info.is_some(),
-                        egui::Button::new(self.t("List allowed ROMs")),
+                        egui::Button::new(self.t("action.list_allowed_roms")),
                     )
                     .clicked()
                 {
@@ -601,9 +578,9 @@ impl eframe::App for SensitivityApp {
                 }
 
                 ui.separator();
-                ui.heading(format!("2. {}", self.t("Official Recovery ROM")));
+                ui.heading(format!("2. {}", self.t("section.official_rom")));
                 if ui
-                    .add_enabled(!self.busy, egui::Button::new(self.t("Choose ROM ZIP")))
+                    .add_enabled(!self.busy, egui::Button::new(self.t("action.choose_rom")))
                     .clicked()
                 {
                     self.choose_rom();
@@ -614,39 +591,36 @@ impl eframe::App for SensitivityApp {
                 if ui
                     .add_enabled(
                         !self.busy && self.device_info.is_some() && self.rom_path.is_some(),
-                        egui::Button::new(self.t("Validate ROM")),
+                        egui::Button::new(self.t("action.validate_rom")),
                     )
                     .clicked()
                 {
                     self.validate_rom();
                 }
                 if let Some(validated) = &self.validated {
-                    ui.label(format!("MD5: {}", validated.md5));
+                    ui.label(self.t("label.md5").replace("{md5}", &validated.md5));
                     if validated.erase {
-                        ui.colored_label(
-                            egui::Color32::RED,
-                            self.t("Validation requires a data wipe"),
-                        );
+                        ui.colored_label(egui::Color32::RED, self.t("status.validation_wipe"));
                     } else {
                         ui.colored_label(
                             egui::Color32::LIGHT_GREEN,
-                            self.t("Validated; no wipe requested"),
+                            self.t("status.validation_no_wipe"),
                         );
                     }
                 }
                 if ui
                     .add_enabled(
                         !self.busy && self.validated.is_some(),
-                        egui::Button::new(self.t("Flash validated ROM")),
+                        egui::Button::new(self.t("action.flash_validated")),
                     )
                     .clicked()
                 {
                     self.request_flash();
                 }
                 if let Some(cancel) = &self.cancel {
-                    if ui.button(self.t("Cancel flash")).clicked() {
+                    if ui.button(self.t("action.cancel_flash")).clicked() {
                         cancel.store(true, Ordering::Relaxed);
-                        self.status = "Cancellation requested...".into();
+                        self.status = self.t("status.cancellation_requested");
                     }
                 }
                 if let Some((sent, total)) = self.progress {
@@ -660,21 +634,21 @@ impl eframe::App for SensitivityApp {
                 }
 
                 ui.separator();
-                ui.heading(self.t("Recovery actions"));
+                ui.heading(self.t("section.recovery_actions"));
                 ui.horizontal(|ui| {
                     if ui
                         .add_enabled(
                             !self.busy && !self.devices.is_empty(),
-                            egui::Button::new(self.t("Reboot")),
+                            egui::Button::new(self.t("action.reboot")),
                         )
                         .clicked()
                     {
-                        self.send_recovery_command("reboot:", "Reboot requested.");
+                        self.send_recovery_command("reboot:", "status.reboot_requested");
                     }
                     if ui
                         .add_enabled(
                             !self.busy && !self.devices.is_empty(),
-                            egui::Button::new(self.t("Erase data")),
+                            egui::Button::new(self.t("action.erase_data")),
                         )
                         .clicked()
                     {
@@ -684,40 +658,40 @@ impl eframe::App for SensitivityApp {
             });
 
         egui::CentralPanel::default().show(ui, |ui| {
-            ui.heading(self.t("Device information"));
+            ui.heading(self.t("section.device_information"));
             if let Some(info) = &self.device_info {
                 egui::Grid::new("device-info").striped(true).show(ui, |ui| {
                     for (label, value) in [
-                        ("Device", info.device.as_str()),
-                        ("Version", info.version.as_str()),
-                        ("Serial", info.sn.as_str()),
-                        ("Codebase", info.codebase.as_str()),
-                        ("Branch", info.branch.as_str()),
-                        ("Language", info.language.as_str()),
-                        ("Region", info.region.as_str()),
-                        ("ROM zone", info.romzone.as_str()),
+                        ("label.device", info.device.as_str()),
+                        ("label.version", info.version.as_str()),
+                        ("label.serial", info.sn.as_str()),
+                        ("label.codebase", info.codebase.as_str()),
+                        ("label.branch", info.branch.as_str()),
+                        ("label.language", info.language.as_str()),
+                        ("label.region", info.region.as_str()),
+                        ("label.rom_zone", info.romzone.as_str()),
                     ] {
-                        ui.strong(label);
+                        ui.strong(self.t(label));
                         ui.monospace(value);
                         ui.end_row();
                     }
                 });
             } else {
-                ui.label(self.t("Read device info to begin."));
+                ui.label(self.t("status.read_info_first"));
             }
             ui.separator();
-            ui.heading(self.t("Allowed ROM response"));
+            ui.heading(self.t("section.allowed_rom_response"));
             egui::ScrollArea::vertical()
                 .max_height(220.0)
                 .show(ui, |ui| {
                     if self.rom_listing.is_empty() {
-                        ui.label(self.t("No response loaded."));
+                        ui.label(self.t("status.no_response"));
                     } else {
                         ui.monospace(&self.rom_listing);
                     }
                 });
             ui.separator();
-            ui.heading(self.t("Activity"));
+            ui.heading(self.t("section.activity"));
             egui::ScrollArea::vertical()
                 .stick_to_bottom(true)
                 .show(ui, |ui| {
@@ -729,28 +703,25 @@ impl eframe::App for SensitivityApp {
 
         if self.confirm_flash {
             let erase = self.validated.as_ref().is_some_and(|rom| rom.erase);
-            egui::Window::new(self.t("Confirm flash"))
+            egui::Window::new(self.t("dialog.confirm_flash"))
                 .collapsible(false)
                 .resizable(false)
                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
                 .show(ui.ctx(), |ui| {
                     if erase {
-                        ui.colored_label(
-                            egui::Color32::RED,
-                            self.t("Xiaomi requires this flash to permanently erase user data."),
-                        );
+                        ui.colored_label(egui::Color32::RED, self.t("dialog.flash_wipe_warning"));
                     } else {
-                        ui.label(self.t("Flash the validated official ROM now?"));
+                        ui.label(self.t("dialog.flash_question"));
                     }
-                    ui.label(self.t("Keep the phone connected until recovery reports completion."));
+                    ui.label(self.t("dialog.keep_connected"));
                     ui.horizontal(|ui| {
-                        if ui.button(self.t("Cancel")).clicked() {
+                        if ui.button(self.t("action.cancel")).clicked() {
                             self.confirm_flash = false;
                         }
                         let label = if erase {
-                            self.t("Erase data and flash")
+                            self.t("action.erase_and_flash")
                         } else {
-                            self.t("Flash")
+                            self.t("action.flash")
                         };
                         if ui.button(label).clicked() {
                             self.start_flash();
@@ -760,20 +731,17 @@ impl eframe::App for SensitivityApp {
         }
 
         if self.confirm_format {
-            egui::Window::new(self.t("Confirm data erase"))
+            egui::Window::new(self.t("dialog.confirm_erase"))
                 .collapsible(false)
                 .resizable(false)
                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
                 .show(ui.ctx(), |ui| {
-                    ui.colored_label(
-                        egui::Color32::RED,
-                        self.t("This permanently erases all user data, then reboots the phone."),
-                    );
+                    ui.colored_label(egui::Color32::RED, self.t("dialog.erase_warning"));
                     ui.horizontal(|ui| {
-                        if ui.button(self.t("Cancel")).clicked() {
+                        if ui.button(self.t("action.cancel")).clicked() {
                             self.confirm_format = false;
                         }
-                        if ui.button(self.t("Erase all data")).clicked() {
+                        if ui.button(self.t("action.erase_all_data")).clicked() {
                             self.format_data();
                         }
                     });

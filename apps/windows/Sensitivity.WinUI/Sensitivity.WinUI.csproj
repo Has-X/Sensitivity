@@ -23,5 +23,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
+    <Content Include="Resources\windows-*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

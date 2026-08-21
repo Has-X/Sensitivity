@@ -15,7 +15,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <FontIcon Glyph="&#xE896;" FontSize="16" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1" Margin="10,0,0,0" Text="Sensitivity" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Margin="10,0,0,0" Tag="app.title" FontWeight="SemiBold" VerticalAlignment="Center" />
         </Grid>
 
         <NavigationView
@@ -27,16 +27,16 @@
             OpenPaneLength="220"
             SelectionChanged="Navigation_SelectionChanged">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Overview" Tag="overview">
+                <NavigationViewItem AutomationProperties.Name="nav.overview" Tag="overview">
                     <NavigationViewItem.Icon><SymbolIcon Symbol="Home" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Flash a ROM" Tag="flash">
+                <NavigationViewItem AutomationProperties.Name="nav.flash" Tag="flash">
                     <NavigationViewItem.Icon><SymbolIcon Symbol="Download" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Recovery actions" Tag="recovery">
+                <NavigationViewItem AutomationProperties.Name="nav.recovery" Tag="recovery">
                     <NavigationViewItem.Icon><SymbolIcon Symbol="Repair" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Diagnostics" Tag="diagnostics">
+                <NavigationViewItem AutomationProperties.Name="nav.diagnostics" Tag="diagnostics">
                     <NavigationViewItem.Icon><SymbolIcon Symbol="View" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
@@ -52,8 +52,8 @@
                 <ScrollViewer x:Name="OverviewPage" Padding="32,72,32,32">
                     <StackPanel MaxWidth="980" HorizontalAlignment="Left" Spacing="20">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Recovery overview" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Connect a Xiaomi phone in “Connect with Mi Assistant” mode. Sensitivity validates official packages before anything is written." Style="{StaticResource CaptionStyle}" MaxWidth="720" />
+                            <TextBlock Tag="page.overview" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Tag="page.overview_intro" Style="{StaticResource CaptionStyle}" MaxWidth="720" />
                         </StackPanel>
 
                         <Border Style="{StaticResource CardStyle}">
@@ -67,13 +67,13 @@
                                     <FontIcon Glyph="&#xE7F8;" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
-                                    <TextBlock x:Name="ConnectionTitle" Text="No recovery connected" Style="{StaticResource SectionTitleStyle}" />
-                                    <TextBlock x:Name="ConnectionSubtitle" Text="Refresh after the phone is waiting for Mi Assistant." Style="{StaticResource CaptionStyle}" />
+                                    <TextBlock x:Name="ConnectionTitle" Tag="connection.none" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBlock x:Name="ConnectionSubtitle" Tag="connection.refresh_hint" Style="{StaticResource CaptionStyle}" />
                                 </StackPanel>
                                 <Button Grid.Column="2" x:Name="RefreshButton" Click="RefreshButton_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <SymbolIcon Symbol="Refresh" />
-                                        <TextBlock Text="Refresh" />
+                                        <TextBlock Tag="action.refresh" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -86,9 +86,9 @@
                             </Grid.ColumnDefinitions>
                             <Border Style="{StaticResource CardStyle}">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Selected recovery" Style="{StaticResource SectionTitleStyle}" />
-                                    <ComboBox x:Name="DevicePicker" Header="USB interface" DisplayMemberPath="DisplayName" SelectionChanged="DevicePicker_SelectionChanged" />
-                                    <Button x:Name="ReadInfoButton" Content="Read device information" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Left" Click="ReadInfoButton_Click" />
+                                    <TextBlock Tag="section.selected_recovery" Style="{StaticResource SectionTitleStyle}" />
+                                    <ComboBox x:Name="DevicePicker" Tag="label.usb_interface" DisplayMemberPath="DisplayName" SelectionChanged="DevicePicker_SelectionChanged" />
+                                    <Button x:Name="ReadInfoButton" Tag="action.read_device" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Left" Click="ReadInfoButton_Click" />
                                     <Grid RowSpacing="10" ColumnSpacing="20">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -97,13 +97,13 @@
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
-                                        <TextBlock Text="Device" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Tag="label.device" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Grid.Column="1" x:Name="DeviceNameText" Text="—" FontWeight="SemiBold" />
-                                        <TextBlock Grid.Row="1" Text="Version" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Grid.Row="1" Tag="label.version" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Grid.Row="1" Grid.Column="1" x:Name="VersionText" Text="—" />
-                                        <TextBlock Grid.Row="2" Text="Region" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Grid.Row="2" Tag="label.region" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RegionText" Text="—" />
-                                        <TextBlock Grid.Row="3" Text="Serial" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Grid.Row="3" Tag="label.serial" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SerialText" Text="—" FontFamily="Consolas" />
                                     </Grid>
                                 </StackPanel>
@@ -111,11 +111,11 @@
 
                             <Border Grid.Column="1" Style="{StaticResource CardStyle}">
                                 <StackPanel Spacing="14">
-                                    <TextBlock Text="Before flashing" Style="{StaticResource SectionTitleStyle}" />
-                                    <TextBlock Text="1  Use the official Recovery ROM for this exact device and region." TextWrapping="Wrap" />
-                                    <TextBlock Text="2  Keep the computer awake and use a reliable USB cable." TextWrapping="Wrap" />
-                                    <TextBlock Text="3  Read every wipe warning before approving it." TextWrapping="Wrap" />
-                                    <Button Content="Choose a ROM" HorizontalAlignment="Left" Click="GoToFlash_Click" />
+                                    <TextBlock Tag="section.before_flash" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBlock Tag="guide.rom" TextWrapping="Wrap" />
+                                    <TextBlock Tag="guide.awake" TextWrapping="Wrap" />
+                                    <TextBlock Tag="guide.wipe" TextWrapping="Wrap" />
+                                    <Button Tag="action.choose_rom" HorizontalAlignment="Left" Click="GoToFlash_Click" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -125,31 +125,31 @@
                 <ScrollViewer x:Name="FlashPage" Padding="32,72,32,32" Visibility="Collapsed">
                     <StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="20">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Flash an official ROM" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="The package is hashed and approved by Xiaomi before the USB transfer starts." Style="{StaticResource CaptionStyle}" />
+                            <TextBlock Tag="page.flash" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Tag="page.flash_intro" Style="{StaticResource CaptionStyle}" />
                         </StackPanel>
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel Spacing="16">
-                                <TextBlock Text="Recovery ROM" Style="{StaticResource SectionTitleStyle}" />
+                                <TextBlock Tag="section.recovery_rom" Style="{StaticResource SectionTitleStyle}" />
                                 <Grid ColumnSpacing="12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                    <TextBox x:Name="RomPathText" PlaceholderText="No ROM selected" IsReadOnly="True" />
-                                    <Button Grid.Column="1" Content="Browse…" Click="BrowseRomButton_Click" />
+                                    <TextBox x:Name="RomPathText" Tag="rom.none" IsReadOnly="True" />
+                                    <Button Grid.Column="1" Tag="action.browse" Click="BrowseRomButton_Click" />
                                 </Grid>
-                                <TextBlock Text="Only official Recovery ROM ZIP files are supported. Fastboot packages cannot be flashed here." Style="{StaticResource CaptionStyle}" />
+                                <TextBlock Tag="rom.only_official" Style="{StaticResource CaptionStyle}" />
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel Spacing="14">
                                 <Grid>
-                                    <TextBlock Text="Flash progress" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBlock Tag="section.flash_progress" Style="{StaticResource SectionTitleStyle}" />
                                     <TextBlock x:Name="ProgressPercentText" Text="" HorizontalAlignment="Right" />
                                 </Grid>
-                                <TextBlock x:Name="OperationStatusText" Text="Ready" Style="{StaticResource CaptionStyle}" />
+                                <TextBlock x:Name="OperationStatusText" Tag="status.ready" Style="{StaticResource CaptionStyle}" />
                                 <ProgressBar x:Name="FlashProgress" Minimum="0" Maximum="100" Value="0" />
                                 <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Button x:Name="StartFlashButton" Content="Review and flash" Style="{StaticResource AccentButtonStyle}" Click="StartFlashButton_Click" />
-                                    <Button x:Name="CancelFlashButton" Content="Cancel safely" IsEnabled="False" Click="CancelFlashButton_Click" />
+                                    <Button x:Name="StartFlashButton" Tag="action.review_flash" Style="{StaticResource AccentButtonStyle}" Click="StartFlashButton_Click" />
+                                    <Button x:Name="CancelFlashButton" Tag="action.cancel_safely" IsEnabled="False" Click="CancelFlashButton_Click" />
                                     <ProgressRing x:Name="BusyRing" Width="20" Height="20" IsActive="False" />
                                 </StackPanel>
                             </StackPanel>
@@ -160,27 +160,27 @@
                 <ScrollViewer x:Name="RecoveryPage" Padding="32,72,32,32" Visibility="Collapsed">
                     <StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="20">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Recovery actions" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="These commands are sent directly to the selected stock recovery." Style="{StaticResource CaptionStyle}" />
+                            <TextBlock Tag="page.recovery" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Tag="page.recovery_intro" Style="{StaticResource CaptionStyle}" />
                         </StackPanel>
                         <Border Style="{StaticResource CardStyle}">
                             <Grid ColumnSpacing="20">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel Spacing="4">
-                                    <TextBlock Text="Reboot the phone" Style="{StaticResource SectionTitleStyle}" />
-                                    <TextBlock Text="Exit recovery and start the installed system." Style="{StaticResource CaptionStyle}" />
+                                    <TextBlock Tag="section.reboot_phone" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBlock Tag="reboot.exit_hint" Style="{StaticResource CaptionStyle}" />
                                 </StackPanel>
-                                <Button Grid.Column="1" Content="Reboot" Click="RebootButton_Click" />
+                                <Button Grid.Column="1" Tag="action.reboot" Click="RebootButton_Click" />
                             </Grid>
                         </Border>
                         <Border Style="{StaticResource CardStyle}" BorderBrush="{ThemeResource SystemFillColorCriticalBrush}">
                             <Grid ColumnSpacing="20">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel Spacing="4">
-                                    <TextBlock Text="Erase all user data" Style="{StaticResource SectionTitleStyle}" />
-                                    <TextBlock Text="Permanent. The phone is formatted and then rebooted." Style="{StaticResource CaptionStyle}" />
+                                    <TextBlock Tag="section.erase_data" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBlock Tag="erase.warning_short" Style="{StaticResource CaptionStyle}" />
                                 </StackPanel>
-                                <Button Grid.Column="1" Content="Erase data…" Click="EraseDataButton_Click" />
+                                <Button Grid.Column="1" Tag="action.erase_data_short" Click="EraseDataButton_Click" />
                             </Grid>
                         </Border>
                     </StackPanel>
@@ -189,16 +189,16 @@
                 <ScrollViewer x:Name="DiagnosticsPage" Padding="32,72,32,32" Visibility="Collapsed">
                     <StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="20">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Diagnostics" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Check the backend, USB interface, WinUSB access, and local ADB coexistence." Style="{StaticResource CaptionStyle}" />
+                            <TextBlock Tag="page.diagnostics" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Tag="page.diagnostics_intro" Style="{StaticResource CaptionStyle}" />
                         </StackPanel>
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel Spacing="14">
                                 <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Button Content="Run diagnostics" Style="{StaticResource AccentButtonStyle}" Click="RunDoctorButton_Click" />
-                                    <Button Content="Copy report" Click="CopyDiagnosticsButton_Click" />
+                                    <Button Tag="action.run_diagnostics" Style="{StaticResource AccentButtonStyle}" Click="RunDoctorButton_Click" />
+                                    <Button Tag="action.copy_report" Click="CopyDiagnosticsButton_Click" />
                                 </StackPanel>
-                                <TextBox x:Name="DiagnosticsText" MinHeight="260" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" PlaceholderText="No diagnostic report yet." />
+                                <TextBox x:Name="DiagnosticsText" Tag="diagnostics.none" MinHeight="260" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -207,21 +207,27 @@
                 <ScrollViewer x:Name="SettingsPage" Padding="32,72,32,32" Visibility="Collapsed">
                     <StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="20">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Settings" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Safe defaults are recommended for most systems." Style="{StaticResource CaptionStyle}" />
+                            <TextBlock Tag="page.settings" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Tag="page.settings_intro" Style="{StaticResource CaptionStyle}" />
                         </StackPanel>
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel Spacing="18">
-                                <ToggleSwitch x:Name="AutoResolveAdbToggle" IsOn="True" Header="Offer to resolve ADB conflicts" OffContent="Disabled" OnContent="Enabled" />
-                                <TextBlock Text="If Android Debug Bridge owns the recovery interface, Sensitivity asks before stopping its local server and retrying." Style="{StaticResource CaptionStyle}" />
-                                <ToggleSwitch x:Name="StopAdbToggle" IsOn="False" Header="Always stop local ADB before connecting" OffContent="Keep ADB running" OnContent="Stop ADB" />
-                                <TextBlock Text="Leave this off unless the automatic recovery prompt does not work on this computer." Style="{StaticResource CaptionStyle}" />
+                                <ToggleSwitch x:Name="AutoResolveAdbToggle" Tag="setting.resolve_adb" IsOn="True" />
+                                <TextBlock Tag="setting.resolve_adb_hint" Style="{StaticResource CaptionStyle}" />
+                                <ToggleSwitch x:Name="StopAdbToggle" Tag="setting.stop_adb_always" IsOn="False" />
+                                <TextBlock Tag="setting.stop_adb_hint" Style="{StaticResource CaptionStyle}" />
+                                <ComboBox x:Name="LanguagePicker" Tag="label.language" SelectionChanged="LanguagePicker_SelectionChanged">
+                                    <ComboBoxItem Tag="" AutomationProperties.Name="language.system" />
+                                    <ComboBoxItem Tag="en" AutomationProperties.Name="language.english" />
+                                    <ComboBoxItem Tag="hu" AutomationProperties.Name="language.hungarian" />
+                                    <ComboBoxItem Tag="es" AutomationProperties.Name="language.spanish" />
+                                </ComboBox>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel Spacing="6">
-                                <TextBlock x:Name="AboutVersionText" Text="Sensitivity" Style="{StaticResource SectionTitleStyle}" />
-                                <TextBlock Text="Native WinUI 3 interface · Shared Rust recovery core · AGPL-3.0-only" Style="{StaticResource CaptionStyle}" />
+                                <TextBlock x:Name="AboutVersionText" Tag="app.title" Style="{StaticResource SectionTitleStyle}" />
+                                <TextBlock Tag="about.description" Style="{StaticResource CaptionStyle}" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
