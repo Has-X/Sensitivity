@@ -31,14 +31,4 @@ public partial class App : Application
         else Resources.Remove("SystemAccentColor");
     }
 
-    public void ApplyXiaomiAccent(bool enabled)
-    {
-        SetXiaomiAccent(enabled);
-        if (_window is null) return;
-        var previousWindow = _window;
-        _window = null;
-        previousWindow.Close();
-        _window = new MainWindow();
-        _window.Activate();
-    }
 }

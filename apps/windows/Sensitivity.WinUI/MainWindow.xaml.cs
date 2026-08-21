@@ -168,7 +168,7 @@ public sealed partial class MainWindow : Window
     private void XiaomiAccentToggle_Toggled(object sender, RoutedEventArgs e)
     {
         SaveSettings();
-        (Application.Current as App)?.ApplyXiaomiAccent(XiaomiAccentToggle.IsOn);
+        (Application.Current as App)?.SetXiaomiAccent(XiaomiAccentToggle.IsOn);
     }
 
     private void SaveSettings()
