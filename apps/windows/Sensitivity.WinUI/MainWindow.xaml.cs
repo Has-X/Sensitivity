@@ -32,6 +32,10 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        foreach (var page in new FrameworkElement[] { OverviewPage, FlashPage, RecoveryPage, DiagnosticsPage, SettingsPage })
+        {
+            page.RegisterPropertyChangedCallback(UIElement.VisibilityProperty, (_, _) => ApplyVisiblePageLocalization(page));
+        }
         var settings = SettingsStore.Load();
         LocalizationService.Initialize(settings.LanguageOverride);
         ApplyLocalization();
@@ -99,7 +103,15 @@ public sealed partial class MainWindow : Window
             "settings" => SettingsPage,
             _ => OverviewPage
         };
+        ApplyVisiblePageLocalization(page);
+    }
+
+    private static void ApplyVisiblePageLocalization(FrameworkElement page)
+    {
+        if (page.Visibility != Visibility.Visible) return;
         LocalizationService.Apply(page);
+        page.DispatcherQueue.TryEnqueue(() =>
+            page.DispatcherQueue.TryEnqueue(() => LocalizationService.Apply(page)));
     }
 
     private void UpdateTitleBarLayout()
@@ -126,6 +138,10 @@ public sealed partial class MainWindow : Window
         LocalizationService.Apply(RecoveryPage);
         LocalizationService.Apply(DiagnosticsPage);
         LocalizationService.Apply(SettingsPage);
+        foreach (var page in new FrameworkElement[] { OverviewPage, FlashPage, RecoveryPage, DiagnosticsPage, SettingsPage })
+        {
+            page.DispatcherQueue.TryEnqueue(() => LocalizationService.Apply(page));
+        }
         AboutVersionText.Text = $"{L("app.title")} {typeof(App).Assembly.GetName().Version?.ToString(3)}";
         Title = L("app.title");
     }
