@@ -37,6 +37,8 @@ public sealed partial class MainWindow : Window
         ApplyLocalization();
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
+        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        UpdateTitleBarLayout();
         SystemBackdrop = new MicaBackdrop { Kind = MicaKind.BaseAlt };
         AppWindow.Resize(new SizeInt32(1120, 760));
         AutoResolveAdbToggle.IsOn = settings.OfferAdbResolution;
@@ -66,6 +68,7 @@ public sealed partial class MainWindow : Window
 
     private async void Root_Loaded(object sender, RoutedEventArgs e)
     {
+        UpdateTitleBarLayout();
         ApplyLocalization();
         if (!_backend.IsAvailable)
         {
@@ -86,6 +89,12 @@ public sealed partial class MainWindow : Window
         RecoveryPage.Visibility = tag == "recovery" ? Visibility.Visible : Visibility.Collapsed;
         DiagnosticsPage.Visibility = tag == "diagnostics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPage.Visibility = tag == "settings" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void UpdateTitleBarLayout()
+    {
+        var rightInset = AppWindow.TitleBar.RightInset;
+        AppTitleBar.Padding = new Thickness(16, 0, Math.Max(16, rightInset + 8), 0);
     }
 
     private void LanguagePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)

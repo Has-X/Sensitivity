@@ -8,10 +8,6 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Xiaomi Orange is the product accent; neutral surfaces and
-                 system text colours remain theme-aware in light and dark mode. -->
-            <Color x:Key="SystemAccentColor">#FF6900</Color>
-
             <Style x:Key="CardStyle" TargetType="Border">
                 <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
@@ -40,6 +36,15 @@
             <Style x:Key="IconActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
                 <Setter Property="MinHeight" Value="36" />
                 <Setter Property="Padding" Value="12,6" />
+            </Style>
+            <Style x:Key="TitleBarActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="MinWidth" Value="32" />
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>
