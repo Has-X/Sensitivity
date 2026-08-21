@@ -34,6 +34,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        MergeFlowActions();
         var settings = SettingsStore.Load();
         LocalizationService.Initialize(settings.LanguageOverride);
         ApplyLocalization();
@@ -122,6 +123,27 @@ public sealed partial class MainWindow : Window
         if (page.Visibility != Visibility.Visible) return;
         page.UpdateLayout();
         LocalizationService.Apply(page);
+    }
+
+    private void MergeFlowActions()
+    {
+        var packageActions = FindVisualChildren<Button>(OverviewPage)
+            .Where(button => button.Tag is "action.get_official_rom" or "action.choose_local_rom")
+            .ToList();
+        if (packageActions.Count < 2) return;
+
+        packageActions[0].Tag = "action.review_flash";
+        packageActions[1].Visibility = Visibility.Collapsed;
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+        {
+            var child = VisualTreeHelper.GetChild(root, index);
+            if (child is T match) yield return match;
+            foreach (var descendant in FindVisualChildren<T>(child)) yield return descendant;
+        }
     }
 
     private void UpdateTitleBarLayout()
