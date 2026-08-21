@@ -7,7 +7,7 @@
   "nav.diagnostics": "Diagnostics",
   "page.overview": "Recovery overview",
   "page.overview_intro": "Connect a Xiaomi phone in “Connect with Mi Assistant” mode. Sensitivity validates official packages before anything is written.",
-  "connection.none": "No recovery connected",
+  "connection.none": "No USB recovery device found",
   "connection.found": "Recovery interface found",
   "connection.refresh_hint": "Refresh after the phone is waiting for Mi Assistant.",
   "action.refresh": "Refresh",

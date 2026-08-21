@@ -21,6 +21,7 @@ public sealed partial class MainWindow : Window
     private string? _romPath;
     private string? _detectedCodename;
     private bool _busy;
+    private bool _hasRecoveryDevice;
 
     private static string L(string key) => LocalizationService.Get(key);
 
@@ -85,6 +86,8 @@ public sealed partial class MainWindow : Window
         ApplyLocalization();
         if (!_backend.IsAvailable)
         {
+            _hasRecoveryDevice = false;
+            UpdateDeviceActionState();
             ShowStatus(L("error.backend_missing"), L("error.backend_missing_detail"), InfoBarSeverity.Error);
             SetInteractive(false);
             return;
@@ -181,6 +184,8 @@ public sealed partial class MainWindow : Window
             var devices = await _backend.GetDevicesAsync(cancellationToken);
             DevicePicker.ItemsSource = devices;
             DevicePicker.SelectedIndex = devices.Count > 0 ? 0 : -1;
+            _hasRecoveryDevice = devices.Count > 0;
+            UpdateDeviceActionState();
             ConnectionTitle.Text = devices.Count switch
             {
                 0 => L("connection.none"),
@@ -203,6 +208,8 @@ public sealed partial class MainWindow : Window
 
     private async void DevicePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        _hasRecoveryDevice = DevicePicker.SelectedItem is UsbDevice;
+        UpdateDeviceActionState();
         ClearDeviceInfo();
         if (DevicePicker.SelectedItem is UsbDevice)
         {
@@ -656,10 +663,7 @@ public sealed partial class MainWindow : Window
         BusyRing.IsActive = busy;
         RefreshButton.IsEnabled = !busy;
         TitleRefreshButton.IsEnabled = !busy;
-        ReadInfoButton.IsEnabled = !busy;
-        StartFlashButton.IsEnabled = !busy;
-        DownloadLatestButton.IsEnabled = !busy;
-        FlashLatestButton.IsEnabled = !busy;
+        UpdateDeviceActionState();
         CancelFlashButton.IsEnabled = busy && _operationCancellation is not null;
         DevicePicker.IsEnabled = !busy;
         RegionProfilePicker.IsEnabled = !busy;
@@ -671,6 +675,15 @@ public sealed partial class MainWindow : Window
     {
         Navigation.IsEnabled = enabled;
         RefreshButton.IsEnabled = enabled;
+    }
+
+    private void UpdateDeviceActionState()
+    {
+        var enabled = _hasRecoveryDevice && !_busy;
+        ReadInfoButton.IsEnabled = enabled;
+        StartFlashButton.IsEnabled = enabled;
+        DownloadLatestButton.IsEnabled = enabled;
+        FlashLatestButton.IsEnabled = enabled;
     }
 
     private void ClearDeviceInfo()

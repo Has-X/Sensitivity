@@ -7,7 +7,7 @@
   "Diagnostics": "Diagnosztika",
   "Recovery overview": "Recovery áttekintés",
   "Connect a Xiaomi phone in “Connect with Mi Assistant” mode. Sensitivity validates official packages before anything is written.": "Csatlakoztass Xiaomi telefont a „Connect with Mi Assistant” módban. A Sensitivity minden írás előtt ellenőrzi a hivatalos csomagokat.",
-  "No recovery connected": "Nincs recovery csatlakoztatva",
+  "No USB recovery device found": "Nem található USB recovery-eszköz",
   "Recovery interface found": "Recovery felület található",
   "No recovery selected": "Nincs recovery kiválasztva",
   "Cancel flash": "Flashelés megszakítása",

@@ -7,7 +7,7 @@
   "Diagnostics": "Diagnóstico",
   "Recovery overview": "Resumen del recovery",
   "Connect a Xiaomi phone in “Connect with Mi Assistant” mode. Sensitivity validates official packages before anything is written.": "Conecta un teléfono Xiaomi en modo “Connect with Mi Assistant”. Sensitivity valida los paquetes oficiales antes de escribir nada.",
-  "No recovery connected": "No hay recovery conectado",
+  "No USB recovery device found": "No se encontró un dispositivo recovery USB",
   "Recovery interface found": "Interfaz recovery encontrada",
   "No recovery selected": "No hay recovery seleccionado",
   "Cancel flash": "Cancelar flasheo",
