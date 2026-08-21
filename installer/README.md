@@ -16,6 +16,10 @@ The result supports unattended package managers and deployment tools:
 .\Sensitivity-Setup-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
+The installer adds its installation directory to the machine `PATH`, so a new
+terminal can run `sensitivity-cli` without navigating to Program Files. It
+removes only its own entry during uninstall.
+
 For ARM64, publish with `-r win-arm64`, build the Rust backend for
 `aarch64-pc-windows-msvc`, and pass `/DAppArchitecture=arm64`. The project
 copies its generated `Sensitivity.pri` into every publish directory because it

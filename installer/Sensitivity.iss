@@ -78,3 +78,77 @@ Name: "{autoprograms}\Sensitivity"; Filename: "{app}\Sensitivity.exe"; WorkingDi
 
 [Run]
 Filename: "{app}\Sensitivity.exe"; Description: "{cm:LaunchProgram,Sensitivity}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+const
+  EnvironmentKey = 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment';
+  WM_SETTINGCHANGE = $001A;
+  SMTO_ABORTIFHUNG = $0002;
+
+function SendMessageTimeout(hWnd: HWND; Msg: UINT; wParam: Longint; lParam: String;
+  fuFlags, uTimeout: UINT; var lpdwResult: DWORD): LRESULT;
+  external 'SendMessageTimeoutW@user32.dll stdcall';
+
+procedure NotifyEnvironmentChanged;
+var
+  ResultCode: DWORD;
+begin
+  SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 'Environment',
+    SMTO_ABORTIFHUNG, 5000, ResultCode);
+end;
+
+function PathContains(const PathValue, Directory: String): Boolean;
+begin
+  Result := Pos(';' + Lowercase(Directory) + ';',
+    ';' + Lowercase(PathValue) + ';') > 0;
+end;
+
+procedure AddCommandLineToPath;
+var
+  PathValue: String;
+  AppDirectory: String;
+begin
+  AppDirectory := ExpandConstant('{app}');
+  if not RegQueryStringValue(HKLM64, EnvironmentKey, 'Path', PathValue) then begin
+    Log('Unable to read the machine PATH. The Sensitivity CLI was not added.');
+    exit;
+  end;
+  if PathContains(PathValue, AppDirectory) then begin
+    Log('Sensitivity is already present on the machine PATH.');
+    exit;
+  end;
+  if RegWriteStringValue(HKLM64, EnvironmentKey, 'Path', PathValue + ';' + AppDirectory) then begin
+    NotifyEnvironmentChanged;
+    Log('Added Sensitivity to the machine PATH.');
+  end else
+    Log('Unable to add Sensitivity to the machine PATH.');
+end;
+
+procedure RemoveCommandLineFromPath;
+var
+  PathValue: String;
+  AppDirectory: String;
+  UpdatedPath: String;
+begin
+  AppDirectory := ExpandConstant('{app}');
+  if not RegQueryStringValue(HKLM64, EnvironmentKey, 'Path', PathValue) then exit;
+  UpdatedPath := PathValue;
+  StringChangeEx(UpdatedPath, ';' + AppDirectory, '', True);
+  StringChangeEx(UpdatedPath, AppDirectory + ';', '', True);
+  if CompareText(UpdatedPath, AppDirectory) = 0 then UpdatedPath := '';
+  if UpdatedPath = PathValue then exit;
+  if RegWriteStringValue(HKLM64, EnvironmentKey, 'Path', UpdatedPath) then begin
+    NotifyEnvironmentChanged;
+    Log('Removed Sensitivity from the machine PATH.');
+  end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then AddCommandLineToPath;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usPostUninstall then RemoveCommandLineFromPath;
+end;
