@@ -13,11 +13,21 @@
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#FFFFFF" />
                     <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemAccentColor}" />
                     <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="#FFFFFF" />
+                    <StaticResource x:Key="AccentFillColorDefaultBrush" ResourceKey="SensitivityAccentBrush" />
+                    <StaticResource x:Key="AccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentBrush" />
+                    <StaticResource x:Key="AccentFillColorTertiaryBrush" ResourceKey="SensitivityAccentBrush" />
+                    <StaticResource x:Key="TextOnAccentFillColorPrimaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
+                    <StaticResource x:Key="TextOnAccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="#000000" />
                     <SolidColorBrush x:Key="SensitivityAccentBrush" Color="{ThemeResource SystemAccentColor}" />
                     <SolidColorBrush x:Key="SensitivityAccentContentForegroundBrush" Color="#000000" />
+                    <StaticResource x:Key="AccentFillColorDefaultBrush" ResourceKey="SensitivityAccentBrush" />
+                    <StaticResource x:Key="AccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentBrush" />
+                    <StaticResource x:Key="AccentFillColorTertiaryBrush" ResourceKey="SensitivityAccentBrush" />
+                    <StaticResource x:Key="TextOnAccentFillColorPrimaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
+                    <StaticResource x:Key="TextOnAccentFillColorSecondaryBrush" ResourceKey="SensitivityAccentContentForegroundBrush" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="AccentContentForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
@@ -54,10 +64,6 @@
             <Style x:Key="IconActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
                 <Setter Property="MinHeight" Value="36" />
                 <Setter Property="Padding" Value="12,6" />
-            </Style>
-            <Style x:Key="SensitivityAccentButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-                <Setter Property="Background" Value="{ThemeResource SensitivityAccentBrush}" />
-                <Setter Property="Foreground" Value="{ThemeResource SensitivityAccentContentForegroundBrush}" />
             </Style>
             <Style x:Key="TitleBarActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
                 <Setter Property="Width" Value="28" />

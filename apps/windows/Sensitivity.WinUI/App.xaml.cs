@@ -9,12 +9,21 @@ public partial class App : Application
 {
     private static readonly Windows.UI.Color XiaomiOrange = ColorHelper.FromArgb(255, 255, 105, 0);
     private readonly UISettings _uiSettings = new();
+    private bool _useXiaomiAccent;
 
     private Window? _window;
 
     public App()
     {
         InitializeComponent();
+        _uiSettings.ColorValuesChanged += (_, _) =>
+        {
+            if (!_useXiaomiAccent)
+            {
+                _window?.DispatcherQueue.TryEnqueue(() =>
+                    SetThemeBrushColor("SensitivityAccentBrush", _uiSettings.GetColorValue(UIColorType.Accent)));
+            }
+        };
         UnhandledException += (_, args) =>
         {
             System.Diagnostics.Debug.WriteLine(args.Exception);
@@ -29,6 +38,7 @@ public partial class App : Application
 
     public void SetXiaomiAccent(bool enabled)
     {
+        _useXiaomiAccent = enabled;
         var color = enabled ? XiaomiOrange : _uiSettings.GetColorValue(UIColorType.Accent);
         SetThemeBrushColor("SensitivityAccentBrush", color);
     }
