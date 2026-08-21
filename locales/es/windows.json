@@ -184,5 +184,17 @@
   "Sensitivity checks the package before transfer and asks again if a wipe is needed.": "Sensitivity comprueba el paquete antes de transferirlo y vuelve a preguntar si se necesita borrar los datos.",
   "Download ROM": "Descargar ROM",
   "Download a package, use a ZIP already in the folder, or browse for one.": "Descarga un paquete, usa un ZIP de la carpeta o busca uno.",
-  "Find ZIP": "Buscar ZIP"
+  "Find ZIP": "Buscar ZIP",
+  "No recovery connected": "No hay recovery conectado",
+  "Taiwan": "Taiwán",
+  "Global": "Global",
+  "Windows could not start the Sensitivity backend.": "Windows no pudo iniciar el backend de Sensitivity.",
+  "Sensitivity returned incomplete device information.": "Sensitivity recibió información incompleta del dispositivo.",
+  "China": "China",
+  "Russia": "Rusia",
+  "Indonesia": "Indonesia",
+  "India": "India",
+  "Türkiye": "Turquía",
+  "EEA": "EEE",
+  "Recovery device": "Dispositivo recovery"
 }

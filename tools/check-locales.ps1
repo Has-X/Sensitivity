@@ -32,11 +32,17 @@ Assert-Catalog 'Portable GUI' @('locales/en/gui.json', 'locales/hu/gui.json', 'l
 
 $aliases = Read-Json 'locales/_keys/windows.json'
 $sources = @(Properties $aliases | ForEach-Object Value | Sort-Object -Unique)
+$englishCatalog = Read-Json 'locales/en/windows.json'
+$expectedWindows = @(Properties $englishCatalog | ForEach-Object Name | Sort-Object)
 foreach ($lang in 'en', 'hu', 'es') {
     $catalog = Read-Json "locales/$lang/windows.json"
-    $missing = @($sources | Where-Object { $_ -notin @(Properties $catalog | ForEach-Object Name) })
-    if ($missing.Count) { throw "Windows locale $lang is missing: $($missing -join '; ')" }
+    $actualWindows = @(Properties $catalog | ForEach-Object Name | Sort-Object)
+    $missing = @($expectedWindows | Where-Object { $_ -notin $actualWindows })
+    $extra = @($actualWindows | Where-Object { $_ -notin $expectedWindows })
+    if ($missing.Count -or $extra.Count) { throw "Windows locale $lang is inconsistent. Missing=$($missing -join '; '); extra=$($extra -join '; ')" }
     $empty = @(Properties $catalog | Where-Object { [string]::IsNullOrWhiteSpace([string]$_.Value) } | ForEach-Object Name)
     if ($empty.Count) { throw "Windows locale $lang has empty values: $($empty -join '; ')" }
 }
-Write-Host "Windows: $($sources.Count) source keys, all locales complete"
+$unknownAliases = @($sources | Where-Object { $_ -notin $expectedWindows })
+if ($unknownAliases.Count) { throw "Windows aliases reference unknown source keys: $($unknownAliases -join '; ')" }
+Write-Host "Windows: $($expectedWindows.Count) source keys, all locales complete"

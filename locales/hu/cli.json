@@ -27,7 +27,6 @@
   "error.linux_permissions": "Linuxon csatlakoztasd újra a telefont, és ellenőrizd az USB-jogosultságokat.",
   "error.zip_not_found": "A ZIP nem található: {path}",
   "error.invalid_md5": "A megadott MD5-nek 32 hexadecimális karakterből kell állnia",
-  "error.no_token": "A validáció nem adott tokent, ezért a flashelés nem indítható.",
   "warning.md5_override": "FIGYELEM: Felülírt MD5 használata: {override} (számított: {computed})",
   "prompt.erase_warning": "FIGYELEM: Ez a művelet véglegesen törli a felhasználói adatokat.",
   "prompt.erase_type": "Írd be az ERASE szót a folytatáshoz: ",
@@ -44,5 +43,19 @@
   "label.branch": "Ág:      {value}",
   "label.language": "Nyelv:   {value}",
   "label.region": "Régió:   {value}",
-  "label.romzone": "ROM-zóna: {value}"
+  "label.romzone": "ROM-zóna: {value}",
+  "error.stop_adb": "A helyi ADB-szerver leállítása",
+  "error.validation_http": "A validációs HTTP-kérése sikertelen",
+  "error.no_token": "A validáció nem adott tokent, ezért a flashelés nem indítható.",
+  "error.init_adb": "ADB-kliens inicializálása",
+  "error.compute_md5": "A ZIP MD5-értékének kiszámítása",
+  "error.discover_usb": "Recovery USB-felületek keresése",
+  "error.fetch_device": "Eszközadatok lekérése",
+  "error.download_latest": "A LatestRom letöltése",
+  "error.md5_length": "A megadott MD5-nek 32 hexadecimális karakterből kell állnia",
+  "error.refuse_http": "Nem HTTPS-kiszolgáló használata a --http kapcsoló nélkül. Megadva: {url}",
+  "error.sideload": "A sideload sikertelen",
+  "error.build_validation": "Validációs kérés összeállítása",
+  "error.open_usb": "Mi Assistant USB-felület megnyitása libusb segítségével",
+  "error.parse_latest": "A LatestRom feldolgozása JSON-ból"
 }

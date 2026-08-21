@@ -27,7 +27,6 @@
   "error.linux_permissions": "On Linux, reconnect the phone and check USB permissions if access is denied.",
   "error.zip_not_found": "ZIP not found: {path}",
   "error.invalid_md5": "Provided MD5 must be 32 hexadecimal characters",
-  "error.no_token": "Validation did not return a token, so the flash cannot start.",
   "warning.md5_override": "WARNING: Using overridden MD5 {override} (computed {computed})",
   "prompt.erase_warning": "WARNING: This operation will permanently erase user data.",
   "prompt.erase_type": "Type ERASE to continue: ",
@@ -44,5 +43,19 @@
   "label.branch": "Branch:   {value}",
   "label.language": "Language: {value}",
   "label.region": "Region:   {value}",
-  "label.romzone": "ROM zone: {value}"
+  "label.romzone": "ROM zone: {value}",
+  "error.stop_adb": "Stopping the local ADB server",
+  "error.validation_http": "Validation HTTP call failed",
+  "error.no_token": "Validation did not return a token, so the flash cannot start.",
+  "error.init_adb": "Initializing ADB client",
+  "error.compute_md5": "Computing MD5 of ZIP",
+  "error.discover_usb": "Discovering recovery USB interfaces",
+  "error.fetch_device": "Fetching device info",
+  "error.download_latest": "Downloading LatestRom",
+  "error.md5_length": "Provided MD5 must be 32 hexadecimal characters",
+  "error.refuse_http": "Refusing to use non-HTTPS server without --http. Provided: {url}",
+  "error.sideload": "Sideload failed",
+  "error.build_validation": "Building validation request",
+  "error.open_usb": "Opening USB Mi Assistant interface via libusb",
+  "error.parse_latest": "Parsing LatestRom from JSON"
 }

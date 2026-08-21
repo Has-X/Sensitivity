@@ -36,7 +36,7 @@ public sealed class SensitivityBackend
         var result = await RunAsync(arguments, cancellationToken);
         EnsureSuccess(result);
         return JsonSerializer.Deserialize(result.StandardOutput, SensitivityJsonContext.Default.DeviceInfo)
-            ?? throw new InvalidOperationException("Sensitivity returned incomplete device information.");
+            ?? throw new InvalidOperationException(LocalizationService.Get("error.backend_incomplete"));
     }
 
     public async Task<BackendResult> RunDoctorAsync(
@@ -66,7 +66,7 @@ public sealed class SensitivityBackend
     public async Task<BackendResult> DownloadLatestAsync(int deviceIndex, string outputDirectory, bool stopAdb, CancellationToken cancellationToken)
     {
         var arguments = GlobalArguments(deviceIndex, stopAdb);
-        arguments.AddRange(["download-latest", "--output-dir", outputDirectory]);
+        arguments.AddRange(["--machine", "download-latest", "--output-dir", outputDirectory]);
         return await RunAsync(arguments, cancellationToken);
     }
 
@@ -177,7 +177,7 @@ public sealed class SensitivityBackend
         if (!IsAvailable)
         {
             throw new FileNotFoundException(
-                "The Sensitivity backend is missing. Reinstall the application or place sensitivity-cli.exe beside Sensitivity.exe.",
+                LocalizationService.Get("error.backend_missing_detail"),
                 ExecutablePath);
         }
 
@@ -202,7 +202,7 @@ public sealed class SensitivityBackend
 
         if (!process.Start())
         {
-            throw new InvalidOperationException("Windows could not start the Sensitivity backend.");
+            throw new InvalidOperationException(LocalizationService.Get("error.backend_start"));
         }
 
         var output = new StringBuilder();

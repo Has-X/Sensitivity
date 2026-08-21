@@ -27,7 +27,6 @@
   "error.linux_permissions": "En Linux, vuelve a conectar el teléfono y comprueba los permisos USB.",
   "error.zip_not_found": "No se encontró el ZIP: {path}",
   "error.invalid_md5": "El MD5 indicado debe tener 32 caracteres hexadecimales",
-  "error.no_token": "La validación no devolvió un token, por lo que no se puede iniciar el flasheo.",
   "warning.md5_override": "ADVERTENCIA: se usa el MD5 sobrescrito {override} (calculado {computed})",
   "prompt.erase_warning": "ADVERTENCIA: esta operación borrará permanentemente los datos de usuario.",
   "prompt.erase_type": "Escribe ERASE para continuar: ",
@@ -44,5 +43,19 @@
   "label.branch": "Rama:      {value}",
   "label.language": "Idioma:    {value}",
   "label.region": "Región:    {value}",
-  "label.romzone": "Zona ROM:  {value}"
+  "label.romzone": "Zona ROM:  {value}",
+  "error.stop_adb": "Deteniendo el servidor ADB local",
+  "error.validation_http": "Falló la solicitud HTTP de validación",
+  "error.no_token": "La validación no devolvió un token, por lo que no se puede iniciar el flasheo.",
+  "error.init_adb": "Inicializando el cliente ADB",
+  "error.compute_md5": "Calculando el MD5 del ZIP",
+  "error.discover_usb": "Buscando interfaces USB de recovery",
+  "error.fetch_device": "Obteniendo información del dispositivo",
+  "error.download_latest": "Descargando LatestRom",
+  "error.md5_length": "El MD5 indicado debe tener 32 caracteres hexadecimales",
+  "error.refuse_http": "No se puede usar un servidor sin HTTPS sin --http. Indicado: {url}",
+  "error.sideload": "Falló el sideload",
+  "error.build_validation": "Preparando la solicitud de validación",
+  "error.open_usb": "Abriendo la interfaz USB de Mi Assistant mediante libusb",
+  "error.parse_latest": "Analizando LatestRom desde JSON"
 }

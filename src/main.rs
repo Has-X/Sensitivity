@@ -200,8 +200,8 @@ fn run() -> Result<()> {
     reset_control_file(cli.approval_file.as_deref())?;
     if !cli.server_url.starts_with("https://") && !cli.http {
         bail!(
-            "Refusing to use non-HTTPS server without --http. Provided: {}",
-            cli.server_url
+            "{}",
+            trf("error.refuse_http", &[("{url}", &cli.server_url)])
         );
     }
     if cli.http && cli.server_url.starts_with("http://") {
@@ -211,15 +211,15 @@ fn run() -> Result<()> {
     let adb_was_running = util::adb_server::is_running(std::time::Duration::from_millis(200));
     if cli.adb_policy == AdbPolicy::Stop && adb_was_running {
         util::adb_server::kill_adb_server(std::time::Duration::from_secs(2))
-            .context("Stopping the local ADB server")?;
+            .context(tr("error.stop_adb"))?;
         eprintln!("{}", tr("warning.adb_stopped"));
     }
 
     // Open USB transport
     let make_client = || -> Result<MiClient> {
-        let transport = UsbTransport::open(cli.device_index, cli.debug_usb)
-            .context("Opening USB Mi Assistant interface via libusb")?;
-        MiClient::new(transport).context("Initializing ADB client")
+        let transport =
+            UsbTransport::open(cli.device_index, cli.debug_usb).context(tr("error.open_usb"))?;
+        MiClient::new(transport).context(tr("error.init_adb"))
     };
     // Handle config-only subcommands before touching USB
     match &cli.command {
@@ -229,8 +229,7 @@ fn run() -> Result<()> {
             return Ok(());
         }
         Commands::Devices { json } => {
-            let devices =
-                UsbTransport::discover().context("Discovering recovery USB interfaces")?;
+            let devices = UsbTransport::discover().context(tr("error.discover_usb"))?;
             if *json {
                 println!("{}", serde_json::to_string_pretty(&devices)?);
             } else if devices.is_empty() {
@@ -284,8 +283,7 @@ fn run() -> Result<()> {
                     )]
                 )
             );
-            let devices =
-                UsbTransport::discover().context("Discovering recovery USB interfaces")?;
+            let devices = UsbTransport::discover().context(tr("error.discover_usb"))?;
             println!(
                 "{}",
                 trf(
@@ -358,7 +356,7 @@ fn run() -> Result<()> {
             println!("{}", tr("status.device_detected"));
         }
         Commands::Info { json } => {
-            let info = client.read_all_info().context("Fetching device info")?;
+            let info = client.read_all_info().context(tr("error.fetch_device"))?;
             if json {
                 println!("{}", serde_json::to_string_pretty(&info)?);
             } else {
@@ -375,18 +373,18 @@ fn run() -> Result<()> {
         Commands::DownloadLatest { output_dir } => {
             let info = effective_device_info(
                 &identity,
-                client.read_all_info().context("Fetching device info")?,
+                client.read_all_info().context(tr("error.fetch_device"))?,
             )?;
             let req_json =
-                validate::build_request_json(&info, None).context("Building validation request")?;
+                validate::build_request_json(&info, None).context(tr("error.build_validation"))?;
             let resp = validate::validate(&cli.server_url, &req_json)
-                .context("Validation HTTP call failed")?;
+                .context(tr("error.validation_http"))?;
             let json = resp
                 .full_json
                 .clone()
                 .ok_or_else(|| anyhow::anyhow!("No full JSON in response"))?;
             let (latest, mirrors) =
-                download::parse_latest_from_json(&json).context("Parsing LatestRom from JSON")?;
+                download::parse_latest_from_json(&json).context(tr("error.parse_latest"))?;
             let url = download::choose_url(&mirrors, &latest.filename)
                 .ok_or_else(|| anyhow::anyhow!("No mirror URL available"))?;
             let client_http = reqwest::blocking::Client::builder()
@@ -394,14 +392,22 @@ fn run() -> Result<()> {
                 .build()?;
             let out_dir = output_dir.unwrap_or_else(|| std::env::current_dir().unwrap());
             let path = download::download_with_md5(&client_http, &url, &out_dir, &latest.md5)
-                .context("Downloading LatestRom")?;
-            println!(
-                "{}",
-                trf(
-                    "status.downloaded",
-                    &[("{path}", &path.display().to_string())]
-                )
-            );
+                .context(tr("error.download_latest"))?;
+            if cli.machine {
+                emit_machine_event(serde_json::json!({
+                    "event": "downloaded",
+                    "path": path,
+                    "md5_verified": true
+                }));
+            } else {
+                println!(
+                    "{}",
+                    trf(
+                        "status.downloaded",
+                        &[("{path}", &path.display().to_string())]
+                    )
+                );
+            }
         }
         Commands::FlashFromLatest {
             output_dir,
@@ -411,19 +417,19 @@ fn run() -> Result<()> {
             emit_status(cli.machine, &tr("status.reading_recovery"));
             let info = effective_device_info(
                 &identity,
-                client.read_all_info().context("Fetching device info")?,
+                client.read_all_info().context(tr("error.fetch_device"))?,
             )?;
             // Step 1: Get LatestRom info
             let req_json =
-                validate::build_request_json(&info, None).context("Building validation request")?;
+                validate::build_request_json(&info, None).context(tr("error.build_validation"))?;
             let resp1 = validate::validate(&cli.server_url, &req_json)
-                .context("Validation HTTP call failed")?;
+                .context(tr("error.validation_http"))?;
             let json = resp1
                 .full_json
                 .clone()
                 .ok_or_else(|| anyhow::anyhow!("No full JSON in response"))?;
             let (latest, mirrors) =
-                download::parse_latest_from_json(&json).context("Parsing LatestRom from JSON")?;
+                download::parse_latest_from_json(&json).context(tr("error.parse_latest"))?;
             let url = download::choose_url(&mirrors, &latest.filename)
                 .ok_or_else(|| anyhow::anyhow!("No mirror URL available"))?;
             // Step 2: Download
@@ -433,12 +439,12 @@ fn run() -> Result<()> {
                 .build()?;
             let out_dir = output_dir.unwrap_or_else(|| std::env::current_dir().unwrap());
             let local_path = download::download_with_md5(&client_http, &url, &out_dir, &latest.md5)
-                .context("Downloading LatestRom")?;
+                .context(tr("error.download_latest"))?;
             // Step 3: Validate for this MD5 and flash
             let req_json2 = validate::build_request_json(&info, Some(latest.md5.clone()))
-                .context("Building validation request")?;
+                .context(tr("error.build_validation"))?;
             let resp2 = validate::validate(&cli.server_url, &req_json2)
-                .context("Validation HTTP call failed")?;
+                .context(tr("error.validation_http"))?;
             if let Some(msg) = resp2.code_message.as_deref() {
                 println!("{}", trf("status.server_message", &[("{message}", msg)]));
             }
@@ -462,18 +468,18 @@ fn run() -> Result<()> {
                 &cancel,
                 cli.machine,
             )
-            .context("Sideload failed")?;
+            .context(tr("error.sideload"))?;
             emit_completed(cli.machine, &tr("status.flash_completed"));
         }
         Commands::ListAllowedRoms => {
             let info = effective_device_info(
                 &identity,
-                client.read_all_info().context("Fetching device info")?,
+                client.read_all_info().context(tr("error.fetch_device"))?,
             )?;
             let req_json =
-                validate::build_request_json(&info, None).context("Building validation request")?;
+                validate::build_request_json(&info, None).context(tr("error.build_validation"))?;
             let resp = validate::validate(&cli.server_url, &req_json)
-                .context("Validation HTTP call failed")?;
+                .context(tr("error.validation_http"))?;
             validate::print_allowed(&resp);
         }
         Commands::Flash {
@@ -494,10 +500,10 @@ fn run() -> Result<()> {
             emit_status(cli.machine, &tr("status.reading_recovery"));
             let info = effective_device_info(
                 &identity,
-                client.read_all_info().context("Fetching device info")?,
+                client.read_all_info().context(tr("error.fetch_device"))?,
             )?;
             emit_status(cli.machine, &tr("status.checking_package"));
-            let computed_md5 = util::md5::md5_file(&path).context("Computing MD5 of zip")?;
+            let computed_md5 = util::md5::md5_file(&path).context(tr("error.compute_md5"))?;
             // An explicit one-session override is retained for protocol debugging.
             let used_md5 = if let Some(m) = &cli.md5 {
                 m.clone()
@@ -505,7 +511,7 @@ fn run() -> Result<()> {
                 computed_md5.clone()
             };
             if used_md5.len() != 32 || !used_md5.chars().all(|c| c.is_ascii_hexdigit()) {
-                bail!("Provided MD5 must be 32 hex characters");
+                bail!("{}", tr("error.md5_length"));
             }
             if used_md5.to_lowercase() != computed_md5 {
                 eprintln!(
@@ -517,7 +523,7 @@ fn run() -> Result<()> {
                 );
             }
             let req_json = validate::build_request_json(&info, Some(used_md5.clone()))
-                .context("Building validation request")?;
+                .context(tr("error.build_validation"))?;
             let mut resp = validate::ValidateResult::default();
             // Preserve whether CLI provided a token before shadowing it
             let cli_token_provided = token.is_some();
@@ -525,13 +531,13 @@ fn run() -> Result<()> {
                 Some(t) => t,
                 None => {
                     let r = validate::validate(&cli.server_url, &req_json)
-                        .context("Validation HTTP call failed")?;
+                        .context(tr("error.validation_http"))?;
                     if let Some(msg) = r.code_message.as_deref() {
                         println!("{}", trf("status.server_message", &[("{message}", msg)]));
                     }
                     let t = match r.validate_token.as_deref() {
                         Some(t) if !t.is_empty() => t.to_string(),
-                        _ => bail!("Validation did not return a token, so the flash cannot start."),
+                        _ => bail!("{}", tr("error.no_token")),
                     };
                     resp = r;
                     t
@@ -561,7 +567,7 @@ fn run() -> Result<()> {
                 &cancel,
                 cli.machine,
             )
-            .context("Sideload failed")?;
+            .context(tr("error.sideload"))?;
             emit_completed(cli.machine, &tr("status.flash_completed"));
         }
         Commands::FormatData { yes } => {

@@ -65,14 +65,14 @@
                 <TextBlock Tag="section.rom_matching" Style="{StaticResource SectionTitleStyle}" />
                 <ComboBox x:Name="RegionProfilePicker" Tag="label.region_profile" SelectionChanged="RegionProfilePicker_SelectionChanged">
                     <ComboBoxItem Tag="" AutomationProperties.Name="profile.auto" />
-                    <ComboBoxItem Tag="global" Content="Global" />
-                    <ComboBoxItem Tag="eea" Content="EEA" />
-                    <ComboBoxItem Tag="in" Content="India" />
-                    <ComboBoxItem Tag="ru" Content="Russia" />
-                    <ComboBoxItem Tag="id" Content="Indonesia" />
-                    <ComboBoxItem Tag="tr" Content="Türkiye" />
-                    <ComboBoxItem Tag="tw" Content="Taiwan" />
-                    <ComboBoxItem Tag="cn" Content="China" />
+                    <ComboBoxItem Tag="global" AutomationProperties.Name="region.global" />
+                    <ComboBoxItem Tag="eea" AutomationProperties.Name="region.eea" />
+                    <ComboBoxItem Tag="in" AutomationProperties.Name="region.india" />
+                    <ComboBoxItem Tag="ru" AutomationProperties.Name="region.russia" />
+                    <ComboBoxItem Tag="id" AutomationProperties.Name="region.indonesia" />
+                    <ComboBoxItem Tag="tr" AutomationProperties.Name="region.turkey" />
+                    <ComboBoxItem Tag="tw" AutomationProperties.Name="region.taiwan" />
+                    <ComboBoxItem Tag="cn" AutomationProperties.Name="region.china" />
                 </ComboBox>
                 <TextBox x:Name="CodenameText" Tag="label.codename" PlaceholderText="garnet" TextChanged="CodenameText_TextChanged" />
                 <TextBlock Tag="setting.profile_hint" Style="{StaticResource CaptionStyle}" />

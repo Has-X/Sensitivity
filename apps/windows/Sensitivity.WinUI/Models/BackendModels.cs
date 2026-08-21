@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Sensitivity.WinUI.Services;
 
 namespace Sensitivity.WinUI.Models;
 
@@ -23,7 +24,7 @@ public sealed class UsbDevice
     public int Protocol { get; set; }
 
     [JsonIgnore]
-    public string DisplayName => $"Recovery device {Index + 1}  ·  {VendorId:x4}:{ProductId:x4}  ·  USB {Bus}/{Address}";
+    public string DisplayName => $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {VendorId:x4}:{ProductId:x4}  ·  USB {Bus}/{Address}";
 }
 
 public sealed class DeviceInfo

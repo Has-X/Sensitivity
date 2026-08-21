@@ -6,7 +6,7 @@ Status date: 2026-08-22
 
 | Surface | English | Hungarian | Spanish | Selection |
 | --- | --- | --- | --- | --- |
-| WinUI 3 app | complete | 22 source entries missing | 1 source entry missing | Windows UI culture or in-app override |
+| WinUI 3 app | complete | complete | complete | Windows UI culture or in-app override |
 | Portable egui GUI | complete | complete | complete | Settings picker or `LC_ALL` / `LANG` |
 | CLI human output | complete | complete | complete | `SENSITIVITY_LANG`, `LC_ALL`, or `LANG` |
 | Inno Setup UI | built-in | built-in | built-in | Windows installer language detection |
@@ -16,10 +16,13 @@ The supported locale set is currently `en`, `hu`, and `es`. A region profile is
 not a language. The existing `in`, `ru`, `id`, `tr`, `tw`, and `cn` ROM profiles
 do not imply that those UI languages are supported.
 
-## Immediate completion work
+## Completed in the current localization pass
 
-The English Windows catalog has 22 entries that are not yet present in the
-Hungarian catalog:
+The previously missing 22 Hungarian and 1 Spanish Windows source entries are
+now translated and present in every catalog. The validator compares the full
+English Windows key set and reports 198 complete source entries.
+
+The completed Hungarian entries were:
 
 - `Allowed ROMs`
 - `Check allowed ROMs`
@@ -44,27 +47,24 @@ Hungarian catalog:
 - `Sensitivity will download the official Recovery ROM, verify it, and request another confirmation if Xiaomi requires a data wipe.`
 - `The download is verified against Xiaomi's MD5 before it is kept.`
 
-Spanish is missing only `No recovery connected` from the English Windows
-source. After these entries are added, the locale validator should compare the
-full English key set, not only the semantic alias source keys.
+Spanish `No recovery connected` was also added. The locale validator now fails
+on any full source-key difference, not only on semantic alias differences.
 
 ## Remaining engineering work
 
-1. Finish the 23 Windows translations above and strengthen
-   `tools/check-locales.ps1` to fail on any source-key difference.
-2. Move remaining user-facing WinUI literals into catalogs: region profile
+1. Move remaining user-facing WinUI literals into catalogs: region profile
    labels, the `garnet` placeholder where appropriate, backend startup errors,
    and the recovery device display label.
-3. Complete CLI error localization. Human status output is catalogued, but
+2. Complete CLI error localization. Human status output is catalogued, but
    `anyhow` contexts and protocol diagnostics in `src/` are still English.
    Protocol tokens such as ADB, WinUSB, CNXN, and sideload-host must remain
    unchanged.
-4. Decide whether documentation and the wiki should be translated. This is a
+3. Decide whether documentation and the wiki should be translated. This is a
    separate content task, not a runtime locale task.
-5. Add a language metadata manifest so every new locale automatically appears
+4. Add a language metadata manifest so every new locale automatically appears
    in the WinUI and portable GUI selectors instead of requiring enum and XAML
    edits in multiple places.
-6. Add locale smoke tests for system detection, explicit override, missing-file
+5. Add locale smoke tests for system detection, explicit override, missing-file
    fallback, placeholders, narrow-window layout, and installer language
    resources.
 

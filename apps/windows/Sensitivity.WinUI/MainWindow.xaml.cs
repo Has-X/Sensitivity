@@ -347,11 +347,11 @@ public sealed partial class MainWindow : Window
         {
             var result = await _backend.DownloadLatestAsync(device.Index, DownloadDirectoryText.Text, StopAdbToggle.IsOn, cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
-            AllowedRomsText.Text = result.StandardOutput.Trim();
             var romPath = ExtractDownloadedRomPath(result.StandardOutput) ?? FindDownloadedRom();
             if (romPath is not null)
             {
                 SelectRomPath(romPath);
+                AllowedRomsText.Text = Path.GetFileName(romPath);
                 NavigateTo("flash");
                 ShowStatus(L("status.download_ready"), Path.GetFileName(romPath), InfoBarSeverity.Success);
             }
@@ -403,6 +403,21 @@ public sealed partial class MainWindow : Window
 
     private static string? ExtractDownloadedRomPath(string output)
     {
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(output);
+            if (document.RootElement.TryGetProperty("event", out var eventProperty)
+                && eventProperty.GetString() == "downloaded"
+                && document.RootElement.TryGetProperty("path", out var pathProperty))
+            {
+                var machinePath = pathProperty.GetString();
+                if (!string.IsNullOrWhiteSpace(machinePath) && File.Exists(machinePath)) return machinePath;
+            }
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            // Older portable backends may still emit the human-readable line.
+        }
         const string prefix = "Downloaded to ";
         const string suffix = " (md5 ok)";
         var line = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
