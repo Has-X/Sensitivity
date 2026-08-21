@@ -260,7 +260,7 @@ public sealed partial class MainWindow : Window
         NavigateTo("flash");
     }
 
-    private void GoToRoms_Click(object sender, RoutedEventArgs e) => NavigateTo("roms");
+    private void GoToRoms_Click(object sender, RoutedEventArgs e) => NavigateTo("flash");
 
     private void NavigateTo(string tag)
     {
@@ -297,6 +297,17 @@ public sealed partial class MainWindow : Window
             DownloadDirectoryText.Text = folder.Path;
             TrySelectDownloadedRom();
         }
+    }
+
+    private void FindDownloadedRomButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (TrySelectDownloadedRom() && _romPath is { } romPath)
+        {
+            ShowStatus(L("status.rom_found"), Path.GetFileName(romPath), InfoBarSeverity.Success);
+            return;
+        }
+
+        ShowStatus(L("status.rom_not_found"), L("status.rom_not_found_detail"), InfoBarSeverity.Informational);
     }
 
     private async void ListAllowedRomsButton_Click(object sender, RoutedEventArgs e)
