@@ -304,10 +304,7 @@ public sealed partial class MainWindow : Window
         if (TrySelectDownloadedRom() && _romPath is { } romPath)
         {
             ShowStatus(L("status.rom_found"), Path.GetFileName(romPath), InfoBarSeverity.Success);
-            return;
         }
-
-        ShowStatus(L("status.rom_not_found"), L("status.rom_not_found_detail"), InfoBarSeverity.Informational);
     }
 
     private async void ListAllowedRomsButton_Click(object sender, RoutedEventArgs e)

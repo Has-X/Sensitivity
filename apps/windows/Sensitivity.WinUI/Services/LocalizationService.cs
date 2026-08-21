@@ -63,8 +63,14 @@ public static class LocalizationService
 
     private static void ApplyElement(FrameworkElement element)
     {
-        var key = AutomationProperties.GetName(element);
-        if (string.IsNullOrWhiteSpace(key)) key = element.Tag as string;
+        var key = element.Tag as string;
+        if (string.IsNullOrWhiteSpace(key) || !_strings.ContainsKey(key))
+        {
+            var automationKey = AutomationProperties.GetName(element);
+            key = !string.IsNullOrWhiteSpace(automationKey) && automationKey.Contains('.')
+                ? automationKey
+                : null;
+        }
         if (string.IsNullOrWhiteSpace(key)) return;
         var value = Get(key);
         switch (element)
