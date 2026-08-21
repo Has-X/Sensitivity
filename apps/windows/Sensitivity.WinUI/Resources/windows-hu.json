@@ -34,7 +34,7 @@
   "Browse…": "Tallózás…",
   "Only official Recovery ROM ZIP files are supported. Fastboot packages cannot be flashed here.": "Csak hivatalos Recovery ROM ZIP-fájlok támogatottak. Fastboot-csomag itt nem flashelhető.",
   "Flash progress": "Flashelési folyamat",
-  "Ready": "Kész",
+  "Choose a ROM file to begin": "Válassz ROM-fájlt a folytatáshoz",
   "Review and flash": "Ellenőrzés és flashelés",
   "Cancel safely": "Biztonságos megszakítás",
   "These commands are sent directly to the selected stock recovery.": "Ezeket a parancsokat közvetlenül a kiválasztott gyári recovery kapja.",

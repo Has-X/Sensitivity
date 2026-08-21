@@ -34,7 +34,7 @@
   "Browse…": "Examinar…",
   "Only official Recovery ROM ZIP files are supported. Fastboot packages cannot be flashed here.": "Solo se admiten ZIP de ROM Recovery oficiales. Aquí no se pueden flashear paquetes Fastboot.",
   "Flash progress": "Progreso del flasheo",
-  "Ready": "Listo",
+  "Choose a ROM file to begin": "Elige un archivo ROM para continuar",
   "Review and flash": "Revisar y flashear",
   "Cancel safely": "Cancelar de forma segura",
   "These commands are sent directly to the selected stock recovery.": "Estos comandos se envían directamente al recovery stock seleccionado.",

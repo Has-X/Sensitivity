@@ -32,7 +32,7 @@
   "action.browse": "Browse…",
   "rom.only_official": "Only official Recovery ROM ZIP files are supported. Fastboot packages cannot be flashed here.",
   "section.flash_progress": "Flash progress",
-  "status.ready": "Ready",
+  "status.ready": "Choose a ROM file to begin",
   "action.review_flash": "Review and flash",
   "action.cancel_safely": "Cancel safely",
   "page.recovery": "Recovery actions",

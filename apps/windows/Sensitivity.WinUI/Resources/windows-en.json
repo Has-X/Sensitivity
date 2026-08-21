@@ -34,7 +34,7 @@
   "Browse…": "Browse…",
   "Only official Recovery ROM ZIP files are supported. Fastboot packages cannot be flashed here.": "Only official Recovery ROM ZIP files are supported. Fastboot packages cannot be flashed here.",
   "Flash progress": "Flash progress",
-  "Ready": "Ready",
+  "Choose a ROM file to begin": "Choose a ROM file to begin",
   "Review and flash": "Review and flash",
   "Cancel safely": "Cancel safely",
   "These commands are sent directly to the selected stock recovery.": "These commands are sent directly to the selected stock recovery.",
