@@ -7,6 +7,9 @@ public sealed class AppSettings
     public bool OfferAdbResolution { get; set; } = true;
     public bool AlwaysStopAdb { get; set; }
     public string? LastRomPath { get; set; }
+    public string? DownloadDirectory { get; set; }
+    public string? RegionProfile { get; set; }
+    public string? Codename { get; set; }
     public string? LanguageOverride { get; set; }
 }
 

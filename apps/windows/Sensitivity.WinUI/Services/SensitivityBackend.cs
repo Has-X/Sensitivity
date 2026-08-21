@@ -13,6 +13,8 @@ public sealed class SensitivityBackend
     };
 
     public string ExecutablePath { get; }
+    public string? Profile { get; set; }
+    public string? Codename { get; set; }
 
     public SensitivityBackend()
     {
@@ -49,6 +51,27 @@ public sealed class SensitivityBackend
     {
         var arguments = GlobalArguments(deviceIndex, stopAdb);
         arguments.Add("doctor");
+        return await RunAsync(arguments, cancellationToken);
+    }
+
+    public async Task<BackendResult> DetectAsync(int deviceIndex, bool stopAdb, CancellationToken cancellationToken)
+    {
+        var arguments = GlobalArguments(deviceIndex, stopAdb);
+        arguments.Add("detect");
+        return await RunAsync(arguments, cancellationToken);
+    }
+
+    public async Task<BackendResult> ListAllowedRomsAsync(int deviceIndex, bool stopAdb, CancellationToken cancellationToken)
+    {
+        var arguments = GlobalArguments(deviceIndex, stopAdb);
+        arguments.Add("list-allowed-roms");
+        return await RunAsync(arguments, cancellationToken);
+    }
+
+    public async Task<BackendResult> DownloadLatestAsync(int deviceIndex, string outputDirectory, bool stopAdb, CancellationToken cancellationToken)
+    {
+        var arguments = GlobalArguments(deviceIndex, stopAdb);
+        arguments.AddRange(["download-latest", "--output-dir", outputDirectory]);
         return await RunAsync(arguments, cancellationToken);
     }
 
@@ -110,6 +133,39 @@ public sealed class SensitivityBackend
                     }
                 },
                 cancelFile);
+        }
+        finally
+        {
+            try { Directory.Delete(controlRoot, true); } catch { }
+        }
+    }
+
+    public async Task<BackendResult> FlashLatestAsync(
+        int deviceIndex,
+        string outputDirectory,
+        bool stopAdb,
+        Func<BackendEvent, Task<bool?>> onEvent,
+        CancellationToken cancellationToken)
+    {
+        var controlRoot = Path.Combine(Path.GetTempPath(), "Sensitivity", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(controlRoot);
+        var cancelFile = Path.Combine(controlRoot, "cancel");
+        var approvalFile = Path.Combine(controlRoot, "approve-wipe");
+        var arguments = GlobalArguments(deviceIndex, stopAdb);
+        arguments.AddRange([
+            "--machine", "--cancel-file", cancelFile, "--approval-file", approvalFile,
+            "flash-from-latest", "--output-dir", outputDirectory
+        ]);
+        try
+        {
+            return await RunAsync(arguments, cancellationToken, async backendEvent =>
+            {
+                var approved = await onEvent(backendEvent);
+                if (backendEvent.Event == "confirmation_required")
+                {
+                    await File.WriteAllTextAsync(approved == true ? approvalFile : cancelFile, string.Empty, CancellationToken.None);
+                }
+            }, cancelFile);
         }
         finally
         {
@@ -210,12 +266,15 @@ public sealed class SensitivityBackend
             || message.Contains("busy", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static List<string> GlobalArguments(int deviceIndex, bool stopAdb)
+    private List<string> GlobalArguments(int deviceIndex, bool stopAdb)
     {
-        return [
+        var arguments = new List<string> {
             "--device-index", deviceIndex.ToString(System.Globalization.CultureInfo.InvariantCulture),
             "--adb-policy", stopAdb ? "stop" : "keep"
-        ];
+        };
+        if (!string.IsNullOrWhiteSpace(Profile)) arguments.AddRange(["--profile", Profile]);
+        if (!string.IsNullOrWhiteSpace(Codename)) arguments.AddRange(["--codename", Codename]);
+        return arguments;
     }
 
     private static async Task ReadOutputAsync(

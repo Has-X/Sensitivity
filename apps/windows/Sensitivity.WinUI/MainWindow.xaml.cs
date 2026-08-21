@@ -44,6 +44,14 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(1120, 760));
         AutoResolveAdbToggle.IsOn = settings.OfferAdbResolution;
         StopAdbToggle.IsOn = settings.AlwaysStopAdb;
+        _backend.Profile = settings.RegionProfile;
+        _backend.Codename = settings.Codename;
+        DownloadDirectoryText.Text = string.IsNullOrWhiteSpace(settings.DownloadDirectory)
+            ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads"
+            : settings.DownloadDirectory;
+        CodenameText.Text = settings.Codename ?? string.Empty;
+        RegionProfilePicker.SelectedItem = RegionProfilePicker.Items.OfType<ComboBoxItem>()
+            .FirstOrDefault(item => (item.Tag as string ?? string.Empty) == (settings.RegionProfile ?? string.Empty));
         LanguagePicker.SelectedItem = LanguagePicker.Items
             .OfType<ComboBoxItem>()
             .FirstOrDefault(item => (item.Tag as string ?? string.Empty) == (settings.LanguageOverride ?? string.Empty));
@@ -62,6 +70,9 @@ public sealed partial class MainWindow : Window
                 OfferAdbResolution = AutoResolveAdbToggle.IsOn,
                 AlwaysStopAdb = StopAdbToggle.IsOn,
                 LastRomPath = _romPath,
+                DownloadDirectory = DownloadDirectoryText.Text,
+                RegionProfile = _backend.Profile,
+                Codename = _backend.Codename,
                 LanguageOverride = LocalizationService.OverrideLanguage
             });
         };
@@ -89,12 +100,14 @@ public sealed partial class MainWindow : Window
                 ?? "overview");
         OverviewPage.Visibility = tag == "overview" ? Visibility.Visible : Visibility.Collapsed;
         FlashPage.Visibility = tag == "flash" ? Visibility.Visible : Visibility.Collapsed;
+        RomsPage.Visibility = tag == "roms" ? Visibility.Visible : Visibility.Collapsed;
         RecoveryPage.Visibility = tag == "recovery" ? Visibility.Visible : Visibility.Collapsed;
         DiagnosticsPage.Visibility = tag == "diagnostics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPage.Visibility = tag == "settings" ? Visibility.Visible : Visibility.Collapsed;
         var page = tag switch
         {
             "flash" => FlashPage,
+            "roms" => RomsPage,
             "recovery" => RecoveryPage,
             "diagnostics" => DiagnosticsPage,
             "settings" => SettingsPage,
@@ -131,6 +144,7 @@ public sealed partial class MainWindow : Window
         LocalizationService.Apply(Root);
         LocalizationService.Apply(OverviewPage);
         LocalizationService.Apply(FlashPage);
+        LocalizationService.Apply(RomsPage);
         LocalizationService.Apply(RecoveryPage);
         LocalizationService.Apply(DiagnosticsPage);
         LocalizationService.Apply(SettingsPage);
@@ -139,9 +153,23 @@ public sealed partial class MainWindow : Window
         {
             item.Content = L(AutomationProperties.GetName(item));
         }
+        foreach (var item in RegionProfilePicker.Items.OfType<ComboBoxItem>())
+        {
+            var localizationKey = AutomationProperties.GetName(item);
+            if (!string.IsNullOrWhiteSpace(localizationKey)) item.Content = L(localizationKey);
+        }
         AboutVersionText.Text = $"{L("app.title")} {typeof(App).Assembly.GetName().Version?.ToString(3)}";
         Title = L("app.title");
     }
+
+    private void RegionProfilePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _backend.Profile = (RegionProfilePicker.SelectedItem as ComboBoxItem)?.Tag as string;
+        if (string.IsNullOrWhiteSpace(_backend.Profile)) _backend.Profile = null;
+    }
+
+    private void CodenameText_TextChanged(object sender, TextChangedEventArgs e)
+        => _backend.Codename = string.IsNullOrWhiteSpace(CodenameText.Text) ? null : CodenameText.Text.Trim();
 
     private async void RefreshButton_Click(object sender, RoutedEventArgs e) => await RefreshDevicesAsync();
 
@@ -226,7 +254,16 @@ public sealed partial class MainWindow : Window
 
     private void GoToFlash_Click(object sender, RoutedEventArgs e)
     {
-        Navigation.SelectedItem = Navigation.MenuItems[1];
+        NavigateTo("flash");
+    }
+
+    private void GoToRoms_Click(object sender, RoutedEventArgs e) => NavigateTo("roms");
+
+    private void NavigateTo(string tag)
+    {
+        Navigation.SelectedItem = Navigation.MenuItems
+            .OfType<NavigationViewItem>()
+            .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), tag, StringComparison.Ordinal));
     }
 
     private async void BrowseRomButton_Click(object sender, RoutedEventArgs e)
@@ -248,6 +285,82 @@ public sealed partial class MainWindow : Window
         FlashProgress.Value = 0;
         ProgressPercentText.Text = string.Empty;
         OperationStatusText.Text = L("status.ready_to_flash");
+    }
+
+    private async void ChooseDownloadFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        var picker = new FolderPicker { SuggestedStartLocation = PickerLocationId.Downloads };
+        picker.FileTypeFilter.Add("*");
+        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
+        var folder = await picker.PickSingleFolderAsync();
+        if (folder is not null) DownloadDirectoryText.Text = folder.Path;
+    }
+
+    private async void ListAllowedRomsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DevicePicker.SelectedItem is not UsbDevice device)
+        {
+            ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
+            return;
+        }
+        await RunBusyAsync(async cancellationToken =>
+        {
+            var result = await _backend.ListAllowedRomsAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
+            AllowedRomsText.Text = string.Join(Environment.NewLine, new[] { result.StandardOutput.Trim(), result.StandardError.Trim() }.Where(text => !string.IsNullOrWhiteSpace(text)));
+            if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
+        }, L("status.fetching_allowed"));
+    }
+
+    private async void DownloadLatestButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DevicePicker.SelectedItem is not UsbDevice device)
+        {
+            ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
+            return;
+        }
+        await RunBusyAsync(async cancellationToken =>
+        {
+            var result = await _backend.DownloadLatestAsync(device.Index, DownloadDirectoryText.Text, StopAdbToggle.IsOn, cancellationToken);
+            if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
+            AllowedRomsText.Text = result.StandardOutput.Trim();
+            ShowStatus(L("status.download_complete"), result.StandardOutput.Trim(), InfoBarSeverity.Success);
+        }, L("status.downloading_latest"));
+    }
+
+    private async void FlashLatestButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DevicePicker.SelectedItem is not UsbDevice device)
+        {
+            ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
+            return;
+        }
+        if (!await ShowChoiceAsync(L("dialog.flash_latest"), L("dialog.flash_latest_detail"), L("action.download_flash_latest"), L("action.cancel"))) return;
+        _operationCancellation = new CancellationTokenSource();
+        SetBusy(true, L("status.downloading_latest"));
+        try
+        {
+            var result = await _backend.FlashLatestAsync(device.Index, DownloadDirectoryText.Text, StopAdbToggle.IsOn, HandleBackendEventAsync, _operationCancellation.Token);
+            if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
+            FlashProgress.Value = 100;
+            ProgressPercentText.Text = "100%";
+            OperationStatusText.Text = L("status.flash_completed");
+            ShowStatus(L("status.flash_completed"), L("status.transfer_ok"), InfoBarSeverity.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            OperationStatusText.Text = L("status.cancelled");
+        }
+        catch (Exception error)
+        {
+            OperationStatusText.Text = L("status.flash_stopped");
+            ShowStatus(L("status.flash_stopped"), CleanError(error.Message), InfoBarSeverity.Error);
+        }
+        finally
+        {
+            _operationCancellation.Dispose();
+            _operationCancellation = null;
+            SetBusy(false);
+        }
     }
 
     private async void StartFlashButton_Click(object sender, RoutedEventArgs e)
@@ -406,6 +519,26 @@ public sealed partial class MainWindow : Window
         }, L("status.running_diagnostics"));
     }
 
+    private async void DetectButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DevicePicker.SelectedItem is not UsbDevice device)
+        {
+            ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
+            return;
+        }
+
+        await RunBusyAsync(async cancellationToken =>
+        {
+            var result = await _backend.DetectAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
+            DiagnosticsText.Text = string.Join(
+                Environment.NewLine,
+                new[] { result.StandardOutput.Trim(), result.StandardError.Trim() }
+                    .Where(value => !string.IsNullOrWhiteSpace(value)));
+            if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
+            ShowStatus(L("status.detected"), L("status.handshake_ok"), InfoBarSeverity.Success);
+        }, L("status.detecting"));
+    }
+
     private void CopyDiagnosticsButton_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(DiagnosticsText.Text)) return;
@@ -442,8 +575,12 @@ public sealed partial class MainWindow : Window
         TitleRefreshButton.IsEnabled = !busy;
         ReadInfoButton.IsEnabled = !busy;
         StartFlashButton.IsEnabled = !busy;
+        DownloadLatestButton.IsEnabled = !busy;
+        FlashLatestButton.IsEnabled = !busy;
         CancelFlashButton.IsEnabled = busy && _operationCancellation is not null;
         DevicePicker.IsEnabled = !busy;
+        RegionProfilePicker.IsEnabled = !busy;
+        CodenameText.IsEnabled = !busy;
         if (status is not null) OperationStatusText.Text = status;
     }
 
