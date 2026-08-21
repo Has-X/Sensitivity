@@ -20,6 +20,17 @@
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
+            <SolidColorBrush x:Key="SensitivityAccentBrush" Color="#0078D4" />
+            <SolidColorBrush x:Key="AccentButtonBackground" Color="#0078D4" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#0078D4" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#0078D4" />
+            <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#0078D4" />
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#0078D4" />
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#0078D4" />
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#0078D4" />
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#0078D4" />
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#0078D4" />
+
             <Style x:Key="CardStyle" TargetType="Border">
                 <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
