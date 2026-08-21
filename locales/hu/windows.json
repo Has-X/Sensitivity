@@ -123,7 +123,7 @@
   "The diagnostic report is on the clipboard.": "A diagnosztikai jelentés a vágólapra került.",
   "The application window is closing.": "Az alkalmazás ablaka bezáródik.",
   "No Mi Assistant recovery interface was found. Reconnect the phone after opening Connect with Mi Assistant.": "Nem található Mi Assistant recovery felület. A Connect with Mi Assistant megnyitása után csatlakoztasd újra a telefont.",
-  "Windows could not open the recovery interface. Check WinUSB setup, close other phone tools, or allow Sensitivity to stop local ADB.": "A Windows nem tudta megnyitni a recovery felületet. Ellenőrizd a WinUSB-t, zárd be a többi telefonos eszközt, vagy engedélyezd a helyi ADB leállítását.",
+  "Windows could not open the recovery interface. Check WinUSB setup, close other phone tools, or allow Sensitivity to stop local ADB.": "Windows could not open the recovery interface. Check WinUSB setup, close other phone tools, or allow Sensitivity to stop local ADB.",
   "Xiaomi validation could not be reached. Check the internet connection and try again without changing the ROM.": "A Xiaomi ellenőrzése nem érhető el. Ellenőrizd az internetet, és a ROM módosítása nélkül próbáld újra.",
   "ROMs": "ROM-ok",
   "Check which packages are compatible with the connected phone.": "Nézd meg, mely csomagok kompatibilisek a csatlakoztatott telefonnal.",

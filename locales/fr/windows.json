@@ -1,5 +1,5 @@
 {
-  "Sensitivity": "ZZZPROTÉGER0ZZZ",
+  "Sensitivity": "Sensitivity",
   "Take care of your Mi.": "Prenez soin de votre Mi.",
   "Overview": "Aperçu",
   "Recovery actions": "Actions Recovery",
@@ -20,7 +20,7 @@
   "2  Keep the computer awake and use a reliable USB cable.": "2 Gardez l'ordinateur éveillé et utilisez un câble USB fiable.",
   "3  Read every wipe warning before approving it.": "3 Lisez chaque avertissement de nettoyage avant de l'approuver.",
   "The package is checked before the USB transfer starts.": "Le package est vérifié avant le début du transfert USB.",
-  "Recovery ROM": "ZZZPROTÉGER0ZZZ",
+  "Recovery ROM": "Recovery ROM",
   "No ROM selected": "Aucun ROM sélectionné",
   "Browse…": "Parcourir…",
   "Recovery ROM ZIP files are supported here. Fastboot packages are not.": "Les fichiers Recovery ROM ZIP sont pris en charge ici. Les packages Fastboot ne le sont pas.",

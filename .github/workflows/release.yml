@@ -9,6 +9,25 @@ permissions:
   contents: write
 
 jobs:
+  preflight:
+    name: Release preflight
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.97.1
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Validate locales
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/check-locales.ps1
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test Rust workspace
+        run: cargo test --workspace --locked
+      - name: Check fuzz target
+        run: cargo check --manifest-path fuzz/Cargo.toml --locked
+
   package:
     name: Package (${{ matrix.name }})
     strategy:
@@ -39,6 +58,7 @@ jobs:
             os: macos-14
             archive: sensitivity-macos-aarch64.tar.gz
     runs-on: ${{ matrix.os }}
+    needs: preflight
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@1.97.1

@@ -12,3 +12,4 @@
 /native-publish-*-test
 /installer-*-test
 /package
+/local-artifacts

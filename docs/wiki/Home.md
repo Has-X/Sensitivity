@@ -6,6 +6,8 @@ Sensitivity is direct USB recovery tooling for Xiaomi devices. The project inclu
 
 - [Installation and release packages](Installation.md)
 - [Recovery safety and device handling](Recovery-safety.md)
+- [Release preflight](Pre-release-checklist.md)
+- [Languages and translation safety](Localization.md)
 - [Windows architecture](../WINDOWS_ARCHITECTURE.md)
 - [English source and translator guide](../LOCALIZATION.md)
 - [Migration from MiAssistantFork](../MIGRATING_FROM_MAF.md)

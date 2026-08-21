@@ -65,6 +65,113 @@ enum Language {
     Es,
     De,
     Fr,
+    It,
+    Pl,
+    PtBr,
+    Tr,
+    Id,
+    Ro,
+    Cs,
+    Sk,
+    Ru,
+    Uk,
+    ZhCn,
+    Ar,
+    Vi,
+    Th,
+    Hi,
+    ZhTw,
+    Ja,
+    Ko,
+    Nl,
+    El,
+    Bg,
+    Hr,
+    Sr,
+    Sl,
+    Sv,
+    Da,
+    Fi,
+    Nb,
+    PtPt,
+}
+
+impl Language {
+    const ALL: &'static [Self] = &[
+        Self::En,
+        Self::Hu,
+        Self::Es,
+        Self::De,
+        Self::Fr,
+        Self::It,
+        Self::Pl,
+        Self::PtBr,
+        Self::Tr,
+        Self::Id,
+        Self::Ro,
+        Self::Cs,
+        Self::Sk,
+        Self::Ru,
+        Self::Uk,
+        Self::ZhCn,
+        Self::Ar,
+        Self::Vi,
+        Self::Th,
+        Self::Hi,
+        Self::ZhTw,
+        Self::Ja,
+        Self::Ko,
+        Self::Nl,
+        Self::El,
+        Self::Bg,
+        Self::Hr,
+        Self::Sr,
+        Self::Sl,
+        Self::Sv,
+        Self::Da,
+        Self::Fi,
+        Self::Nb,
+        Self::PtPt,
+    ];
+
+    fn code(self) -> &'static str {
+        match self {
+            Self::En => "en",
+            Self::Hu => "hu",
+            Self::Es => "es",
+            Self::De => "de",
+            Self::Fr => "fr",
+            Self::It => "it",
+            Self::Pl => "pl",
+            Self::PtBr => "pt-BR",
+            Self::Tr => "tr",
+            Self::Id => "id",
+            Self::Ro => "ro",
+            Self::Cs => "cs",
+            Self::Sk => "sk",
+            Self::Ru => "ru",
+            Self::Uk => "uk",
+            Self::ZhCn => "zh-CN",
+            Self::Ar => "ar",
+            Self::Vi => "vi",
+            Self::Th => "th",
+            Self::Hi => "hi",
+            Self::ZhTw => "zh-TW",
+            Self::Ja => "ja",
+            Self::Ko => "ko",
+            Self::Nl => "nl",
+            Self::El => "el",
+            Self::Bg => "bg",
+            Self::Hr => "hr",
+            Self::Sr => "sr",
+            Self::Sl => "sl",
+            Self::Sv => "sv",
+            Self::Da => "da",
+            Self::Fi => "fi",
+            Self::Nb => "nb",
+            Self::PtPt => "pt-PT",
+        }
+    }
 }
 
 impl Default for Language {
@@ -80,6 +187,64 @@ impl Default for Language {
             Self::De
         } else if locale.starts_with("fr") {
             Self::Fr
+        } else if locale.starts_with("it") {
+            Self::It
+        } else if locale.starts_with("pl") {
+            Self::Pl
+        } else if locale.starts_with("pt-pt") {
+            Self::PtPt
+        } else if locale.starts_with("pt") {
+            Self::PtBr
+        } else if locale.starts_with("tr") {
+            Self::Tr
+        } else if locale.starts_with("id") {
+            Self::Id
+        } else if locale.starts_with("ro") {
+            Self::Ro
+        } else if locale.starts_with("cs") {
+            Self::Cs
+        } else if locale.starts_with("sk") {
+            Self::Sk
+        } else if locale.starts_with("ru") {
+            Self::Ru
+        } else if locale.starts_with("uk") {
+            Self::Uk
+        } else if locale.starts_with("zh-tw") {
+            Self::ZhTw
+        } else if locale.starts_with("zh") {
+            Self::ZhCn
+        } else if locale.starts_with("ar") {
+            Self::Ar
+        } else if locale.starts_with("vi") {
+            Self::Vi
+        } else if locale.starts_with("th") {
+            Self::Th
+        } else if locale.starts_with("hi") {
+            Self::Hi
+        } else if locale.starts_with("ja") {
+            Self::Ja
+        } else if locale.starts_with("ko") {
+            Self::Ko
+        } else if locale.starts_with("nl") {
+            Self::Nl
+        } else if locale.starts_with("el") {
+            Self::El
+        } else if locale.starts_with("bg") {
+            Self::Bg
+        } else if locale.starts_with("hr") {
+            Self::Hr
+        } else if locale.starts_with("sr") {
+            Self::Sr
+        } else if locale.starts_with("sl") {
+            Self::Sl
+        } else if locale.starts_with("sv") {
+            Self::Sv
+        } else if locale.starts_with("da") {
+            Self::Da
+        } else if locale.starts_with("fi") {
+            Self::Fi
+        } else if locale.starts_with("nb") {
+            Self::Nb
         } else {
             Self::En
         }
@@ -93,6 +258,35 @@ fn load_catalog(language: Language) -> HashMap<String, String> {
         Language::Es => include_str!("../../../locales/es/gui.json"),
         Language::De => include_str!("../../../locales/de/gui.json"),
         Language::Fr => include_str!("../../../locales/fr/gui.json"),
+        Language::It => include_str!("../../../locales/it/gui.json"),
+        Language::Pl => include_str!("../../../locales/pl/gui.json"),
+        Language::PtBr => include_str!("../../../locales/pt-BR/gui.json"),
+        Language::Tr => include_str!("../../../locales/tr/gui.json"),
+        Language::Id => include_str!("../../../locales/id/gui.json"),
+        Language::Ro => include_str!("../../../locales/ro/gui.json"),
+        Language::Cs => include_str!("../../../locales/cs/gui.json"),
+        Language::Sk => include_str!("../../../locales/sk/gui.json"),
+        Language::Ru => include_str!("../../../locales/ru/gui.json"),
+        Language::Uk => include_str!("../../../locales/uk/gui.json"),
+        Language::ZhCn => include_str!("../../../locales/zh-CN/gui.json"),
+        Language::Ar => include_str!("../../../locales/ar/gui.json"),
+        Language::Vi => include_str!("../../../locales/vi/gui.json"),
+        Language::Th => include_str!("../../../locales/th/gui.json"),
+        Language::Hi => include_str!("../../../locales/hi/gui.json"),
+        Language::ZhTw => include_str!("../../../locales/zh-TW/gui.json"),
+        Language::Ja => include_str!("../../../locales/ja/gui.json"),
+        Language::Ko => include_str!("../../../locales/ko/gui.json"),
+        Language::Nl => include_str!("../../../locales/nl/gui.json"),
+        Language::El => include_str!("../../../locales/el/gui.json"),
+        Language::Bg => include_str!("../../../locales/bg/gui.json"),
+        Language::Hr => include_str!("../../../locales/hr/gui.json"),
+        Language::Sr => include_str!("../../../locales/sr/gui.json"),
+        Language::Sl => include_str!("../../../locales/sl/gui.json"),
+        Language::Sv => include_str!("../../../locales/sv/gui.json"),
+        Language::Da => include_str!("../../../locales/da/gui.json"),
+        Language::Fi => include_str!("../../../locales/fi/gui.json"),
+        Language::Nb => include_str!("../../../locales/nb/gui.json"),
+        Language::PtPt => include_str!("../../../locales/pt-PT/gui.json"),
     };
     let mut catalog: HashMap<String, String> = serde_json::from_str(source).unwrap_or_default();
     let aliases: HashMap<String, String> =
@@ -519,19 +713,11 @@ impl eframe::App for SensitivityApp {
                 ui.separator();
                 let previous_language = self.language;
                 egui::ComboBox::from_id_salt("language")
-                    .selected_text(match self.language {
-                        Language::En => "EN",
-                        Language::Hu => "HU",
-                        Language::Es => "ES",
-                        Language::De => "DE",
-                        Language::Fr => "FR",
-                    })
+                    .selected_text(self.language.code())
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut self.language, Language::En, "EN");
-                        ui.selectable_value(&mut self.language, Language::Hu, "HU");
-                        ui.selectable_value(&mut self.language, Language::Es, "ES");
-                        ui.selectable_value(&mut self.language, Language::De, "DE");
-                        ui.selectable_value(&mut self.language, Language::Fr, "FR");
+                        for language in Language::ALL {
+                            ui.selectable_value(&mut self.language, *language, language.code());
+                        }
                     });
                 if self.language != previous_language {
                     self.catalog = load_catalog(self.language);

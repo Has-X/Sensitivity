@@ -137,6 +137,9 @@ public sealed partial class MainWindow : Window
     private void ApplyLocalization()
     {
         LocalizationService.Apply(Root);
+        Root.FlowDirection = LocalizationService.CurrentLanguage == "ar"
+            ? FlowDirection.RightToLeft
+            : FlowDirection.LeftToRight;
         LocalizationService.Apply(OverviewPage);
         LocalizationService.Apply(FlashPage);
         LocalizationService.Apply(RomsPage);
@@ -151,7 +154,7 @@ public sealed partial class MainWindow : Window
         foreach (var item in RegionProfilePicker.Items.OfType<ComboBoxItem>())
         {
             var localizationKey = AutomationProperties.GetName(item);
-            if (!string.IsNullOrWhiteSpace(localizationKey)) item.Content = L(localizationKey);
+            if (!string.IsNullOrWhiteSpace(localizationKey) && L(localizationKey) != localizationKey) item.Content = L(localizationKey);
         }
         AboutVersionText.Text = $"{L("app.title")} {typeof(App).Assembly.GetName().Version?.ToString(3)}";
         Title = L("app.title");

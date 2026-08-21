@@ -50,6 +50,35 @@
                     <ComboBoxItem Tag="es" AutomationProperties.Name="language.spanish" />
                     <ComboBoxItem Tag="de" AutomationProperties.Name="language.german" />
                     <ComboBoxItem Tag="fr" AutomationProperties.Name="language.french" />
+                    <ComboBoxItem Tag="it" Content="Italian" AutomationProperties.Name="language.italian" />
+                    <ComboBoxItem Tag="pl" Content="Polski" AutomationProperties.Name="language.polish" />
+                    <ComboBoxItem Tag="pt-BR" Content="Português (Brasil)" AutomationProperties.Name="language.portuguese_brazil" />
+                    <ComboBoxItem Tag="tr" Content="Türkçe" AutomationProperties.Name="language.turkish" />
+                    <ComboBoxItem Tag="id" Content="Bahasa Indonesia" AutomationProperties.Name="language.indonesian" />
+                    <ComboBoxItem Tag="ro" Content="Română" AutomationProperties.Name="language.romanian" />
+                    <ComboBoxItem Tag="cs" Content="Čeština" AutomationProperties.Name="language.czech" />
+                    <ComboBoxItem Tag="sk" Content="Slovenčina" AutomationProperties.Name="language.slovak" />
+                    <ComboBoxItem Tag="ru" Content="Русский" AutomationProperties.Name="language.russian" />
+                    <ComboBoxItem Tag="uk" Content="Українська" AutomationProperties.Name="language.ukrainian" />
+                    <ComboBoxItem Tag="zh-CN" Content="简体中文" AutomationProperties.Name="language.chinese_simplified" />
+                    <ComboBoxItem Tag="ar" Content="العربية" AutomationProperties.Name="language.arabic" />
+                    <ComboBoxItem Tag="vi" Content="Tiếng Việt" AutomationProperties.Name="language.vietnamese" />
+                    <ComboBoxItem Tag="th" Content="ไทย" AutomationProperties.Name="language.thai" />
+                    <ComboBoxItem Tag="hi" Content="हिन्दी" AutomationProperties.Name="language.hindi" />
+                    <ComboBoxItem Tag="zh-TW" Content="繁體中文" AutomationProperties.Name="language.chinese_traditional" />
+                    <ComboBoxItem Tag="ja" Content="日本語" AutomationProperties.Name="language.japanese" />
+                    <ComboBoxItem Tag="ko" Content="한국어" AutomationProperties.Name="language.korean" />
+                    <ComboBoxItem Tag="nl" Content="Nederlands" AutomationProperties.Name="language.dutch" />
+                    <ComboBoxItem Tag="el" Content="Ελληνικά" AutomationProperties.Name="language.greek" />
+                    <ComboBoxItem Tag="bg" Content="Български" AutomationProperties.Name="language.bulgarian" />
+                    <ComboBoxItem Tag="hr" Content="Hrvatski" AutomationProperties.Name="language.croatian" />
+                    <ComboBoxItem Tag="sr" Content="Српски" AutomationProperties.Name="language.serbian" />
+                    <ComboBoxItem Tag="sl" Content="Slovenščina" AutomationProperties.Name="language.slovenian" />
+                    <ComboBoxItem Tag="sv" Content="Svenska" AutomationProperties.Name="language.swedish" />
+                    <ComboBoxItem Tag="da" Content="Dansk" AutomationProperties.Name="language.danish" />
+                    <ComboBoxItem Tag="fi" Content="Suomi" AutomationProperties.Name="language.finnish" />
+                    <ComboBoxItem Tag="nb" Content="Norsk bokmål" AutomationProperties.Name="language.norwegian" />
+                    <ComboBoxItem Tag="pt-PT" Content="Português (Portugal)" AutomationProperties.Name="language.portuguese_portugal" />
                 </ComboBox>
             </StackPanel>
         </Border>

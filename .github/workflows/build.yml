@@ -10,6 +10,10 @@ on:
       - "src/**"
       - "crates/**"
       - "apps/**"
+      - "locales/**"
+      - "installer/**"
+      - "packaging/**"
+      - "tools/check-locales.ps1"
       - ".github/workflows/build.yml"
   pull_request:
     branches: [ main, master ]
@@ -20,6 +24,10 @@ on:
       - "src/**"
       - "crates/**"
       - "apps/**"
+      - "locales/**"
+      - "installer/**"
+      - "packaging/**"
+      - "tools/check-locales.ps1"
       - ".github/workflows/build.yml"
 
 concurrency:
@@ -65,6 +73,10 @@ jobs:
 
       - name: Format
         run: cargo fmt --all -- --check
+
+      - name: Validate locales
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/check-locales.ps1
 
       - name: Clippy
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
@@ -121,6 +133,10 @@ jobs:
       - run: rustup target add ${{ matrix.rust_target }}
       - run: cargo test -p sensitivity --locked
         if: matrix.architecture == 'x64'
+      - name: Validate locales
+        if: matrix.architecture == 'x64'
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/check-locales.ps1
       - run: cargo clippy -p sensitivity --all-targets --locked -- -D warnings
         if: matrix.architecture == 'x64'
       - run: cargo build -p sensitivity --release --target ${{ matrix.rust_target }} --locked

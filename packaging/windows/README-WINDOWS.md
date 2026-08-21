@@ -2,7 +2,7 @@
 
 Run `Sensitivity-Setup-x64.exe` and open **Sensitivity** from the Start menu, or extract the portable ZIP and open `Sensitivity.exe`. The installer places the application in `Program Files\Sensitivity`, creates a Start menu entry, and registers a normal Windows uninstall entry. The Windows interface is self-contained; no separate .NET or Windows App SDK installation is required.
 
-The installer follows the Windows light or dark setting and picks English, Hungarian, or Spanish from the system language when available. For unattended deployment, use `Sensitivity-Setup-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART`.
+The installer follows the Windows light or dark setting. The app selects a supported system language or in-app override, including the 34 runtime catalogs listed in the project localization guide. For unattended deployment, use `Sensitivity-Setup-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART`.
 
 The app includes diagnostics and can explain likely driver or ADB ownership problems. The installer adds `sensitivity-cli.exe` to the machine `PATH`; open a new terminal after setup and run `sensitivity-cli` for scripts and detailed troubleshooting.
 

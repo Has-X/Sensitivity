@@ -15,7 +15,10 @@
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SelfContained>true</SelfContained>
-    <PublishTrimmed>true</PublishTrimmed>
+    <!-- WinUI 3 and Windows App SDK use runtime activation paths that the .NET
+         trimmer cannot prove safe. A self-contained desktop build is larger,
+         but avoids shipping a publish that starts and then fails at activation. -->
+    <PublishTrimmed>false</PublishTrimmed>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

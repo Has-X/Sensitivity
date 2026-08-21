@@ -6,7 +6,7 @@ Sensitivity is developed and published by [Chromatic](https://chromatic.hu). For
 
 ## Windows
 
-Choose `Sensitivity-Setup-x64.exe` for Intel and AMD PCs, or `Sensitivity-Setup-arm64.exe` for Windows on ARM. Both install the native Fluent 2 WinUI 3 application in Program Files and add a Start menu shortcut. Portable ZIPs are available for each architecture. Every package includes `sensitivity-cli.exe`, the WinUSB setup guide, and PowerShell completions. The installer follows the Windows light or dark preference; the app follows the system theme and accent color, uses Mica on supported Windows versions, and automatically selects English, Hungarian, Spanish, German, or French from the system language when available.
+Choose `Sensitivity-Setup-x64.exe` for Intel and AMD PCs, or `Sensitivity-Setup-arm64.exe` for Windows on ARM. Both install the native Fluent 2 WinUI 3 application in Program Files and add a Start menu shortcut. Portable ZIPs are available for each architecture. Every package includes `sensitivity-cli.exe`, the WinUSB setup guide, and PowerShell completions. The installer follows the Windows light or dark preference; the app follows the system theme and accent color, uses Mica on supported Windows versions, and selects a supported system language or in-app override. Runtime catalogs are available for English, Hungarian, Spanish, German, French, Italian, Polish, Brazilian and European Portuguese, Turkish, Indonesian, Romanian, Czech, Slovak, Russian, Ukrainian, Simplified and Traditional Chinese, Arabic, Vietnamese, Thai, Hindi, Japanese, Korean, Dutch, Greek, Bulgarian, Croatian, Serbian, Slovenian, Swedish, Danish, Finnish, and Norwegian Bokmål.
 
 ## Linux and macOS
 

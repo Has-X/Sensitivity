@@ -9,6 +9,12 @@ namespace Sensitivity.WinUI.Services;
 
 public static class LocalizationService
 {
+    private static readonly string[] SupportedLanguages =
+    {
+        "en", "hu", "es", "de", "fr", "it", "pl", "pt-BR", "tr", "id", "ro", "cs", "sk", "ru", "uk",
+        "zh-CN", "ar", "vi", "th", "hi", "zh-TW", "ja", "ko", "nl", "el", "bg", "hr", "sr", "sl",
+        "sv", "da", "fi", "nb", "pt-PT"
+    };
     private static IReadOnlyDictionary<string, string> _strings = new Dictionary<string, string>();
 
     public static string CurrentLanguage { get; private set; } = "en";
@@ -18,9 +24,9 @@ public static class LocalizationService
     {
         OverrideLanguage = string.IsNullOrWhiteSpace(overrideLanguage) ? null : overrideLanguage;
         var requested = string.IsNullOrWhiteSpace(overrideLanguage)
-            ? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
+            ? CultureInfo.CurrentUICulture.Name
             : overrideLanguage;
-        CurrentLanguage = requested is "hu" or "es" or "de" or "fr" ? requested : "en";
+        CurrentLanguage = ResolveLanguage(requested);
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", "locales", CurrentLanguage, "windows.json");
         try
         {
@@ -40,6 +46,16 @@ public static class LocalizationService
         {
             _strings = new Dictionary<string, string>();
         }
+    }
+
+    private static string ResolveLanguage(string requested)
+    {
+        if (SupportedLanguages.Contains(requested, StringComparer.OrdinalIgnoreCase))
+            return SupportedLanguages.First(language => string.Equals(language, requested, StringComparison.OrdinalIgnoreCase));
+        var baseLanguage = requested.Split('-', '_')[0].ToLowerInvariant();
+        if (baseLanguage == "pt") return "pt-BR";
+        if (baseLanguage == "zh") return requested.Contains("TW", StringComparison.OrdinalIgnoreCase) ? "zh-TW" : "zh-CN";
+        return SupportedLanguages.FirstOrDefault(language => language.Equals(baseLanguage, StringComparison.OrdinalIgnoreCase)) ?? "en";
     }
 
     public static string Get(string key) => _strings.TryGetValue(key, out var value) ? value : key;
