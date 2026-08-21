@@ -37,7 +37,6 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         var settings = SettingsStore.Load();
         LocalizationService.Initialize(settings.LanguageOverride);
-        (Application.Current as App)?.SetXiaomiAccent(settings.UseXiaomiAccent);
         ApplyLocalization();
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
@@ -47,7 +46,6 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(1120, 760));
         AutoResolveAdbToggle.IsOn = settings.OfferAdbResolution;
         StopAdbToggle.IsOn = settings.AlwaysStopAdb;
-        XiaomiAccentToggle.IsOn = settings.UseXiaomiAccent;
         _backend.Profile = settings.RegionProfile;
         _backend.Codename = settings.Codename;
         DownloadDirectoryText.Text = string.IsNullOrWhiteSpace(settings.DownloadDirectory)
@@ -165,19 +163,12 @@ public sealed partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(_backend.Profile)) _backend.Profile = null;
     }
 
-    private void XiaomiAccentToggle_Toggled(object sender, RoutedEventArgs e)
-    {
-        SaveSettings();
-        (Application.Current as App)?.SetXiaomiAccent(XiaomiAccentToggle.IsOn);
-    }
-
     private void SaveSettings()
     {
         SettingsStore.Save(new AppSettings
         {
             OfferAdbResolution = AutoResolveAdbToggle.IsOn,
             AlwaysStopAdb = StopAdbToggle.IsOn,
-            UseXiaomiAccent = XiaomiAccentToggle.IsOn,
             LastRomPath = _romPath,
             DownloadDirectory = DownloadDirectoryText.Text,
             RegionProfile = _backend.Profile,
