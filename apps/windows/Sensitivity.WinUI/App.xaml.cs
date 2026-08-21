@@ -13,16 +13,22 @@ public partial class App : Application
     {
         "SensitivityAccentBrush",
         "AccentButtonBackground",
-        "AccentButtonBackgroundPointerOver",
-        "AccentButtonBackgroundPressed",
         "AccentButtonBorderBrush",
-        "AccentButtonBorderBrushPointerOver",
-        "AccentButtonBorderBrushPressed",
         "ToggleSwitchFillOn",
+        "ToggleSwitchStrokeOn"
+    };
+    private static readonly string[] HoverBrushKeys =
+    {
+        "AccentButtonBackgroundPointerOver",
+        "AccentButtonBorderBrushPointerOver",
         "ToggleSwitchFillOnPointerOver",
+        "ToggleSwitchStrokeOnPointerOver"
+    };
+    private static readonly string[] PressedBrushKeys =
+    {
+        "AccentButtonBackgroundPressed",
+        "AccentButtonBorderBrushPressed",
         "ToggleSwitchFillOnPressed",
-        "ToggleSwitchStrokeOn",
-        "ToggleSwitchStrokeOnPointerOver",
         "ToggleSwitchStrokeOnPressed"
     };
     private readonly UISettings _uiSettings = new();
@@ -55,18 +61,24 @@ public partial class App : Application
     public void SetXiaomiAccent(bool enabled)
     {
         _useXiaomiAccent = enabled;
-        var color = enabled ? XiaomiOrange : GetSystemAccentFillColor();
-        foreach (var key in AccentBrushKeys)
+        var baseColor = enabled ? XiaomiOrange : _uiSettings.GetColorValue(UIColorType.Accent);
+        var hoverColor = enabled
+            ? ColorHelper.FromArgb(255, 255, 131, 51)
+            : _uiSettings.GetColorValue(UIColorType.AccentLight1);
+        var pressedColor = enabled
+            ? ColorHelper.FromArgb(255, 214, 87, 0)
+            : _uiSettings.GetColorValue(UIColorType.AccentDark1);
+        SetBrushColors(AccentBrushKeys, baseColor);
+        SetBrushColors(HoverBrushKeys, hoverColor);
+        SetBrushColors(PressedBrushKeys, pressedColor);
+    }
+
+    private void SetBrushColors(IEnumerable<string> keys, Windows.UI.Color color)
+    {
+        foreach (var key in keys)
         {
             if (Resources[key] is SolidColorBrush brush) brush.Color = color;
         }
-    }
-
-    private Windows.UI.Color GetSystemAccentFillColor()
-    {
-        var background = _uiSettings.GetColorValue(UIColorType.Background);
-        var isDark = background.R + background.G + background.B < 384;
-        return _uiSettings.GetColorValue(isDark ? UIColorType.AccentDark1 : UIColorType.AccentLight2);
     }
 
 }
