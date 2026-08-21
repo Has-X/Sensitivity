@@ -1,5 +1,6 @@
 {
   "app.title": "Sensitivity",
+  "app.tagline": "Take care of your Mi.",
   "nav.overview": "Overview",
   "nav.flash": "Flash a ROM",
   "nav.recovery": "Recovery actions",
@@ -44,6 +45,7 @@
   "page.diagnostics": "Diagnostics",
   "page.diagnostics_intro": "Check the backend, USB interface, WinUSB access, and local ADB coexistence.",
   "action.run_diagnostics": "Run diagnostics",
+  "action.reboot": "Reboot",
   "action.copy_report": "Copy report",
   "diagnostics.none": "No diagnostic report yet.",
   "page.settings": "Settings",

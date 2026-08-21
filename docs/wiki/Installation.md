@@ -4,7 +4,7 @@ Use the latest archive from [GitHub Releases](https://github.com/Has-X/Sensitivi
 
 ## Windows
 
-Run `Sensitivity-Setup-x64.exe` to install Sensitivity in Program Files and launch it from Start, or extract the portable ZIP. The archive includes the native WinUI 3 app, `sensitivity-cli.exe`, the WinUSB setup guide, and PowerShell completions. The installer follows the Windows light or dark preference and automatically selects English, Hungarian, or Spanish from the system language when available.
+Choose `Sensitivity-Setup-x64.exe` for Intel and AMD PCs, or `Sensitivity-Setup-arm64.exe` for Windows on ARM. Both install the native Fluent 2 WinUI 3 application in Program Files and add a Start menu shortcut. Portable ZIPs are available for each architecture. Every package includes `sensitivity-cli.exe`, the WinUSB setup guide, and PowerShell completions. The installer follows the Windows light or dark preference; the app follows the system theme and accent color, uses Mica on supported Windows versions, and automatically selects English, Hungarian, or Spanish from the system language when available.
 
 ## Linux and macOS
 

@@ -10,6 +10,14 @@
 #ifndef OutputDir
   #define OutputDir "..\\dist"
 #endif
+#ifndef AppArchitecture
+  #define AppArchitecture "x64"
+#endif
+#if AppArchitecture == "x64"
+  #define InstallArchitecture "x64compatible"
+#else
+  #define InstallArchitecture "arm64"
+#endif
 
 [Setup]
 AppId={{A2E220C2-402D-4B6F-94D2-04D09F30A25E}
@@ -25,14 +33,17 @@ DefaultGroupName=Sensitivity
 UninstallDisplayIcon={app}\Sensitivity.exe
 SetupIconFile=assets\app.ico
 OutputDir={#OutputDir}
-OutputBaseFilename=Sensitivity-Setup-x64
+OutputBaseFilename=Sensitivity-Setup-{#AppArchitecture}
 VersionInfoVersion={#AppVersion}
 VersionInfoCompany=HasX
 VersionInfoDescription=Sensitivity Installer
 VersionInfoProductName=Sensitivity
 VersionInfoProductVersion={#AppVersion}
-ArchitecturesAllowed=x64compatible
-ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed={#InstallArchitecture}
+ArchitecturesInstallIn64BitMode={#InstallArchitecture}
+; Inno Setup 7 can emit a native x64 setup bootstrapper. On Windows on ARM,
+; Windows 11 runs that bootstrapper through x64 emulation while it installs the
+; native ARM64 Sensitivity files selected by AppArchitecture.
 SetupArchitecture=x64
 PrivilegesRequired=admin
 DisableWelcomePage=yes

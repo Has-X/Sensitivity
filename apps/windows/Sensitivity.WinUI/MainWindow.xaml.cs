@@ -265,7 +265,7 @@ public sealed partial class MainWindow : Window
         catch (Exception error)
         {
             OperationStatusText.Text = L("status.flash_stopped");
-            ShowStatus("Flash failed", CleanError(error.Message), InfoBarSeverity.Error);
+            ShowStatus(L("status.flash_stopped"), CleanError(error.Message), InfoBarSeverity.Error);
         }
         finally
         {
@@ -401,6 +401,7 @@ public sealed partial class MainWindow : Window
         _busy = busy;
         BusyRing.IsActive = busy;
         RefreshButton.IsEnabled = !busy;
+        TitleRefreshButton.IsEnabled = !busy;
         ReadInfoButton.IsEnabled = !busy;
         StartFlashButton.IsEnabled = !busy;
         CancelFlashButton.IsEnabled = busy && _operationCancellation is not null;

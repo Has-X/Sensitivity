@@ -72,7 +72,7 @@ public static class LocalizationService
             case TextBlock textBlock:
                 textBlock.Text = value;
                 break;
-            case Button button:
+            case Button button when button.Content is not UIElement:
                 button.Content = value;
                 break;
             case NavigationViewItem navigationItem:

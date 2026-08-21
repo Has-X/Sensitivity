@@ -6,6 +6,9 @@
 /installer/out*/
 /installer/test-install.log
 /installer/*-test.log
+/installer-test
 /native-publish
 /native-publish-test
+/native-publish-*-test
+/installer-*-test
 /package

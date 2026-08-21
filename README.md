@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Made%20in-the%20EU%20🇪🇺-003399" alt="Made in the EU 🇪🇺">
 </p>
 
-Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, native WinUI 3 on Windows, and a lightweight portable GUI on Linux and macOS.
+Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, a native Fluent 2 WinUI 3 application on Windows, and a lightweight portable GUI on Linux and macOS.
 
 It speaks the Mi Assistant ADB-like protocol directly over USB, validates official Recovery ROMs with Xiaomi's `miotaV3` service, and streams approved packages to stock recovery. It does not require `adb`, an unlocked bootloader, or proprietary Xiaomi desktop software.
 
@@ -21,7 +21,7 @@ It speaks the Mi Assistant ADB-like protocol directly over USB, validates offici
 
 ## Install
 
-Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, run `Sensitivity-Setup-x64.exe` to install Sensitivity in Program Files and open it from Start, or extract the portable ZIP and open `Sensitivity.exe`. The setup follows Windows light or dark mode and is available in English, Hungarian, and Spanish. The portable GUI lets you choose the same languages. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
+Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, choose the native `Sensitivity-Setup-x64.exe` or `Sensitivity-Setup-arm64.exe` for the processor architecture, then open Sensitivity from Start. Portable ZIPs are available too. The app uses the Windows system light or dark mode, system accent color, Mica material where supported, and English, Hungarian, or Spanish from the system language or the in-app override. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
 
 To build or install from source:
 
@@ -139,7 +139,7 @@ cd fuzz
 cargo +nightly fuzz run adb-header
 ```
 
-Tagging a version such as `v1.1.0` builds a self-contained WinUI 3 application and a native x64 Inno Setup installer for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
+Tagging a version such as `v1.1.0` builds self-contained Fluent 2 WinUI 3 applications and architecture-matched x64 and ARM64 Inno Setup installers for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
 
 The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md).
 

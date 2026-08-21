@@ -9,23 +9,33 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="CardStyle" TargetType="Border">
-                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="CornerRadius" Value="8" />
-                <Setter Property="Padding" Value="20" />
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="Padding" Value="24" />
+            </Style>
+            <Style x:Key="HeroCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+                <Setter Property="Background" Value="{ThemeResource AccentFillColorSecondaryBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
             </Style>
             <Style x:Key="PageTitleStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="28" />
+                <Setter Property="FontSize" Value="32" />
                 <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="TextWrapping" Value="Wrap" />
             </Style>
             <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="18" />
+                <Setter Property="FontSize" Value="20" />
                 <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="TextWrapping" Value="Wrap" />
             </Style>
             <Style x:Key="CaptionStyle" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
                 <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+            <Style x:Key="IconActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="MinHeight" Value="40" />
+                <Setter Property="Padding" Value="14,8" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

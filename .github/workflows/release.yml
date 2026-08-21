@@ -21,6 +21,17 @@ jobs:
           - name: windows-x86_64
             os: windows-latest
             archive: sensitivity-windows-x86_64.zip
+            runtime: win-x64
+            rust_target: x86_64-pc-windows-msvc
+            app_architecture: x64
+            platform: x64
+          - name: windows-arm64
+            os: windows-11-arm
+            archive: sensitivity-windows-arm64.zip
+            runtime: win-arm64
+            rust_target: aarch64-pc-windows-msvc
+            app_architecture: arm64
+            platform: ARM64
           - name: macos-x86_64
             os: macos-15-intel
             archive: sensitivity-macos-x86_64.tar.gz
@@ -32,33 +43,39 @@ jobs:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@1.95.0
       - uses: actions/setup-dotnet@v6
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         with:
           dotnet-version: 8.0.x
       - uses: Swatinem/rust-cache@v2
+      - name: Install Windows Rust target
+        if: matrix.runtime != ''
+        run: rustup target add ${{ matrix.rust_target }}
       - name: Test Rust workspace
-        if: runner.os != 'Windows'
+        if: matrix.runtime == ''
         run: cargo test --workspace --locked
       - name: Build Rust workspace
-        if: runner.os != 'Windows'
+        if: matrix.runtime == ''
         run: cargo build --workspace --release --locked
       - name: Test Windows backend
-        if: runner.os == 'Windows'
+        if: matrix.runtime == 'win-x64'
         run: cargo test -p sensitivity --locked
       - name: Build Windows backend
-        if: runner.os == 'Windows'
-        run: cargo build -p sensitivity --release --locked
+        if: matrix.runtime == 'win-x64'
+        run: cargo build -p sensitivity --release --target ${{ matrix.rust_target }} --locked
+      - name: Build ARM64 Windows backend
+        if: matrix.runtime == 'win-arm64'
+        run: cargo build -p sensitivity --release --target ${{ matrix.rust_target }} --locked
       - name: Publish native Windows app
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         shell: pwsh
         run: |
-          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
+          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r ${{ matrix.runtime }} -p:Platform=${{ matrix.platform }} --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item target/release/sensitivity.exe native-publish/sensitivity-cli.exe
+          Copy-Item target/${{ matrix.rust_target }}/release/sensitivity.exe native-publish/sensitivity-cli.exe
           if (!(Test-Path native-publish/Sensitivity.exe)) { throw "Sensitivity.exe was not published" }
           if (!(Test-Path native-publish/sensitivity-cli.exe)) { throw "sensitivity-cli.exe was not packaged" }
       - name: Package Unix
-        if: runner.os != 'Windows'
+        if: matrix.runtime == ''
         shell: bash
         run: |
           mkdir package
@@ -83,7 +100,7 @@ jobs:
           fi
           tar -C package -czf "${{ matrix.archive }}" .
       - name: Package Windows
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         shell: pwsh
         run: |
           New-Item -ItemType Directory package | Out-Null
@@ -92,10 +109,10 @@ jobs:
           Copy-Item docs package/docs -Recurse
           Copy-Item packaging/windows/README-WINDOWS.md package/
           New-Item -ItemType Directory -Force package/completions | Out-Null
-          & target/release/sensitivity.exe completions powershell | Out-File -Encoding utf8 package/completions/_sensitivity.ps1
+          & target/${{ matrix.rust_target }}/release/sensitivity.exe completions powershell | Out-File -Encoding utf8 package/completions/_sensitivity.ps1
           Compress-Archive -Path package/* -DestinationPath "${{ matrix.archive }}"
       - name: Build Windows installer
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         shell: pwsh
         run: |
           winget install --id JRSoftware.InnoSetup.7 --exact --source winget --accept-package-agreements --accept-source-agreements --silent
@@ -103,9 +120,9 @@ jobs:
           $iscc = Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'
           if (!(Test-Path $iscc)) { throw 'Inno Setup 7 compiler was not installed' }
           New-Item -ItemType Directory -Force installer-out | Out-Null
-          & $iscc "/DAppVersion=$version" "/DSourceDir=$PWD\native-publish" "/DOutputDir=$PWD\installer-out" installer/Sensitivity.iss
+          & $iscc "/DAppVersion=$version" "/DAppArchitecture=${{ matrix.app_architecture }}" "/DSourceDir=$PWD\native-publish" "/DOutputDir=$PWD\installer-out" installer/Sensitivity.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Move-Item installer-out/Sensitivity-Setup-x64.exe sensitivity-windows-x86_64-setup.exe
+          Move-Item "installer-out/Sensitivity-Setup-${{ matrix.app_architecture }}.exe" "sensitivity-windows-${{ matrix.app_architecture }}-setup.exe"
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
