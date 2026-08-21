@@ -24,6 +24,9 @@
             <SolidColorBrush x:Key="AccentButtonBackground" Color="#0078D4" />
             <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#0078D4" />
             <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#0078D4" />
+            <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="#0078D4" />
+            <SolidColorBrush x:Key="AccentButtonBorderBrushPointerOver" Color="#0078D4" />
+            <SolidColorBrush x:Key="AccentButtonBorderBrushPressed" Color="#0078D4" />
             <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#0078D4" />
             <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#0078D4" />
             <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#0078D4" />

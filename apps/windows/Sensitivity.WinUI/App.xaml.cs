@@ -15,6 +15,9 @@ public partial class App : Application
         "AccentButtonBackground",
         "AccentButtonBackgroundPointerOver",
         "AccentButtonBackgroundPressed",
+        "AccentButtonBorderBrush",
+        "AccentButtonBorderBrushPointerOver",
+        "AccentButtonBorderBrushPressed",
         "ToggleSwitchFillOn",
         "ToggleSwitchFillOnPointerOver",
         "ToggleSwitchFillOnPressed",
@@ -23,11 +26,19 @@ public partial class App : Application
         "ToggleSwitchStrokeOnPressed"
     };
     private readonly UISettings _uiSettings = new();
+    private bool _useXiaomiAccent;
     private Window? _window;
 
     public App()
     {
         InitializeComponent();
+        _uiSettings.ColorValuesChanged += (_, _) =>
+        {
+            if (!_useXiaomiAccent)
+            {
+                _window?.DispatcherQueue.TryEnqueue(() => SetXiaomiAccent(false));
+            }
+        };
         UnhandledException += (_, args) =>
         {
             System.Diagnostics.Debug.WriteLine(args.Exception);
@@ -43,11 +54,19 @@ public partial class App : Application
 
     public void SetXiaomiAccent(bool enabled)
     {
-        var color = enabled ? XiaomiOrange : _uiSettings.GetColorValue(UIColorType.Accent);
+        _useXiaomiAccent = enabled;
+        var color = enabled ? XiaomiOrange : GetSystemAccentFillColor();
         foreach (var key in AccentBrushKeys)
         {
             if (Resources[key] is SolidColorBrush brush) brush.Color = color;
         }
+    }
+
+    private Windows.UI.Color GetSystemAccentFillColor()
+    {
+        var background = _uiSettings.GetColorValue(UIColorType.Background);
+        var isDark = background.R + background.G + background.B < 384;
+        return _uiSettings.GetColorValue(isDark ? UIColorType.AccentDark1 : UIColorType.AccentLight2);
     }
 
 }
