@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/build-release%20verified-FF6900" alt="release build verified">
   <img src="https://img.shields.io/badge/security-CodeQL%20Advanced-2EA44F" alt="CodeQL Advanced">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-444444" alt="Windows Linux macOS">
+  <a href="https://discord.gg/v4TkjmBHbG"><img src="https://img.shields.io/badge/Chromatic-Discord-5865F2?logo=discord&logoColor=white" alt="Chromatic Discord"></a>
   <img src="https://img.shields.io/badge/license-AGPL--3.0-000000" alt="AGPL-3.0 license">
   <img src="https://img.shields.io/badge/Made%20in-the%20EU%20🇪🇺-003399" alt="Made in the EU 🇪🇺">
 </p>
@@ -16,7 +17,7 @@ Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the mai
 
 The Windows application is built with WinUI 3 and the Windows App SDK. Its Fluent 2 interface follows Fluent Design conventions: adaptive navigation, native system theme and accent resources, Mica where Windows supports it, accessible controls, and Segoe Fluent icons. It is a real desktop application, not a web wrapper.
 
-Developed and published by [Chromatic](https://chromatic.hu). For product feedback, contact [feedback@chromatic.hu](mailto:feedback@chromatic.hu). For community support, join the [Sensitivity Discord server](https://discord.gg/Mun6CsfQqa).
+Developed and published by [Chromatic](https://chromatic.hu). For product feedback, contact [feedback@chromatic.hu](mailto:feedback@chromatic.hu). For installation help, recovery questions, and community support, join the [Chromatic Discord server](https://discord.gg/v4TkjmBHbG).
 
 It speaks the Mi Assistant ADB-like protocol directly over USB, validates official Recovery ROMs with Xiaomi's `miotaV3` service, and streams approved packages to stock recovery. It does not require `adb`, an unlocked bootloader, or proprietary Xiaomi desktop software.
 
@@ -87,7 +88,7 @@ The native GUI is the recommended starting point for most users. It guides the r
   </tr>
 </table>
 
-The maintained documentation is available in the [Sensitivity Wiki](https://github.com/Has-X/Sensitivity/wiki); its source pages remain in [`docs/wiki`](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
+The maintained documentation is available in the [Sensitivity Wiki](https://github.com/Has-X/Sensitivity/wiki); its source pages remain in [`docs/wiki`](docs/wiki/Home.md). For setup questions and community support, use the [Chromatic Discord server](https://discord.gg/v4TkjmBHbG). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
 
 Translation contributors should use the [English source and translator guide](docs/LOCALIZATION.md). It records the safety context for Windows, installer, portable GUI, and CLI messages.
 

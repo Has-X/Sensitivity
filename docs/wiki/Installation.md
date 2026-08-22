@@ -2,7 +2,7 @@
 
 Use the latest archive from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases).
 
-Sensitivity is developed and published by [Chromatic](https://chromatic.hu). For product feedback, email [feedback@chromatic.hu](mailto:feedback@chromatic.hu).
+Sensitivity is developed and published by [Chromatic](https://chromatic.hu). For product feedback, email [feedback@chromatic.hu](mailto:feedback@chromatic.hu). For installation help and community support, join the [Chromatic Discord server](https://discord.gg/v4TkjmBHbG).
 
 ## Windows
 
