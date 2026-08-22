@@ -137,7 +137,15 @@ jobs:
         if: matrix.runtime != ''
         shell: pwsh
         run: |
-          winget install --id JRSoftware.InnoSetup.7 --exact --source winget --accept-package-agreements --accept-source-agreements --silent
+          $iscc = Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'
+          if (!(Test-Path $iscc) -and (Get-Command winget -ErrorAction SilentlyContinue)) {
+            winget install --id JRSoftware.InnoSetup.7 --exact --source winget --accept-package-agreements --accept-source-agreements --silent
+          }
+          if (!(Test-Path $iscc)) {
+            $bootstrap = Join-Path $env:RUNNER_TEMP 'innosetup-7.1.0-x64.exe'
+            Invoke-WebRequest -Uri 'https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe' -OutFile $bootstrap
+            Start-Process -FilePath $bootstrap -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-' -Wait
+          }
           $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
           $iscc = Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'
           if (!(Test-Path $iscc)) { throw 'Inno Setup 7 compiler was not installed' }
