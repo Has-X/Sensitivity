@@ -18,10 +18,13 @@ use sensitivity::{sideload, util, validate};
 const SERVER_URL: &str = "https://update.miui.com/updates/miotaV3.php";
 
 fn main() -> eframe::Result<()> {
+    let app_icon = eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/sensitivity-icon.png"))
+        .expect("embedded Sensitivity icon must be a valid PNG");
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1040.0, 720.0])
-            .with_min_inner_size([820.0, 560.0]),
+            .with_min_inner_size([820.0, 560.0])
+            .with_icon(app_icon),
         ..Default::default()
     };
     eframe::run_native(
