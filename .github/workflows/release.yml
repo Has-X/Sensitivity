@@ -137,7 +137,12 @@ jobs:
         if: matrix.runtime != ''
         shell: pwsh
         run: |
-          $iscc = Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'
+          $isccCandidates = @(
+            (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'),
+            (Join-Path $env:ProgramFiles 'Inno Setup 7\ISCC.exe'),
+            (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 7\ISCC.exe')
+          )
+          $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
           if (!(Test-Path $iscc) -and (Get-Command winget -ErrorAction SilentlyContinue)) {
             winget install --id JRSoftware.InnoSetup.7 --exact --source winget --accept-package-agreements --accept-source-agreements --silent
           }
@@ -147,7 +152,7 @@ jobs:
             Start-Process -FilePath $bootstrap -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-' -Wait
           }
           $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
-          $iscc = Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'
+          $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
           if (!(Test-Path $iscc)) { throw 'Inno Setup 7 compiler was not installed' }
           New-Item -ItemType Directory -Force installer-out | Out-Null
           & $iscc "/DAppVersion=$version" "/DAppArchitecture=${{ matrix.app_architecture }}" "/DSourceDir=$PWD\native-publish" "/DOutputDir=$PWD\installer-out" installer/Sensitivity.iss
