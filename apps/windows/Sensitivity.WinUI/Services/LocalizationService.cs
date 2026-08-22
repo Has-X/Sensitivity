@@ -88,7 +88,10 @@ public static class LocalizationService
                 ? automationKey
                 : null;
         }
-        if (string.IsNullOrWhiteSpace(key)) return;
+        // Keep authored fallback content, such as native language names, when
+        // an older catalog has not received a newly introduced semantic key.
+        // Never render the internal key itself to users.
+        if (string.IsNullOrWhiteSpace(key) || !_strings.ContainsKey(key)) return;
         var value = Get(key);
         switch (element)
         {
