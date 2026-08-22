@@ -160,7 +160,7 @@ cd fuzz
 cargo +nightly fuzz run adb-header
 ```
 
-Tagging a version such as `v1.1.0` builds self-contained Fluent 2 WinUI 3 applications and architecture-matched x64 and ARM64 Inno Setup installers for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
+Tagging a version such as `v1.1.3` builds self-contained Fluent 2 WinUI 3 applications and architecture-matched x64 and ARM64 Inno Setup installers for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
 
 The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md). Contributors should also follow the repository [engineering guide](AGENTS.md) and [design system](DESIGN.md).
 

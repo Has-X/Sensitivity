@@ -7,7 +7,7 @@ Build a self-contained Windows publish first, then compile it:
 ```powershell
 dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
 Copy-Item target\x86_64-pc-windows-msvc\release\sensitivity.exe native-publish/sensitivity-cli.exe
-& "$env:LOCALAPPDATA\Programs\Inno Setup 7\ISCC.exe" "/DAppVersion=1.1.2" "/DAppArchitecture=x64" "/DSourceDir=$PWD\native-publish" "/DOutputDir=$PWD\installer\out" installer/Sensitivity.iss
+& "$env:LOCALAPPDATA\Programs\Inno Setup 7\ISCC.exe" "/DAppVersion=1.1.3" "/DAppArchitecture=x64" "/DSourceDir=$PWD\native-publish" "/DOutputDir=$PWD\installer\out" installer/Sensitivity.iss
 ```
 
 The result supports unattended package managers and deployment tools:
