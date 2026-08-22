@@ -1,12 +1,14 @@
 // Copyright (C) 2026 Chromatic
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::OnceLock};
 
 macro_rules! define_languages {
     ($(($variant:ident, $code:literal, $prefix:literal)),+ $(,)?) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
         pub enum Language { $($variant),+ }
+
+        static CATALOGS: OnceLock<HashMap<Language, HashMap<String, String>>> = OnceLock::new();
 
         impl Language {
             pub const ALL: &'static [Self] = &[$(Self::$variant),+];
@@ -23,11 +25,13 @@ macro_rules! define_languages {
                 match self { $(Self::$variant => $code),+ }
             }
 
-            fn catalog(self) -> HashMap<String, String> {
-                let source = match self {
-                    $(Self::$variant => include_str!(concat!("../locales/", $code, "/cli.json"))),+
-                };
-                serde_json::from_str(source).expect("valid embedded CLI locale")
+            fn catalog(self) -> &'static HashMap<String, String> {
+                let catalogs = CATALOGS.get_or_init(|| {
+                    HashMap::from([
+                        $((Self::$variant, serde_json::from_str(include_str!(concat!("../locales/", $code, "/cli.json"))).expect("valid embedded CLI locale")),)+
+                    ])
+                });
+                &catalogs[&self]
             }
         }
     };
@@ -77,7 +81,8 @@ pub fn language() -> Language {
 pub fn tr(key: &str) -> String {
     language()
         .catalog()
-        .remove(key)
+        .get(key)
+        .cloned()
         .unwrap_or_else(|| key.to_owned())
 }
 

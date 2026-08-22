@@ -22,10 +22,10 @@ public static class LocalizationService
 
     public static void Initialize(string? overrideLanguage)
     {
-        OverrideLanguage = string.IsNullOrWhiteSpace(overrideLanguage) ? null : overrideLanguage;
-        var requested = string.IsNullOrWhiteSpace(overrideLanguage)
+        OverrideLanguage = string.IsNullOrWhiteSpace(overrideLanguage) ? null : overrideLanguage.Trim();
+        var requested = OverrideLanguage is null
             ? CultureInfo.CurrentUICulture.Name
-            : overrideLanguage;
+            : OverrideLanguage;
         CurrentLanguage = ResolveLanguage(requested);
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", "locales", CurrentLanguage, "windows.json");
         try
