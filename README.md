@@ -16,7 +16,7 @@ Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the mai
 
 The Windows application is built with WinUI 3 and the Windows App SDK. Its Fluent 2 interface follows Fluent Design conventions: adaptive navigation, native system theme and accent resources, Mica where Windows supports it, accessible controls, and Segoe Fluent icons. It is a real desktop application, not a web wrapper.
 
-Developed and published by [Chromatic](https://chromatic.hu). For product feedback, contact [feedback@chromatic.hu](mailto:feedback@chromatic.hu).
+Developed and published by [Chromatic](https://chromatic.hu). For product feedback, contact [feedback@chromatic.hu](mailto:feedback@chromatic.hu). For community support, join the [Sensitivity Discord server](https://discord.gg/Mun6CsfQqa).
 
 It speaks the Mi Assistant ADB-like protocol directly over USB, validates official Recovery ROMs with Xiaomi's `miotaV3` service, and streams approved packages to stock recovery. It does not require `adb`, an unlocked bootloader, or proprietary Xiaomi desktop software.
 
