@@ -67,10 +67,25 @@ Sensitivity calculates the package MD5, asks Xiaomi's service for approval and t
 ## Showcase
 
 <p align="center">
-  <img src="assets/sensitivity-showcase.png" alt="Sensitivity recovery connection screen in dark mode" width="900">
+  <img src="assets/showcase/overview-rounded.png" alt="Sensitivity WinUI 3 recovery overview with a detected Mi Assistant interface" width="100%">
 </p>
 
-The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. On Windows, this flow uses WinUI 3 navigation and Fluent 2 controls while respecting the system theme and accent colour.
+The native GUI is the recommended starting point for most users. It guides the recovery flow from device detection through ROM selection, validation, flashing, diagnostics, and settings without requiring terminal commands. The overview keeps the safe next action visible and shows device identity before any package operation.
+
+<table>
+  <tr>
+    <td><img src="assets/showcase/flash-rounded.png" alt="Sensitivity ROM download and flash screen"></td>
+    <td><img src="assets/showcase/roms-rounded.png" alt="Sensitivity compatible ROM packages screen"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/showcase/recovery-rounded.png" alt="Sensitivity recovery actions screen"></td>
+    <td><img src="assets/showcase/diagnostics-rounded.png" alt="Sensitivity diagnostics screen"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/showcase/settings-rounded.png" alt="Sensitivity settings and language screen"></td>
+    <td></td>
+  </tr>
+</table>
 
 The maintained documentation is available in the [Sensitivity Wiki](https://github.com/Has-X/Sensitivity/wiki); its source pages remain in [`docs/wiki`](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
 
