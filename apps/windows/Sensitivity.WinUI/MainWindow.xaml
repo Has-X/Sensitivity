@@ -111,12 +111,12 @@
         </Border>
         <Border Style="{StaticResource CardStyle}">
             <StackPanel Spacing="6">
-                <TextBlock x:Name="AboutVersionText" Tag="app.title" Style="{StaticResource SectionTitleStyle}" />
+                <TextBlock x:Name="AboutVersionText" Style="{StaticResource SectionTitleStyle}" />
                 <TextBlock Tag="about.description" Style="{StaticResource CaptionStyle}" />
                 <TextBlock Tag="about.publisher" Style="{StaticResource CaptionStyle}" />
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <HyperlinkButton Tag="about.website" NavigateUri="https://chromatic.hu" />
-                    <HyperlinkButton Tag="about.feedback" NavigateUri="mailto:feedback@chromatic.hu" />
+                    <HyperlinkButton Style="{StaticResource SupportLinkStyle}" Tag="about.website" NavigateUri="https://chromatic.hu" />
+                    <HyperlinkButton Style="{StaticResource SupportLinkStyle}" Tag="about.feedback" NavigateUri="mailto:feedback@chromatic.hu" />
                 </StackPanel>
             </StackPanel>
         </Border>
