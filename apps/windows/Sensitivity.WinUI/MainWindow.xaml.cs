@@ -10,6 +10,7 @@ using Sensitivity.WinUI.Services;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
 using Windows.Storage.Pickers;
+using Windows.System;
 using WinRT.Interop;
 
 namespace Sensitivity.WinUI;
@@ -116,6 +117,21 @@ public sealed partial class MainWindow : Window
         if (page.Visibility != Visibility.Visible) return;
         page.UpdateLayout();
         LocalizationService.Apply(page);
+    }
+
+    private static async Task OpenExternalAsync(string uri)
+    {
+        await Launcher.LaunchUriAsync(new Uri(uri));
+    }
+
+    private async void WebsiteButton_Click(object sender, RoutedEventArgs e)
+    {
+        await OpenExternalAsync("https://chromatic.hu");
+    }
+
+    private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
+    {
+        await OpenExternalAsync("mailto:feedback@chromatic.hu");
     }
 
     private void UpdateTitleBarLayout()

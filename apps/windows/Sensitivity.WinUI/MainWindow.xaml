@@ -115,8 +115,8 @@
                 <TextBlock Tag="about.description" Style="{StaticResource CaptionStyle}" />
                 <TextBlock Tag="about.publisher" Style="{StaticResource CaptionStyle}" />
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <HyperlinkButton Style="{StaticResource SupportLinkStyle}" Tag="about.website" NavigateUri="https://chromatic.hu" />
-                    <HyperlinkButton Style="{StaticResource SupportLinkStyle}" Tag="about.feedback" NavigateUri="mailto:feedback@chromatic.hu" />
+                    <Button Style="{StaticResource SupportButtonStyle}" Tag="about.website" Click="WebsiteButton_Click" />
+                    <Button Style="{StaticResource SupportButtonStyle}" Tag="about.feedback" Click="FeedbackButton_Click" />
                 </StackPanel>
             </StackPanel>
         </Border>
