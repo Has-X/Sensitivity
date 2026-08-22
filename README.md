@@ -92,7 +92,9 @@ The maintained documentation is available in the [Sensitivity Wiki](https://gith
 
 Translation contributors should use the [English source and translator guide](docs/LOCALIZATION.md). It records the safety context for Windows, installer, portable GUI, and CLI messages.
 
-Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
+Use `sensitivity help` or `sensitivity help <command>` for the complete command reference. On Windows, use `sensitivity-cli.exe help` or `sensitivity-cli.exe help <command>`.
+
+On Windows, the packaged command is `sensitivity-cli.exe` (or `sensitivity-cli` after the installer adds it to `PATH`). On Linux and macOS, the command is `sensitivity`. The examples below use the cross-platform name.
 
 ## Common commands
 

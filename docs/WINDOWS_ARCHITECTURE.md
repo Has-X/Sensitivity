@@ -30,7 +30,7 @@ ends.
 
 ## Machine event contract
 
-`sensitivity --machine` writes one JSON object per line. Current events are:
+`sensitivity-cli.exe --machine` writes one JSON object per line. Current events are:
 
 ```json
 {"event":"status","message":"Validating ROM with Xiaomi"}

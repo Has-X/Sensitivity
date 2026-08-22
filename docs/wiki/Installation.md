@@ -10,7 +10,7 @@ Choose `Sensitivity-Setup-x64.exe` for Intel and AMD PCs, or `Sensitivity-Setup-
 
 ## Linux and macOS
 
-Extract the platform archive and launch `sensitivity-gui` for the desktop interface or `sensitivity` for the CLI. Linux archives include the optional udev rule installer.
+Extract the platform archive and launch `sensitivity-gui` for the desktop interface. On Linux and macOS, use `sensitivity` for the CLI; on Windows, use `sensitivity-cli.exe` (or `sensitivity-cli` when it is on `PATH`). Linux archives include the optional udev rule installer.
 
 ## Build from source
 

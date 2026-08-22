@@ -28,6 +28,6 @@ The duplicate `miassistant` executable has been retired. Update scripts to use t
 
 ## Automation changes
 
-Use `sensitivity info --json` rather than parsing labeled text. Generate completion definitions with `sensitivity completions bash`, `zsh`, `fish`, `elvish`, or `powershell`.
+Use `sensitivity info --json` rather than parsing labeled text. On Windows, use `sensitivity-cli.exe info --json` instead. Generate completion definitions with `sensitivity completions bash`, `zsh`, `fish`, `elvish`, or `powershell` (`sensitivity-cli.exe` on Windows).
 
 Scripts that can erase data must pass `--yes` explicitly. Scripts should not pass `--adb-policy stop` globally; doing so stops a running ADB server even for devices unrelated to the recovery operation.
