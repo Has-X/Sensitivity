@@ -13,7 +13,7 @@ runs:
 
         Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -OutFile $installer -UseBasicParsing
         & $installer -Channel 10.0 -Architecture arm64 -InstallDir $installRoot -NoPath
-        if ($LASTEXITCODE -ne 0) { throw "dotnet-install.ps1 failed with exit code $LASTEXITCODE" }
+        if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw "dotnet-install.ps1 failed with exit code $LASTEXITCODE" }
 
         $dotnet = Join-Path $installRoot 'dotnet.exe'
         if (!(Test-Path $dotnet)) { throw 'The ARM64 .NET SDK installation did not produce dotnet.exe' }
