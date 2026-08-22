@@ -12,7 +12,9 @@
   <img src="https://img.shields.io/badge/Made%20in-the%20EU%20🇪🇺-003399" alt="Made in the EU 🇪🇺">
 </p>
 
-Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, a native Fluent 2 WinUI 3 application on Windows, and a lightweight portable GUI on Linux and macOS.
+Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, a native Windows application, and a lightweight portable GUI on Linux and macOS.
+
+The Windows application is built with WinUI 3 and the Windows App SDK. Its Fluent 2 interface follows Fluent Design conventions: adaptive navigation, native system theme and accent resources, Mica where Windows supports it, accessible controls, and Segoe Fluent icons. It is a real desktop application, not a web wrapper.
 
 Developed and published by [Chromatic](https://chromatic.hu). For product feedback, contact [feedback@chromatic.hu](mailto:feedback@chromatic.hu).
 
@@ -23,7 +25,7 @@ It speaks the Mi Assistant ADB-like protocol directly over USB, validates offici
 
 ## Install
 
-Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, choose the native `Sensitivity-Setup-x64.exe` or `Sensitivity-Setup-arm64.exe` for the processor architecture, then open Sensitivity from Start. Portable ZIPs are available too. The app uses the Windows system light or dark mode, system accent color, and Mica material where supported. The language selector and CLI support English, Hungarian, Spanish, German, French, Italian, Polish, Brazilian and European Portuguese, Turkish, Indonesian, Romanian, Czech, Slovak, Russian, Ukrainian, Simplified and Traditional Chinese, Arabic, Vietnamese, Thai, Hindi, Japanese, Korean, Dutch, Greek, Bulgarian, Croatian, Serbian, Slovenian, Swedish, Danish, Finnish, and Norwegian Bokmål. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
+Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, choose the native `Sensitivity-Setup-x64.exe` or `Sensitivity-Setup-arm64.exe` for the processor architecture, then open Sensitivity from Start. Portable ZIPs are available too. The Windows app follows the system light or dark mode and accent colour, with Mica material where supported. The app and CLI support 34 languages; see the [localization guide](docs/LOCALIZATION.md) for the maintained list and translation rules. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
 
 To build or install from source:
 
@@ -68,7 +70,7 @@ Sensitivity calculates the package MD5, asks Xiaomi's service for approval and t
   <img src="assets/sensitivity-showcase.png" alt="Sensitivity recovery connection screen in dark mode" width="900">
 </p>
 
-The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the Windows system theme and accent colour.
+The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. On Windows, this flow uses WinUI 3 navigation and Fluent 2 controls while respecting the system theme and accent colour.
 
 The maintained documentation is available in the [Sensitivity Wiki](https://github.com/Has-X/Sensitivity/wiki); its source pages remain in [`docs/wiki`](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
 
@@ -145,7 +147,7 @@ cargo +nightly fuzz run adb-header
 
 Tagging a version such as `v1.1.0` builds self-contained Fluent 2 WinUI 3 applications and architecture-matched x64 and ARM64 Inno Setup installers for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
 
-The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md).
+The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md). Contributors should also follow the repository [engineering guide](AGENTS.md) and [design system](DESIGN.md).
 
 ## Project lineage
 
