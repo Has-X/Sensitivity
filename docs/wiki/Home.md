@@ -14,6 +14,6 @@ Sensitivity is direct USB recovery tooling for Xiaomi devices. The project inclu
 - [English source and translator guide](../LOCALIZATION.md)
 - [Migration from MiAssistantFork](../MIGRATING_FROM_MAF.md)
 
-For product feedback, email [feedback@chromatic.hu](mailto:feedback@chromatic.hu).
+For product feedback, email [feedback@chromatic.hu](mailto:feedback@chromatic.hu). For installation help, recovery questions, and community support, join the [Chromatic Discord server](https://discord.gg/v4TkjmBHbG).
 
 Never publish serial numbers, validation tokens, private ROM URLs, or complete raw recovery responses.
