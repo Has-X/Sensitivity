@@ -1,26 +1,51 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>Sensitivity.WinUI</RootNamespace>
     <AssemblyName>Sensitivity</AssemblyName>
-    <Version>1.1.1</Version>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x64</Platforms>
-    <PlatformTarget>x64</PlatformTarget>
-    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <Version>1.1.2</Version>
+    <ApplicationIcon>..\..\..\installer\assets\app.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SelfContained>true</SelfContained>
+    <!-- WinUI 3 and Windows App SDK use runtime activation paths that the .NET
+         trimmer cannot prove safe. A self-contained desktop build is larger,
+         but avoids shipping a publish that starts and then fails at activation. -->
     <PublishTrimmed>false</PublishTrimmed>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
+    <Content Include="..\..\..\locales\**\*.json" Link="Resources\locales\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\assets\sensitivity-icon.png" Link="Assets\SensitivityIcon.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Windows App SDK 2.x does not currently copy the generated app PRI to an
+       unpackaged publish directory. Without it, WinUI fails fast at startup. -->
+  <Target Name="CopyAppPriToPublish" AfterTargets="Publish">
+    <Copy
+      SourceFiles="$(TargetDir)$(AssemblyName).pri"
+      DestinationFolder="$(PublishDir)"
+      Condition="Exists('$(TargetDir)$(AssemblyName).pri')" />
+  </Target>
+
+  <!-- Keep the unpackaged developer build runnable: the WinUI shell invokes
+       the shared Rust CLI beside Sensitivity.exe. Release packaging still
+       replaces this file with the matching target-built binary. -->
+  <Target Name="CopyNativeBackendAfterBuild" AfterTargets="Build">
+    <PropertyGroup>
+      <NativeBackendPath Condition="'$(Platform)' == 'ARM64'">$(MSBuildProjectDirectory)\..\..\..\target\aarch64-pc-windows-msvc\release\sensitivity.exe</NativeBackendPath>
+      <NativeBackendPath Condition="'$(Platform)' != 'ARM64'">$(MSBuildProjectDirectory)\..\..\..\target\x86_64-pc-windows-msvc\release\sensitivity.exe</NativeBackendPath>
+    </PropertyGroup>
+    <Copy SourceFiles="$(NativeBackendPath)" DestinationFiles="$(TargetDir)sensitivity-cli.exe" Condition="Exists('$(NativeBackendPath)')" />
+  </Target>
 </Project>

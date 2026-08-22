@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Sensitivity.WinUI.Services;
 
 namespace Sensitivity.WinUI.Models;
 
@@ -23,7 +24,7 @@ public sealed class UsbDevice
     public int Protocol { get; set; }
 
     [JsonIgnore]
-    public string DisplayName => $"Recovery device {Index + 1}  ·  {VendorId:x4}:{ProductId:x4}  ·  USB {Bus}/{Address}";
+    public string DisplayName => $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {VendorId:x4}:{ProductId:x4}  ·  USB {Bus}/{Address}";
 }
 
 public sealed class DeviceInfo
@@ -76,6 +77,6 @@ public sealed record BackendResult(int ExitCode, string StandardOutput, string S
     public bool Succeeded => ExitCode == 0;
 
     public string ErrorMessage => string.IsNullOrWhiteSpace(StandardError)
-        ? "Sensitivity could not complete the operation."
+        ? LocalizationService.Get("error.operation_failed")
         : StandardError.Trim();
 }

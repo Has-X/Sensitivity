@@ -7,7 +7,7 @@
   <key>CFBundleDisplayName</key>
   <string>Sensitivity</string>
   <key>CFBundleIdentifier</key>
-  <string>dev.hasx.sensitivity</string>
+  <string>hu.chromatic.sensitivity</string>
   <key>CFBundleVersion</key>
   <string>@VERSION@</string>
   <key>CFBundleShortVersionString</key>

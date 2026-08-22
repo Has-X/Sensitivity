@@ -1,7 +1,8 @@
-// Copyright (C) 2026 HasX
+// Copyright (C) 2026 Chromatic
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
-// Website: https://hasx.dev
+// Website: https://chromatic.hu
 
+use crate::i18n::tr;
 use anyhow::{anyhow, bail, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
 use cbc::cipher::{block_padding::Pkcs7, BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
@@ -211,9 +212,9 @@ pub fn print_allowed(res: &ValidateResult) {
     // Prefer explicit allowed list (PkgRom.Validate)
     if let Some(list) = &res.pkgrom_validate {
         if list.is_empty() {
-            println!("No allowed ROMs reported by server.");
+            println!("{}", tr("status.no_allowed_roms"));
         } else {
-            println!("Allowed ROMs:");
+            println!("{}", tr("status.allowed_roms"));
             for s in list {
                 println!("- {}", s);
             }
@@ -227,7 +228,7 @@ pub fn print_allowed(res: &ValidateResult) {
             if let Some(obj) = val.as_object() {
                 // Detect invalid data like C code
                 if obj.contains_key("Signup") || obj.contains_key("VersionBoot") {
-                    eprintln!("Error: Invalid data");
+                    eprintln!("{}: Invalid data", tr("error.prefix"));
                     return;
                 }
                 let mut printed = false;
@@ -255,7 +256,7 @@ pub fn print_allowed(res: &ValidateResult) {
     if let Some(msg) = &res.code_message {
         println!("{}", msg);
     } else {
-        println!("Server did not include allowed ROM list.");
+        println!("{}", tr("status.no_allowed_roms"));
     }
 }
 

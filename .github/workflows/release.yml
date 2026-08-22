@@ -9,6 +9,25 @@ permissions:
   contents: write
 
 jobs:
+  preflight:
+    name: Release preflight
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.97.1
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Validate locales
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/check-locales.ps1
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test Rust workspace
+        run: cargo test --workspace --locked
+      - name: Check fuzz target
+        run: cargo check --manifest-path fuzz/Cargo.toml --locked
+
   package:
     name: Package (${{ matrix.name }})
     strategy:
@@ -21,6 +40,17 @@ jobs:
           - name: windows-x86_64
             os: windows-latest
             archive: sensitivity-windows-x86_64.zip
+            runtime: win-x64
+            rust_target: x86_64-pc-windows-msvc
+            app_architecture: x64
+            platform: x64
+          - name: windows-arm64
+            os: windows-11-arm
+            archive: sensitivity-windows-arm64.zip
+            runtime: win-arm64
+            rust_target: aarch64-pc-windows-msvc
+            app_architecture: arm64
+            platform: ARM64
           - name: macos-x86_64
             os: macos-15-intel
             archive: sensitivity-macos-x86_64.tar.gz
@@ -28,37 +58,44 @@ jobs:
             os: macos-14
             archive: sensitivity-macos-aarch64.tar.gz
     runs-on: ${{ matrix.os }}
+    needs: preflight
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.1
       - uses: actions/setup-dotnet@v6
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
       - uses: Swatinem/rust-cache@v2
+      - name: Install Windows Rust target
+        if: matrix.runtime != ''
+        run: rustup target add ${{ matrix.rust_target }}
       - name: Test Rust workspace
-        if: runner.os != 'Windows'
+        if: matrix.runtime == ''
         run: cargo test --workspace --locked
       - name: Build Rust workspace
-        if: runner.os != 'Windows'
+        if: matrix.runtime == ''
         run: cargo build --workspace --release --locked
       - name: Test Windows backend
-        if: runner.os == 'Windows'
+        if: matrix.runtime == 'win-x64'
         run: cargo test -p sensitivity --locked
       - name: Build Windows backend
-        if: runner.os == 'Windows'
-        run: cargo build -p sensitivity --release --locked
+        if: matrix.runtime == 'win-x64'
+        run: cargo build -p sensitivity --release --target ${{ matrix.rust_target }} --locked
+      - name: Build ARM64 Windows backend
+        if: matrix.runtime == 'win-arm64'
+        run: cargo build -p sensitivity --release --target ${{ matrix.rust_target }} --locked
       - name: Publish native Windows app
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         shell: pwsh
         run: |
-          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
+          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r ${{ matrix.runtime }} -p:Platform=${{ matrix.platform }} --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item target/release/sensitivity.exe native-publish/sensitivity-cli.exe
+          Copy-Item target/${{ matrix.rust_target }}/release/sensitivity.exe native-publish/sensitivity-cli.exe
           if (!(Test-Path native-publish/Sensitivity.exe)) { throw "Sensitivity.exe was not published" }
           if (!(Test-Path native-publish/sensitivity-cli.exe)) { throw "sensitivity-cli.exe was not packaged" }
       - name: Package Unix
-        if: runner.os != 'Windows'
+        if: matrix.runtime == ''
         shell: bash
         run: |
           mkdir package
@@ -83,49 +120,35 @@ jobs:
           fi
           tar -C package -czf "${{ matrix.archive }}" .
       - name: Package Windows
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         shell: pwsh
         run: |
           New-Item -ItemType Directory package | Out-Null
           Copy-Item native-publish/* package -Recurse
-          Copy-Item README.md, LICENSE package/
+          Copy-Item README.md, LICENSE, SECURITY.md, CODE_OF_CONDUCT.md, CONTRIBUTING.md package/
           Copy-Item docs package/docs -Recurse
           Copy-Item packaging/windows/README-WINDOWS.md package/
           New-Item -ItemType Directory -Force package/completions | Out-Null
-          & target/release/sensitivity.exe completions powershell | Out-File -Encoding utf8 package/completions/_sensitivity.ps1
+          & target/${{ matrix.rust_target }}/release/sensitivity.exe completions powershell | Out-File -Encoding utf8 package/completions/_sensitivity.ps1
           Compress-Archive -Path package/* -DestinationPath "${{ matrix.archive }}"
       - name: Build Windows installer
-        if: runner.os == 'Windows'
+        if: matrix.runtime != ''
         shell: pwsh
         run: |
-          choco install wixtoolset --no-progress -y
+          winget install --id JRSoftware.InnoSetup.7 --exact --source winget --accept-package-agreements --accept-source-agreements --silent
           $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
-          $wixBin = (Resolve-Path "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" | Select-Object -Last 1).Path
-          & "$wixBin\heat.exe" dir package -cg AppFiles -dr INSTALLFOLDER -srd -sreg -scom -gg -var var.PublishDir -out sensitivity-files.wxs
+          $iscc = Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'
+          if (!(Test-Path $iscc)) { throw 'Inno Setup 7 compiler was not installed' }
+          New-Item -ItemType Directory -Force installer-out | Out-Null
+          & $iscc "/DAppVersion=$version" "/DAppArchitecture=${{ matrix.app_architecture }}" "/DSourceDir=$PWD\native-publish" "/DOutputDir=$PWD\installer-out" installer/Sensitivity.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          [xml]$harvest = Get-Content sensitivity-files.wxs
-          $namespaces = New-Object System.Xml.XmlNamespaceManager($harvest.NameTable)
-          $namespaces.AddNamespace("wix", "http://schemas.microsoft.com/wix/2006/wi")
-          $appFile = $harvest.SelectSingleNode("//wix:File[substring(@Source, string-length(@Source) - string-length('Sensitivity.exe') + 1) = 'Sensitivity.exe']", $namespaces)
-          if ($null -eq $appFile) { throw "Harvested Sensitivity.exe was not found" }
-          $shortcut = $harvest.CreateElement("Shortcut", "http://schemas.microsoft.com/wix/2006/wi")
-          $shortcut.SetAttribute("Id", "StartMenuShortcut")
-          $shortcut.SetAttribute("Directory", "CommonProgramsFolder")
-          $shortcut.SetAttribute("Name", "Sensitivity")
-          $shortcut.SetAttribute("WorkingDirectory", "INSTALLFOLDER")
-          $shortcut.SetAttribute("Advertise", "no")
-          [void]$appFile.AppendChild($shortcut)
-          $harvest.Save("$PWD\sensitivity-files.wxs")
-          & "$wixBin\candle.exe" -arch x64 "-dVersion=$version" "-dPublishDir=$PWD\package" packaging/windows/sensitivity.wxs sensitivity-files.wxs
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "$wixBin\light.exe" -ext WixUIExtension -sice:ICE03 sensitivity.wixobj sensitivity-files.wixobj -out sensitivity-windows-x86_64.msi
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Move-Item "installer-out/Sensitivity-Setup-${{ matrix.app_architecture }}.exe" "sensitivity-windows-${{ matrix.app_architecture }}-setup.exe"
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
           path: |
             ${{ matrix.archive }}
-            sensitivity-*.msi
+            sensitivity-*-setup.exe
           if-no-files-found: error
 
   publish:

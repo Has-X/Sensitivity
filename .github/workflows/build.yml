@@ -10,8 +10,13 @@ on:
       - "src/**"
       - "crates/**"
       - "apps/**"
+      - "locales/**"
+      - "installer/**"
+      - "packaging/**"
+      - "tools/check-locales.ps1"
       - ".github/workflows/build.yml"
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, master ]
     paths:
       - "Cargo.toml"
@@ -20,6 +25,10 @@ on:
       - "src/**"
       - "crates/**"
       - "apps/**"
+      - "locales/**"
+      - "installer/**"
+      - "packaging/**"
+      - "tools/check-locales.ps1"
       - ".github/workflows/build.yml"
 
 concurrency:
@@ -66,6 +75,10 @@ jobs:
       - name: Format
         run: cargo fmt --all -- --check
 
+      - name: Validate locales
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/check-locales.ps1
+
       - name: Clippy
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
@@ -95,38 +108,59 @@ jobs:
           path: dist/*
 
   windows-native:
-    name: Build native Windows app
-    runs-on: windows-latest
+    name: Build native Windows app (${{ matrix.architecture }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x64
+            os: windows-latest
+            runtime: win-x64
+            rust_target: x86_64-pc-windows-msvc
+            platform: x64
+          - architecture: arm64
+            os: windows-11-arm
+            runtime: win-arm64
+            rust_target: aarch64-pc-windows-msvc
+            platform: ARM64
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
       - uses: Swatinem/rust-cache@v2
+      - run: rustup target add ${{ matrix.rust_target }}
       - run: cargo test -p sensitivity --locked
+        if: matrix.architecture == 'x64'
+      - name: Validate locales
+        if: matrix.architecture == 'x64'
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/check-locales.ps1
       - run: cargo clippy -p sensitivity --all-targets --locked -- -D warnings
-      - run: cargo build -p sensitivity --release --locked
+        if: matrix.architecture == 'x64'
+      - run: cargo build -p sensitivity --release --target ${{ matrix.rust_target }} --locked
       - name: Publish WinUI 3 app
         shell: pwsh
         run: |
-          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
+          dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r ${{ matrix.runtime }} -p:Platform=${{ matrix.platform }} --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item target/release/sensitivity.exe native-publish/sensitivity-cli.exe
+          Copy-Item target/${{ matrix.rust_target }}/release/sensitivity.exe native-publish/sensitivity-cli.exe
           if (!(Test-Path native-publish/Sensitivity.exe)) { throw "Sensitivity.exe was not published" }
           if (!(Test-Path native-publish/sensitivity-cli.exe)) { throw "sensitivity-cli.exe was not packaged" }
       - uses: actions/upload-artifact@v7
         with:
-          name: sensitivity-Windows-X64
+          name: sensitivity-Windows-${{ matrix.architecture }}
           path: native-publish/*
           if-no-files-found: error
 
   msrv:
-    name: Minimum Rust 1.95
+    name: Minimum Rust 1.97
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: dtolnay/rust-toolchain@1.97.1
       - uses: Swatinem/rust-cache@v2
       - run: cargo check --workspace --locked
 

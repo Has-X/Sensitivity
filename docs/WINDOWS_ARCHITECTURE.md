@@ -1,9 +1,15 @@
 # Native Windows architecture
 
 Sensitivity's Windows application is an unpackaged, self-contained WinUI 3
-desktop app. It uses Fluent controls and Mica through the stable Windows App
-SDK. The recovery protocol remains in the shared Rust core and is shipped as
+desktop app using the current stable Windows App SDK. Its Fluent 2 shell uses
+adaptive NavigationView layouts, Segoe Fluent icons, Windows system theme and
+accent resources, accessible native controls, and Mica where supported. The
+recovery protocol remains in the shared Rust core and is shipped as
 `sensitivity-cli.exe` beside the user-facing `Sensitivity.exe`.
+
+The publish target explicitly copies Sensitivity's generated PRI resource file.
+Windows App SDK 2.x currently omits this file from unpackaged publish output by
+default, which causes an immediate WinUI startup failure without this safeguard.
 
 ## Process boundary
 
@@ -56,6 +62,7 @@ USB connection.
 
 The Windows CI job is the authoritative XAML compilation check because the
 Windows App SDK XAML compiler is a Windows executable. Releases publish the
-WinUI app and Rust backend together, then produce both a portable ZIP and an
-x64 MSI. The MSI shortcut launches only `Sensitivity.exe`; the CLI remains
-available for automation and diagnostics.
+WinUI app and Rust backend together for both x64 and ARM64, then produce a
+portable ZIP and architecture-matched Inno Setup installer for each. The Start
+menu shortcut launches only `Sensitivity.exe`; the CLI remains available for
+automation and diagnostics.

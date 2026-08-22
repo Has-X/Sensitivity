@@ -1,6 +1,6 @@
-// Copyright (C) 2026 HasX
+// Copyright (C) 2026 Chromatic
 // Licensed under the GNU AGPL v3.0. See LICENSE file for details.
-// Website: https://hasx.dev
+// Website: https://chromatic.hu
 
 //! Core implementation for the Sensitivity Xiaomi Recovery tool.
 //!
@@ -10,6 +10,7 @@
 
 pub mod adb;
 pub mod download;
+pub mod i18n;
 pub mod mi;
 pub mod sideload;
 pub mod usb;

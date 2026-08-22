@@ -12,7 +12,9 @@
   <img src="https://img.shields.io/badge/Made%20in-the%20EU%20🇪🇺-003399" alt="Made in the EU 🇪🇺">
 </p>
 
-Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, native WinUI 3 on Windows, and a lightweight portable GUI on Linux and macOS.
+Sensitivity is a direct-USB Xiaomi Recovery flash and rescue tool. It is the maintained successor to MiAssistantFork (MAF), with one shared protocol core, a safe CLI, a native Fluent 2 WinUI 3 application on Windows, and a lightweight portable GUI on Linux and macOS.
+
+Developed and published by [Chromatic](https://chromatic.hu). For product feedback, contact [feedback@chromatic.hu](mailto:feedback@chromatic.hu).
 
 It speaks the Mi Assistant ADB-like protocol directly over USB, validates official Recovery ROMs with Xiaomi's `miotaV3` service, and streams approved packages to stock recovery. It does not require `adb`, an unlocked bootloader, or proprietary Xiaomi desktop software.
 
@@ -21,7 +23,7 @@ It speaks the Mi Assistant ADB-like protocol directly over USB, validates offici
 
 ## Install
 
-Download the archive for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, install the MSI and open **Sensitivity** from Start, or extract the portable ZIP and open `Sensitivity.exe`. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
+Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, choose the native `Sensitivity-Setup-x64.exe` or `Sensitivity-Setup-arm64.exe` for the processor architecture, then open Sensitivity from Start. Portable ZIPs are available too. The app uses the Windows system light or dark mode, system accent color, and Mica material where supported. The language selector and CLI support English, Hungarian, Spanish, German, French, Italian, Polish, Brazilian and European Portuguese, Turkish, Indonesian, Romanian, Czech, Slovak, Russian, Ukrainian, Simplified and Traditional Chinese, Arabic, Vietnamese, Thai, Hindi, Japanese, Korean, Dutch, Greek, Bulgarian, Croatian, Serbian, Slovenian, Swedish, Danish, Finnish, and Norwegian Bokmål. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
 
 To build or install from source:
 
@@ -66,9 +68,11 @@ Sensitivity calculates the package MD5, asks Xiaomi's service for approval and t
   <img src="assets/sensitivity-showcase.png" alt="Sensitivity recovery connection screen in dark mode" width="900">
 </p>
 
-The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the system colour theme, with Xiaomi Orange used for actions and status accents.
+The screenshot shows the guarded first step of the desktop flow: Sensitivity lists matching Mi Assistant recovery interfaces before any device claim or flash action. The desktop interfaces follow the Windows system theme and accent colour.
 
 The maintained documentation is available in the [Sensitivity Wiki](https://github.com/Has-X/Sensitivity/wiki); its source pages remain in [`docs/wiki`](docs/wiki/Home.md). Security reports belong in the [Security Advisory flow](https://github.com/Has-X/Sensitivity/security/advisories/new), not in public issues.
+
+Translation contributors should use the [English source and translator guide](docs/LOCALIZATION.md). It records the safety context for Windows, installer, portable GUI, and CLI messages.
 
 Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
 
@@ -123,7 +127,7 @@ Hardware behavior varies between recovery versions. Offline CI proves builds, pa
 
 ## Development
 
-Requirements: Rust 1.95 or newer. `libusb` is built from vendored sources.
+Requirements: Rust 1.97.1 or newer. `libusb` is built from vendored sources.
 
 ```console
 cargo fmt --all -- --check
@@ -139,7 +143,7 @@ cd fuzz
 cargo +nightly fuzz run adb-header
 ```
 
-Tagging a version such as `v1.1.0` builds a self-contained WinUI 3 application and MSI for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
+Tagging a version such as `v1.1.0` builds self-contained Fluent 2 WinUI 3 applications and architecture-matched x64 and ARM64 Inno Setup installers for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
 
 The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md).
 
@@ -149,6 +153,6 @@ Sensitivity fully consolidates the useful parts of [MiAssistantFork](https://git
 
 ## License
 
-Copyright (C) 2026 HasX and contributors. Sensitivity is licensed under the [GNU Affero General Public License v3.0](LICENSE), SPDX identifier `AGPL-3.0-only`.
+Copyright (C) 2026 Chromatic and contributors. Sensitivity is licensed under the [GNU Affero General Public License v3.0](LICENSE), SPDX identifier `AGPL-3.0-only`.
 
 Commercial use is not categorically prohibited by the AGPL. Distribution or network use of a modified version must satisfy the license's corresponding-source and licensing requirements. No Xiaomi proprietary components are included.
