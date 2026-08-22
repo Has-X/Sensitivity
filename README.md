@@ -45,19 +45,33 @@ In the desktop app, select the detected recovery and ROM, review validation and 
 For the CLI:
 
 1. Boot the phone into stock recovery and choose **Connect with Mi Assistant**.
-2. Connect it directly by USB and run the setup check:
+2. Connect it directly by USB and run the setup check. On Windows, use the packaged CLI executable:
+
+   ```powershell
+   .\sensitivity-cli.exe doctor
+   ```
+
+   On Linux and macOS, use:
 
    ```console
    sensitivity doctor
    ```
 
-3. Read the detected device identity:
+3. Read the detected device identity with the same platform-specific command:
+
+   ```powershell
+   .\sensitivity-cli.exe info
+   ```
 
    ```console
    sensitivity info
    ```
 
 4. Flash an official Recovery ROM:
+
+   ```powershell
+   .\sensitivity-cli.exe flash C:\path\to\recovery-rom.zip
+   ```
 
    ```console
    sensitivity flash /path/to/recovery-rom.zip

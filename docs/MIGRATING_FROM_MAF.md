@@ -1,6 +1,6 @@
 # Migrating from MiAssistantFork
 
-Sensitivity is the maintained successor to MiAssistantFork (MAF) and now contains its useful GUI, cancellation, packaging, and fuzz-testing ideas without retaining a duplicate protocol implementation. Verify the connected recovery with `sensitivity doctor`, then replace an existing MAF workflow.
+Sensitivity is the maintained successor to MiAssistantFork (MAF) and now contains its useful GUI, cancellation, packaging, and fuzz-testing ideas without retaining a duplicate protocol implementation. Verify the connected recovery with `sensitivity doctor`, then replace an existing MAF workflow. On Windows, use `sensitivity-cli.exe` in place of `sensitivity` for every command below.
 
 ## Command mapping
 
@@ -14,7 +14,7 @@ Sensitivity is the maintained successor to MiAssistantFork (MAF) and now contain
 | `miassistant-cli format-data` | `sensitivity format-data` | Requires typing `ERASE`, or `--yes` for intentional automation. |
 | `miassistant-cli reboot` | `sensitivity reboot` | Same recovery command. |
 
-The duplicate `miassistant` executable has been retired. Update scripts to use the `sensitivity` name.
+The duplicate `miassistant` executable has been retired. Update scripts to use `sensitivity` on Linux and macOS, or `sensitivity-cli.exe` on Windows.
 
 ## Behavioral differences
 
