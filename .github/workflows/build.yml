@@ -158,6 +158,28 @@ jobs:
           path: native-publish/*
           if-no-files-found: error
 
+  linux-arm64:
+    name: Build Linux ARM64
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build release binaries
+        run: cargo build --workspace --release --locked
+      - name: Test Rust workspace
+        run: cargo test --workspace --locked
+      - name: Prepare artifact
+        run: |
+          mkdir -p dist
+          cp target/release/sensitivity dist/sensitivity-linux-aarch64
+          cp target/release/sensitivity-gui dist/sensitivity-gui-linux-aarch64
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sensitivity-Linux-arm64
+          path: dist/*
+          if-no-files-found: error
+
   msrv:
     name: Minimum Rust 1.97
     runs-on: ubuntu-22.04

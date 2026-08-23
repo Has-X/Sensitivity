@@ -39,6 +39,9 @@ jobs:
           - name: linux-x86_64
             os: ubuntu-22.04
             archive: sensitivity-linux-x86_64.tar.gz
+          - name: linux-aarch64
+            os: ubuntu-24.04-arm
+            archive: sensitivity-linux-aarch64.tar.gz
           - name: windows-x86_64
             os: windows-latest
             archive: sensitivity-windows-x86_64.zip
@@ -123,6 +126,57 @@ jobs:
             rm package/Sensitivity.app/Contents/Info.plist.bak
           fi
           tar -C package -czf "${{ matrix.archive }}" .
+      - name: Package Linux desktop formats
+        if: matrix.name == 'linux-x86_64'
+        shell: bash
+        run: |
+          mkdir -p deb-root/DEBIAN deb-root/usr/bin deb-root/usr/share/applications deb-root/usr/share/icons/hicolor/512x512/apps
+          cp target/release/sensitivity deb-root/usr/bin/sensitivity
+          cp target/release/sensitivity-gui deb-root/usr/bin/sensitivity-gui
+          cp assets/sensitivity-icon.png deb-root/usr/share/icons/hicolor/512x512/apps/sensitivity.png
+          cat > deb-root/usr/share/applications/sensitivity.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Sensitivity
+          Comment=Direct USB Xiaomi Recovery tool
+          Exec=sensitivity-gui
+          Icon=sensitivity
+          Terminal=false
+          Categories=Utility;System;
+          EOF
+          cat > deb-root/DEBIAN/control <<EOF
+          Package: sensitivity
+          Version: $(cargo metadata --format-version 1 --no-deps | sed -n 's/.*"name":"sensitivity","version":"\([^"]*\)".*/\1/p')
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Chromatic <feedback@chromatic.hu>
+          Description: Sensitivity Xiaomi Recovery tool
+           Direct USB recovery validation, download, and flashing for Xiaomi devices.
+          EOF
+          dpkg-deb --build --root-owner-group deb-root sensitivity-linux-x86_64.deb
+          mkdir -p Sensitivity.AppDir/usr/bin Sensitivity.AppDir/usr/share/icons/hicolor/512x512/apps
+          cp target/release/sensitivity target/release/sensitivity-gui Sensitivity.AppDir/usr/bin/
+          cp assets/sensitivity-icon.png Sensitivity.AppDir/usr/share/icons/hicolor/512x512/apps/sensitivity.png
+          cat > Sensitivity.AppDir/AppRun <<'EOF'
+          #!/bin/sh
+          exec "$(dirname "$0")/usr/bin/sensitivity-gui" "$@"
+          EOF
+          chmod +x Sensitivity.AppDir/AppRun
+          cat > Sensitivity.AppDir/sensitivity.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Sensitivity
+          Comment=Direct USB Xiaomi Recovery tool
+          Exec=sensitivity-gui
+          Icon=sensitivity
+          Terminal=false
+          Categories=Utility;System;
+          EOF
+          cp Sensitivity.AppDir/sensitivity.desktop Sensitivity.AppDir/usr/share/applications/
+          curl -L --fail --retry 3 -o appimagetool.AppImage https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool.AppImage
+          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool.AppImage Sensitivity.AppDir sensitivity-linux-x86_64.AppImage
       - name: Package Windows
         if: matrix.runtime != ''
         shell: pwsh
@@ -165,6 +219,8 @@ jobs:
           name: ${{ matrix.name }}
           path: |
             ${{ matrix.archive }}
+            sensitivity-*.AppImage
+            sensitivity-*.deb
             sensitivity-*-setup.exe
           if-no-files-found: error
 
