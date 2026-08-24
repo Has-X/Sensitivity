@@ -206,9 +206,9 @@ fn redact_json_value(value: &Value) -> Value {
                 .collect(),
         ),
         Value::Array(items) => Value::Array(items.iter().map(redact_json_value).collect()),
-        Value::String(value) => Value::String(format!("<redacted:string:{}>", value.len())),
-        Value::Number(_) => Value::String("<redacted:number>".to_owned()),
-        Value::Bool(_) => Value::String("<redacted:boolean>".to_owned()),
+        Value::String(_) => Value::String("<redacted>".to_owned()),
+        Value::Number(_) => Value::Number(0.into()),
+        Value::Bool(_) => Value::Bool(false),
         Value::Null => Value::Null,
     }
 }
@@ -366,7 +366,7 @@ mod tests {
     #[test]
     fn diagnostic_json_redacts_all_scalar_values() {
         let result = parse_validation_response(
-            r#"{"PkgRom":{"Validate":"secret-token","Erase":1},"Code":{"message":"success"}}"#,
+            r#"{"PkgRom":{"Validate":"secret-token","Erase":7,"Wipe":true},"Code":{"message":"success"}}"#,
         )
         .unwrap();
         let diagnostic = redacted_response_json(&result).unwrap();
@@ -374,7 +374,13 @@ mod tests {
         assert!(diagnostic.contains("Validate"));
         assert!(!diagnostic.contains("secret-token"));
         assert!(!diagnostic.contains("success"));
-        assert!(!diagnostic.contains("\": 1"));
+        assert!(!diagnostic.contains("string:"));
+        assert!(!diagnostic.contains("\": 7"));
+        assert!(!diagnostic.contains("true"));
+        let redacted: Value = serde_json::from_str(&diagnostic).unwrap();
+        assert!(redacted["PkgRom"]["Validate"].is_string());
+        assert!(redacted["PkgRom"]["Erase"].is_number());
+        assert!(redacted["PkgRom"]["Wipe"].is_boolean());
     }
 
     #[test]
