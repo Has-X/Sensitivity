@@ -18,8 +18,9 @@ use sensitivity::{download, sideload, util, validate};
 const SERVER_URL: &str = "https://update.miui.com/updates/miotaV3.php";
 
 fn main() -> eframe::Result<()> {
-    let app_icon = eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/sensitivity-icon.png"))
-        .expect("embedded Sensitivity icon must be a valid PNG");
+    let app_icon =
+        eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/sensitivity-icon.png"))
+            .expect("embedded Sensitivity icon must be a valid PNG");
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1040.0, 720.0])
@@ -340,8 +341,10 @@ impl SensitivityApp {
             .and_then(|storage| storage.get_string("sensitivity.state"))
             .and_then(|json| serde_json::from_str::<PersistedState>(&json).ok())
             .unwrap_or_default();
-        let icon = eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/sensitivity-icon.png"))
-            .expect("embedded Sensitivity icon must be a valid PNG");
+        let icon = eframe::icon_data::from_png_bytes(include_bytes!(
+            "../../../assets/sensitivity-icon.png"
+        ))
+        .expect("embedded Sensitivity icon must be a valid PNG");
         let icon_image = egui::ColorImage::from_rgba_unmultiplied(
             [icon.width as usize, icon.height as usize],
             &icon.rgba,
@@ -522,12 +525,7 @@ impl SensitivityApp {
                 let client = reqwest::blocking::Client::builder()
                     .user_agent("MiTunes_UserAgent_v3.0")
                     .build()?;
-                Ok(download::download_with_md5(
-                    &client,
-                    &url,
-                    &output_dir,
-                    &latest.md5,
-                )?)
+                download::download_with_md5(&client, &url, &output_dir, &latest.md5)
             })();
             match result {
                 Ok(path) => {
@@ -535,7 +533,8 @@ impl SensitivityApp {
                     let _ = sender.send(Message::Status("status.downloaded".into()));
                 }
                 Err(error) => {
-                    let _ = sender.send(Message::Error(format!("status.operation_failed|{error:#}")));
+                    let _ =
+                        sender.send(Message::Error(format!("status.operation_failed|{error:#}")));
                 }
             }
         });
