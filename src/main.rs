@@ -148,6 +148,9 @@ enum Commands {
         /// Allow/force data wipe (sets sideload-host :1). Useful if using --token without server response.
         #[arg(long, action = ArgAction::SetTrue)]
         wipe: bool,
+        /// Write a redacted validation response to PATH for troubleshooting
+        #[arg(long, value_name = "PATH")]
+        dump_json: Option<PathBuf>,
     },
     /// Erase user data, then reboot
     FormatData {
@@ -487,6 +490,7 @@ fn run() -> Result<()> {
             yes,
             token,
             wipe,
+            dump_json,
         } => {
             if !path.exists() {
                 bail!(
@@ -532,6 +536,12 @@ fn run() -> Result<()> {
                 None => {
                     let r = validate::validate(&cli.server_url, &req_json)
                         .context(tr("error.validation_http"))?;
+                    if let Some(path) = dump_json.as_deref() {
+                        let diagnostic = validate::redacted_response_json(&r)?;
+                        std::fs::write(path, diagnostic).with_context(|| {
+                            format!("Writing redacted validation response to {}", path.display())
+                        })?;
+                    }
                     if let Some(msg) = r.code_message.as_deref() {
                         println!("{}", trf("status.server_message", &[("{message}", msg)]));
                     }
@@ -852,6 +862,25 @@ mod cli_tests {
         assert!(cli.machine);
         assert_eq!(cli.cancel_file, Some(PathBuf::from("cancel.flag")));
         assert_eq!(cli.approval_file, Some(PathBuf::from("approve.flag")));
+    }
+
+    #[test]
+    fn flash_redacted_diagnostic_path_parses() {
+        let cli = Cli::try_parse_from([
+            "sensitivity",
+            "flash",
+            "rom.zip",
+            "--dump-json",
+            "validation-shape.json",
+        ])
+        .unwrap();
+        assert!(matches!(
+            cli.command,
+            Commands::Flash {
+                dump_json: Some(path),
+                ..
+            } if path.as_path() == Path::new("validation-shape.json")
+        ));
     }
 
     #[test]
