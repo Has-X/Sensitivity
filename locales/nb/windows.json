@@ -80,7 +80,7 @@
   "{device} is ready": "{device} er klar",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery klar",
-  "The direct USB handshake and device queries succeeded.": "Det direkte USB-håndtrykket og enhetsspørringene var vellykket.",
+  "The recovery handshake and device queries succeeded.": "Tilkoblingen til recovery og enhetsspørringene var vellykket.",
   "Reading recovery information…": "Leser gjenopprettingsinformasjon...",
   "Ready to validate and flash": "Klar til å validere og flashe",
   "Choose a ROM": "Velg en ROM",

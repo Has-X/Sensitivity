@@ -77,7 +77,7 @@
   "{device} is ready": "{device} ist bereit",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery bereit",
-  "The direct USB handshake and device queries succeeded.": "Der direkte USB-Handshake und die Geräteabfragen waren erfolgreich.",
+  "The recovery handshake and device queries succeeded.": "Die Verbindung zur Recovery und die Geräteabfragen waren erfolgreich.",
   "Reading recovery information…": "Informationen zur Recovery werden gelesen…",
   "Choose a ROM": "Wählen Sie einen ROM",
   "No recovery selected": "Keine Recovery ausgewählt",

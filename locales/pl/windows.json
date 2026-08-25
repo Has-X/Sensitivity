@@ -80,7 +80,7 @@
   "{device} is ready": "{device} jest gotowy",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery gotowy",
-  "The direct USB handshake and device queries succeeded.": "Bezpośrednie uzgadnianie USB i zapytania o urządzenia powiodły się.",
+  "The recovery handshake and device queries succeeded.": "Połączenie z recovery i zapytania o urządzenie powiodły się.",
   "Reading recovery information…": "Czytanie informacji o przywracaniu...",
   "Ready to validate and flash": "Gotowy do sprawdzenia i flashowania",
   "Choose a ROM": "Wybierz ROM",

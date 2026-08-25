@@ -80,7 +80,7 @@
   "{device} is ready": "{device} on valmis",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery valmis",
-  "The direct USB handshake and device queries succeeded.": "Suora USB-kättely ja laitekyselyt onnistuivat.",
+  "The recovery handshake and device queries succeeded.": "Recovery-yhteys ja laitekyselyt onnistuivat.",
   "Reading recovery information…": "Luetaan palautustietoja…",
   "Ready to validate and flash": "Valmiina tarkistamaan ja vilkkumaan",
   "Choose a ROM": "Valitse ROM",

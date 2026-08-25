@@ -80,7 +80,7 @@
   "{device} is ready": "{device} พร้อมแล้ว",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery พร้อม",
-  "The direct USB handshake and device queries succeeded.": "การจับมือ USB โดยตรงและการค้นหาอุปกรณ์สำเร็จ",
+  "The recovery handshake and device queries succeeded.": "การเชื่อมต่อกับ recovery และการอ่านข้อมูลอุปกรณ์สำเร็จ",
   "Reading recovery information…": "กำลังอ่านข้อมูลการกู้คืน...",
   "Ready to validate and flash": "พร้อมที่จะตรวจสอบและแฟลช",
   "Choose a ROM": "เลือก ROM",

@@ -6,6 +6,7 @@ use anyhow::{Context, Result};
 
 use crate::adb::{connect, AdbConnection};
 use crate::usb::UsbTransport;
+use crate::util::adb_server::{AdbServerSideloadStream, AdbServerTransport};
 pub mod profile;
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -21,13 +22,34 @@ pub struct DeviceInfo {
 }
 
 pub struct MiClient {
-    adb: AdbConnection,
+    backend: MiBackend,
+}
+
+enum MiBackend {
+    Direct(AdbConnection),
+    Server(AdbServerTransport),
+}
+
+pub enum OpenedSideload<'a> {
+    Direct {
+        stream: crate::adb::AdbStream<'a>,
+        pending: Option<crate::adb::AdbPacket>,
+    },
+    Server(AdbServerSideloadStream),
 }
 
 impl MiClient {
     pub fn new(usb: UsbTransport) -> Result<Self> {
         let adb = connect(usb).context("ADB CONNECT handshake failed")?;
-        Ok(Self { adb })
+        Ok(Self {
+            backend: MiBackend::Direct(adb),
+        })
+    }
+
+    pub fn from_adb_server(transport_id: u64) -> Self {
+        Self {
+            backend: MiBackend::Server(AdbServerTransport::new(transport_id)),
+        }
     }
 
     pub fn read_all_info(&mut self) -> Result<DeviceInfo> {
@@ -52,25 +74,34 @@ impl MiClient {
     }
 
     pub fn simple_query(&mut self, cmd: &str) -> Result<String> {
-        let text = self
-            .adb
-            .query_text(cmd)
-            .with_context(|| format!("query_text {}", cmd))?;
+        let text = match &mut self.backend {
+            MiBackend::Direct(adb) => adb.query_text(cmd),
+            MiBackend::Server(adb) => adb.query_text(cmd),
+        }
+        .with_context(|| format!("query_text {cmd}"))?;
         Ok(text)
     }
 
     pub fn simple_command(&mut self, cmd: &str) -> Result<()> {
-        let mut s = self.adb.open_service(cmd)?;
-        // Reboot and format-data can deliberately drop USB before CLSE. A
-        // successfully opened service is the recovery's acknowledgement.
-        let _ = s.read_to_end();
+        match &mut self.backend {
+            MiBackend::Direct(adb) => {
+                let mut stream = adb.open_service(cmd)?;
+                // Reboot and format-data can deliberately drop USB before CLSE. A
+                // successfully opened service is the recovery's acknowledgement.
+                let _ = stream.read_to_end();
+            }
+            MiBackend::Server(adb) => adb.command(cmd)?,
+        }
         Ok(())
     }
 
-    pub fn open_sideload(
-        &mut self,
-        name: &str,
-    ) -> Result<(crate::adb::AdbStream<'_>, Option<crate::adb::AdbPacket>)> {
-        self.adb.open_sideload(name)
+    pub fn open_sideload(&mut self, name: &str) -> Result<OpenedSideload<'_>> {
+        match &mut self.backend {
+            MiBackend::Direct(adb) => {
+                let (stream, pending) = adb.open_sideload(name)?;
+                Ok(OpenedSideload::Direct { stream, pending })
+            }
+            MiBackend::Server(adb) => Ok(OpenedSideload::Server(adb.open_sideload(name)?)),
+        }
     }
 }

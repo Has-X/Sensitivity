@@ -80,7 +80,7 @@
   "{device} is ready": "{device} is klaar",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery gereed",
-  "The direct USB handshake and device queries succeeded.": "De directe USB handshake- en apparaatquery's zijn geslaagd.",
+  "The recovery handshake and device queries succeeded.": "De verbinding met recovery en de apparaatquery's zijn geslaagd.",
   "Reading recovery information…": "Herstelinformatie lezen...",
   "Ready to validate and flash": "Klaar om te valideren en te flashen",
   "Choose a ROM": "Kies een ROM",

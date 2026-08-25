@@ -80,7 +80,7 @@
   "{device} is ready": "{device} hazır",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery hazır",
-  "The direct USB handshake and device queries succeeded.": "Doğrudan USB anlaşması ve cihaz sorguları başarılı oldu.",
+  "The recovery handshake and device queries succeeded.": "Recovery bağlantısı ve cihaz sorguları başarılı oldu.",
   "Reading recovery information…": "Kurtarma bilgileri okunuyor…",
   "Ready to validate and flash": "Doğrulamaya ve flaşa hazır",
   "Choose a ROM": "Bir ROM seçin",

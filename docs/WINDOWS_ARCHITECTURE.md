@@ -52,11 +52,11 @@ user's local application-data directory.
 
 ## ADB coexistence
 
-The safe default is to leave the user's ADB server running. If Windows reports
-that the recovery USB interface is busy, the app offers to stop ADB once and
-retry; it does not silently disrupt another debugging session. Users with a
-persistently conflicting setup can opt into stopping ADB before every direct
-USB connection.
+The safe default is to leave the user's ADB server running. If it already owns
+a Mi Recovery interface, the Rust backend selects that recovery through the
+local ADB server and leaves unrelated Android debugging sessions connected.
+Direct USB remains the fallback. Stopping ADB is an explicit override because
+it disrupts every device attached to that server.
 
 ## Build and release
 

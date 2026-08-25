@@ -18,7 +18,7 @@ The duplicate `miassistant` executable has been retired. Update scripts to use `
 
 ## Behavioral differences
 
-- Sensitivity leaves the desktop ADB server alone by default. Use `--adb-policy stop` only when diagnostics show that ADB owns the recovery interface.
+- Sensitivity leaves the desktop ADB server alone by default and reuses a matching Mi Recovery transport when ADB already owns it. Use `--adb-policy stop` only to force the direct USB fallback.
 - Sensitivity requires HTTPS for Xiaomi validation unless the hidden advanced override is explicitly supplied.
 - Downloads are written to a hidden partial file and only replace the destination after MD5 verification.
 - Ctrl-C or the GUI Cancel button requests a graceful close after the current USB operation.
