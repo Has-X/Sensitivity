@@ -80,7 +80,7 @@
   "{device} is ready": "{device} तैयार है",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery तैयार",
-  "The direct USB handshake and device queries succeeded.": "प्रत्यक्ष USB हैंडशेक और डिवाइस क्वेरी सफल रहीं।",
+  "The recovery handshake and device queries succeeded.": "रिकवरी हैंडशेक और डिवाइस क्वेरी सफल रहीं।",
   "Reading recovery information…": "पुनर्प्राप्ति जानकारी पढ़ें...",
   "Ready to validate and flash": "सत्यापित करने और फ़्लैश करने के लिए तैयार",
   "Choose a ROM": "चुनें ROM",

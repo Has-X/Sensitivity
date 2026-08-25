@@ -84,7 +84,7 @@
   "{device} is ready": "{device} készen áll",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery készen áll",
-  "The direct USB handshake and device queries succeeded.": "A közvetlen USB-kézfogás és az eszközlekérdezések sikeresek.",
+  "The recovery handshake and device queries succeeded.": "A recovery-kapcsolat és az eszközlekérdezések sikeresek.",
   "Reading recovery information…": "Recovery-információk beolvasása…",
   "Ready to validate and flash": "Kész az ellenőrzésre és flashelésre",
   "Select an official Recovery ROM ZIP before continuing.": "A folytatás előtt válassz hivatalos Recovery ROM ZIP-et.",

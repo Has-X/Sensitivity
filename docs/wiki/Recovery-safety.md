@@ -13,10 +13,16 @@ The `doctor`, `devices`, and `info` commands are read-only. ADB is preserved by 
 
 ## Validation diagnostics
 
-If Xiaomi accepts a request but does not return a usable validation token, save a redacted response for the issue report:
+Check a local package without opening sideload, and save a redacted response for troubleshooting:
 
 ```console
-sensitivity flash ROM.zip --dump-json validation-shape.json
+sensitivity flash ROM.zip --validate-only --dump-json validation-shape.json
+```
+
+To inspect Xiaomi's package-discovery response without downloading a ROM:
+
+```console
+sensitivity list-allowed-roms --dump-json discovery-shape.json
 ```
 
 On Windows, use `sensitivity-cli.exe`. The diagnostic keeps JSON field names and value types while replacing every scalar value. It does not contain the validation token, device serial number, server message, or ROM URL. Review any diagnostic file before attaching it to a public issue.

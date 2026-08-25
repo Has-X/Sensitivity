@@ -80,7 +80,7 @@
   "{device} is ready": "{device} je pripravený",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery pripravený",
-  "The direct USB handshake and device queries succeeded.": "Priame handshake USB a dopyty na zariadenie boli úspešné.",
+  "The recovery handshake and device queries succeeded.": "Pripojenie k recovery a dopyty na zariadenie boli úspešné.",
   "Reading recovery information…": "Čítanie informácií o obnovení…",
   "Ready to validate and flash": "Pripravené na overenie a flash",
   "Choose a ROM": "Vyberte ROM",

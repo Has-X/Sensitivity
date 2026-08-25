@@ -80,7 +80,7 @@
   "{device} is ready": "{device} is ready",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery ready",
-  "The direct USB handshake and device queries succeeded.": "The direct USB handshake and device queries succeeded.",
+  "The recovery handshake and device queries succeeded.": "Povezivanje sa recovery okruženjem i upiti uređaja su uspeli.",
   "Reading recovery information…": "Читање информација о опоравку…",
   "Ready to validate and flash": "Спреман за потврду и флеш",
   "Choose a ROM": "Choose a ROM",

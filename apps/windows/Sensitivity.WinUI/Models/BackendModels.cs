@@ -20,11 +20,25 @@ public sealed class UsbDevice
     [JsonPropertyName("product_id")]
     public int ProductId { get; set; }
 
+    [JsonPropertyName("transport")]
+    public string Transport { get; set; } = "usb";
+
+    [JsonPropertyName("transport_id")]
+    public long? TransportId { get; set; }
+
+    [JsonPropertyName("recovery_device")]
+    public string? RecoveryDevice { get; set; }
+
+    [JsonPropertyName("model")]
+    public string? Model { get; set; }
+
     [JsonPropertyName("protocol")]
     public int Protocol { get; set; }
 
     [JsonIgnore]
-    public string DisplayName => $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {VendorId:x4}:{ProductId:x4}  ·  USB {Bus}/{Address}";
+    public string DisplayName => Transport == "adb-server"
+        ? $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {RecoveryDevice ?? Model ?? LocalizationService.Get("label.recovery_device")}  ·  ADB"
+        : $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {VendorId:x4}:{ProductId:x4}  ·  USB {Bus}/{Address}";
 }
 
 public sealed class DeviceInfo

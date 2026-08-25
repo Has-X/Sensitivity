@@ -1,6 +1,6 @@
 # Sensitivity Wiki
 
-Sensitivity is direct USB recovery tooling for Xiaomi devices. The project includes a Rust CLI, a native Fluent 2 WinUI 3 Windows application, and portable Linux and macOS interfaces. The Windows app follows system light or dark mode and accent color, uses Mica where available, and ships as a native x64 or ARM64 package. It is developed and published by [Chromatic](https://chromatic.hu).
+Sensitivity is USB recovery tooling for Xiaomi devices. It can reuse an existing local ADB server for Mi Recovery while keeping other Android devices connected, with direct USB as a fallback. The project includes a Rust CLI, a native Fluent 2 WinUI 3 Windows application, and portable Linux and macOS interfaces. The Windows app follows system light or dark mode and accent color, uses Mica where available, and ships as a native x64 or ARM64 package. It is developed and published by [Chromatic](https://chromatic.hu).
 
 ## Start here
 

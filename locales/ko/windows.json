@@ -80,7 +80,7 @@
   "{device} is ready": "{device}이(가) 준비되었습니다",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery 준비됨",
-  "The direct USB handshake and device queries succeeded.": "직접 USB 핸드셰이크 및 장치 쿼리가 성공했습니다.",
+  "The recovery handshake and device queries succeeded.": "복구 연결 및 기기 정보 조회에 성공했습니다.",
   "Reading recovery information…": "복구 정보 읽기…",
   "Ready to validate and flash": "검증 및 플래시 준비가 완료되었습니다.",
   "Choose a ROM": "ROM을(를) 선택하세요",

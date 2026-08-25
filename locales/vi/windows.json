@@ -80,7 +80,7 @@
   "{device} is ready": "{device} đã sẵn sàng",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery sẵn sàng",
-  "The direct USB handshake and device queries succeeded.": "Bắt tay trực tiếp USB truy vấn thiết bị và bắt tay đã thành công.",
+  "The recovery handshake and device queries succeeded.": "Kết nối recovery và truy vấn thiết bị đã thành công.",
   "Reading recovery information…": "Đang đọc thông tin khôi phục…",
   "Ready to validate and flash": "Sẵn sàng xác thực và flash",
   "Choose a ROM": "Chọn một ROM",

@@ -86,7 +86,7 @@
   "connection.ready": "{device} is ready",
   "connection.details": "Recovery {version} · {region} {romzone}",
   "status.recovery_ready": "Recovery ready",
-  "status.handshake_ok": "The direct USB handshake and device queries succeeded.",
+  "status.handshake_ok": "The recovery handshake and device queries succeeded.",
   "status.reading_recovery": "Reading recovery information…",
   "status.ready_to_flash": "Ready to validate and flash",
   "dialog.choose_rom": "Choose a ROM",

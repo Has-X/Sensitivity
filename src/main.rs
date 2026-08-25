@@ -135,7 +135,11 @@ enum Commands {
         json: bool,
     },
     /// Query the server and list allowed ROMs
-    ListAllowedRoms,
+    ListAllowedRoms {
+        /// Write a redacted validation response to PATH for troubleshooting
+        #[arg(long, value_name = "PATH")]
+        dump_json: Option<PathBuf>,
+    },
     /// Validate and sideload the given Recovery ROM zip
     Flash {
         path: PathBuf,
@@ -151,6 +155,9 @@ enum Commands {
         /// Write a redacted validation response to PATH for troubleshooting
         #[arg(long, value_name = "PATH")]
         dump_json: Option<PathBuf>,
+        /// Validate with Xiaomi and stop before sideloading
+        #[arg(long, conflicts_with = "token")]
+        validate_only: bool,
     },
     /// Erase user data, then reboot
     FormatData {
@@ -220,6 +227,20 @@ fn run() -> Result<()> {
 
     // Open USB transport
     let make_client = || -> Result<MiClient> {
+        if cli.adb_policy == AdbPolicy::Keep && adb_was_running {
+            let recoveries = util::adb_server::discover_mi_recoveries(Duration::from_secs(3))
+                .context("Discovering Mi Recovery devices through the running ADB server")?;
+            if !recoveries.is_empty() {
+                let recovery = recoveries.get(cli.device_index).ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "Device index {} out of range ({} found through ADB server)",
+                        cli.device_index,
+                        recoveries.len()
+                    )
+                })?;
+                return Ok(MiClient::from_adb_server(recovery.transport_id));
+            }
+        }
         let transport =
             UsbTransport::open(cli.device_index, cli.debug_usb).context(tr("error.open_usb"))?;
         MiClient::new(transport).context(tr("error.init_adb"))
@@ -232,7 +253,8 @@ fn run() -> Result<()> {
             return Ok(());
         }
         Commands::Devices { json } => {
-            let devices = UsbTransport::discover().context(tr("error.discover_usb"))?;
+            let devices = discover_recovery_interfaces(cli.adb_policy, adb_was_running)
+                .context(tr("error.discover_usb"))?;
             if *json {
                 println!("{}", serde_json::to_string_pretty(&devices)?);
             } else if devices.is_empty() {
@@ -286,7 +308,8 @@ fn run() -> Result<()> {
                     )]
                 )
             );
-            let devices = UsbTransport::discover().context(tr("error.discover_usb"))?;
+            let devices = discover_recovery_interfaces(cli.adb_policy, adb_was_running)
+                .context(tr("error.discover_usb"))?;
             println!(
                 "{}",
                 trf(
@@ -356,7 +379,7 @@ fn run() -> Result<()> {
         Commands::Devices { .. } => unreachable!("devices returns before USB command dispatch"),
         Commands::Doctor => unreachable!("doctor returns before USB command dispatch"),
         Commands::Detect => {
-            println!("{}", tr("status.device_detected"));
+            println!("{}", tr("status.recovery_ready"));
         }
         Commands::Info { json } => {
             let info = client.read_all_info().context(tr("error.fetch_device"))?;
@@ -474,7 +497,7 @@ fn run() -> Result<()> {
             .context(tr("error.sideload"))?;
             emit_completed(cli.machine, &tr("status.flash_completed"));
         }
-        Commands::ListAllowedRoms => {
+        Commands::ListAllowedRoms { dump_json } => {
             let info = effective_device_info(
                 &identity,
                 client.read_all_info().context(tr("error.fetch_device"))?,
@@ -483,7 +506,10 @@ fn run() -> Result<()> {
                 validate::build_request_json(&info, None).context(tr("error.build_validation"))?;
             let resp = validate::validate(&cli.server_url, &req_json)
                 .context(tr("error.validation_http"))?;
-            validate::print_allowed(&resp);
+            if let Some(path) = dump_json.as_deref() {
+                write_redacted_validation_response(&resp, path)?;
+            }
+            validate::print_allowed(&resp)?;
         }
         Commands::Flash {
             path,
@@ -491,6 +517,7 @@ fn run() -> Result<()> {
             token,
             wipe,
             dump_json,
+            validate_only,
         } => {
             if !path.exists() {
                 bail!(
@@ -537,10 +564,7 @@ fn run() -> Result<()> {
                     let r = validate::validate(&cli.server_url, &req_json)
                         .context(tr("error.validation_http"))?;
                     if let Some(path) = dump_json.as_deref() {
-                        let diagnostic = validate::redacted_response_json(&r)?;
-                        std::fs::write(path, diagnostic).with_context(|| {
-                            format!("Writing redacted validation response to {}", path.display())
-                        })?;
+                        write_redacted_validation_response(&r, path)?;
                     }
                     if let Some(msg) = r.code_message.as_deref() {
                         println!("{}", trf("status.server_message", &[("{message}", msg)]));
@@ -553,6 +577,10 @@ fn run() -> Result<()> {
                     t
                 }
             };
+            if validate_only {
+                emit_status(cli.machine, &tr("status.ready_result"));
+                return Ok(());
+            }
             if let Some(v) = &resp.pkgrom_validate {
                 if v.is_empty() {
                     eprintln!("No allowed ROMs reported by server (Validate array empty). Proceeding may fail.");
@@ -609,6 +637,15 @@ fn reset_control_file(path: Option<&Path>) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn write_redacted_validation_response(
+    result: &validate::ValidateResult,
+    path: &Path,
+) -> Result<()> {
+    let diagnostic = validate::redacted_response_json(result)?;
+    std::fs::write(path, diagnostic)
+        .with_context(|| format!("Writing redacted validation response to {}", path.display()))
 }
 
 fn emit_machine_event(event: serde_json::Value) {
@@ -729,6 +766,14 @@ fn install_cancel_handler(cancel_file: Option<&Path>) -> Result<Arc<AtomicBool>>
 }
 
 fn print_usb_device(device: &sensitivity::usb::UsbDeviceInfo) {
+    if device.transport == "adb-server" {
+        println!(
+            "  [{}] {} via the running ADB server",
+            device.index,
+            device.recovery_device.as_deref().unwrap_or("Mi Recovery")
+        );
+        return;
+    }
     println!(
         "  [{}] {:04x}:{:04x} bus {} address {} interface {} endpoints 0x{:02x}/0x{:02x}",
         device.index,
@@ -740,6 +785,37 @@ fn print_usb_device(device: &sensitivity::usb::UsbDeviceInfo) {
         device.endpoint_in,
         device.endpoint_out
     );
+}
+
+fn discover_recovery_interfaces(
+    adb_policy: AdbPolicy,
+    adb_server_running: bool,
+) -> Result<Vec<sensitivity::usb::UsbDeviceInfo>> {
+    if adb_policy == AdbPolicy::Keep && adb_server_running {
+        let recoveries = util::adb_server::discover_mi_recoveries(Duration::from_secs(3))?;
+        if !recoveries.is_empty() {
+            return Ok(recoveries
+                .into_iter()
+                .enumerate()
+                .map(|(index, recovery)| sensitivity::usb::UsbDeviceInfo {
+                    index,
+                    transport: "adb-server".to_owned(),
+                    transport_id: Some(recovery.transport_id),
+                    bus: 0,
+                    address: 0,
+                    vendor_id: 0,
+                    product_id: 0,
+                    interface: 0,
+                    protocol: 1,
+                    endpoint_in: 0,
+                    endpoint_out: 0,
+                    recovery_device: Some(recovery.recovery_device),
+                    model: recovery.model,
+                })
+                .collect());
+        }
+    }
+    UsbTransport::discover()
 }
 
 fn adb_may_own_interface(error: &anyhow::Error) -> bool {
@@ -881,6 +957,45 @@ mod cli_tests {
                 ..
             } if path.as_path() == Path::new("validation-shape.json")
         ));
+    }
+
+    #[test]
+    fn list_allowed_roms_redacted_diagnostic_path_parses() {
+        let cli = Cli::try_parse_from([
+            "sensitivity",
+            "list-allowed-roms",
+            "--dump-json",
+            "validation-shape.json",
+        ])
+        .unwrap();
+        assert!(matches!(
+            cli.command,
+            Commands::ListAllowedRoms {
+                dump_json: Some(path)
+            } if path.as_path() == Path::new("validation-shape.json")
+        ));
+    }
+
+    #[test]
+    fn flash_validate_only_parses() {
+        let cli =
+            Cli::try_parse_from(["sensitivity", "flash", "rom.zip", "--validate-only"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Commands::Flash {
+                validate_only: true,
+                ..
+            }
+        ));
+        assert!(Cli::try_parse_from([
+            "sensitivity",
+            "flash",
+            "rom.zip",
+            "--validate-only",
+            "--token",
+            "private-token",
+        ])
+        .is_err());
     }
 
     #[test]

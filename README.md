@@ -115,12 +115,13 @@ On Windows, the packaged command is `sensitivity-cli.exe` (or `sensitivity-cli` 
 ```console
 sensitivity doctor                       # diagnose USB and local ADB coexistence
 sensitivity devices                      # list matching USB interfaces without claiming them
-sensitivity detect                       # verify the direct-USB protocol handshake
+sensitivity detect                       # verify the recovery protocol handshake
 sensitivity info                         # human-readable device information
 sensitivity info --json                  # stable output for scripts
 sensitivity completions bash             # generate shell completion definitions
 sensitivity list-allowed-roms             # query packages accepted for this device
 sensitivity download-latest               # download and verify the latest approved ROM
+sensitivity flash ROM.zip --validate-only # validate without starting sideload
 sensitivity flash ROM.zip                 # validate and flash a local package
 sensitivity flash-from-latest             # download, validate, and flash
 sensitivity reboot                        # leave recovery
@@ -136,14 +137,14 @@ The supported profiles are `global`, `eea`, `in`, `ru`, `id`, `tr`, `tw`, and `c
 
 ## ADB coexistence
 
-Sensitivity uses direct USB and leaves a local Android Debug Bridge server untouched by default. If `adb` already owns the recovery interface, stop it only for this invocation:
+Sensitivity leaves a local Android Debug Bridge server untouched by default. When that server already owns a Mi Recovery interface, Sensitivity reuses the matching recovery transport while keeping unrelated Android devices connected. It falls back to direct USB when no compatible recovery is available through ADB. To force direct USB for one invocation:
 
 ```console
 sensitivity --adb-policy stop doctor
 sensitivity --adb-policy stop flash ROM.zip
 ```
 
-Sensitivity never occupies port 5037 and only asks the ADB server to stop when you choose that policy. The Windows app detects likely ownership conflicts, explains the impact, and asks before retrying.
+Sensitivity only asks the ADB server to stop when you choose that policy. The Windows app lists Mi Recovery transports without presenting normal Android devices as recovery targets. Existing debugging sessions remain connected when the default policy is used.
 
 Users and scripts moving from the older project should read [Migrating from MiAssistantFork](docs/MIGRATING_FROM_MAF.md).
 

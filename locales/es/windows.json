@@ -83,7 +83,7 @@
   "{device} is ready": "{device} está listo",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery listo",
-  "The direct USB handshake and device queries succeeded.": "El handshake USB directo y las consultas del dispositivo fueron correctos.",
+  "The recovery handshake and device queries succeeded.": "La conexión con el recovery y las consultas del dispositivo se completaron correctamente.",
   "Reading recovery information…": "Leyendo información del recovery…",
   "Ready to validate and flash": "Listo para validar y flashear",
   "Select an official Recovery ROM ZIP before continuing.": "Selecciona un ZIP de ROM Recovery oficial antes de continuar.",

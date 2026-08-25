@@ -235,6 +235,8 @@ public sealed partial class MainWindow : Window
     private async void DevicePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _hasRecoveryDevice = DevicePicker.SelectedItem is UsbDevice;
+        StopAdbToggle.IsEnabled = DevicePicker.SelectedItem is not UsbDevice selected
+            || !string.Equals(selected.Transport, "adb-server", StringComparison.Ordinal);
         UpdateDeviceActionState();
         ClearDeviceInfo();
         if (DevicePicker.SelectedItem is UsbDevice)
@@ -258,9 +260,9 @@ public sealed partial class MainWindow : Window
             DeviceInfo info;
             try
             {
-                info = await _backend.GetDeviceInfoAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
+                info = await _backend.GetDeviceInfoAsync(device.Index, ShouldStopAdb(device), cancellationToken);
             }
-            catch (Exception error) when (!StopAdbToggle.IsOn
+            catch (Exception error) when (!ShouldStopAdb(device)
                 && AutoResolveAdbToggle.IsOn
                 && SensitivityBackend.IsUsbOwnershipError(error))
             {
@@ -349,7 +351,7 @@ public sealed partial class MainWindow : Window
         }
         await RunBusyAsync(async cancellationToken =>
         {
-            var result = await _backend.ListAllowedRomsAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
+            var result = await _backend.ListAllowedRomsAsync(device.Index, ShouldStopAdb(device), cancellationToken);
             AllowedRomsText.Text = string.Join(Environment.NewLine, new[] { result.StandardOutput.Trim(), result.StandardError.Trim() }.Where(text => !string.IsNullOrWhiteSpace(text)));
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
         }, L("status.fetching_allowed"));
@@ -364,7 +366,7 @@ public sealed partial class MainWindow : Window
         }
         await RunBusyAsync(async cancellationToken =>
         {
-            var result = await _backend.DownloadLatestAsync(device.Index, DownloadDirectoryText.Text, StopAdbToggle.IsOn, cancellationToken);
+            var result = await _backend.DownloadLatestAsync(device.Index, DownloadDirectoryText.Text, ShouldStopAdb(device), cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
             var romPath = ExtractDownloadedRomPath(result.StandardOutput) ?? FindDownloadedRom();
             if (romPath is not null)
@@ -458,6 +460,9 @@ public sealed partial class MainWindow : Window
             : null;
     }
 
+    private bool ShouldStopAdb(UsbDevice device)
+        => StopAdbToggle.IsOn && !string.Equals(device.Transport, "adb-server", StringComparison.Ordinal);
+
     private async void FlashLatestButton_Click(object sender, RoutedEventArgs e)
     {
         if (DevicePicker.SelectedItem is not UsbDevice device)
@@ -470,7 +475,7 @@ public sealed partial class MainWindow : Window
         SetBusy(true, L("status.downloading_latest"));
         try
         {
-            var result = await _backend.FlashLatestAsync(device.Index, DownloadDirectoryText.Text, StopAdbToggle.IsOn, HandleBackendEventAsync, _operationCancellation.Token);
+            var result = await _backend.FlashLatestAsync(device.Index, DownloadDirectoryText.Text, ShouldStopAdb(device), HandleBackendEventAsync, _operationCancellation.Token);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
             FlashProgress.Value = 100;
             ProgressPercentText.Text = "100%";
@@ -523,7 +528,7 @@ public sealed partial class MainWindow : Window
             var result = await _backend.FlashAsync(
                 device.Index,
                 _romPath,
-                StopAdbToggle.IsOn,
+                ShouldStopAdb(device),
                 HandleBackendEventAsync,
                 _operationCancellation.Token);
             if (_operationCancellation.IsCancellationRequested)
@@ -604,7 +609,7 @@ public sealed partial class MainWindow : Window
         }
         await RunBusyAsync(async cancellationToken =>
         {
-            var result = await _backend.RebootAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
+            var result = await _backend.RebootAsync(device.Index, ShouldStopAdb(device), cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
             ShowStatus(L("status.reboot_requested"), L("status.reboot_detail"), InfoBarSeverity.Success);
         }, L("status.sending_reboot"));
@@ -627,7 +632,7 @@ public sealed partial class MainWindow : Window
         }
         await RunBusyAsync(async cancellationToken =>
         {
-            var result = await _backend.FormatDataAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
+            var result = await _backend.FormatDataAsync(device.Index, ShouldStopAdb(device), cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
             ShowStatus(L("status.erase_requested"), L("status.erase_detail"), InfoBarSeverity.Success);
         }, L("status.erasing"));
@@ -635,10 +640,12 @@ public sealed partial class MainWindow : Window
 
     private async void RunDoctorButton_Click(object sender, RoutedEventArgs e)
     {
-        var index = (DevicePicker.SelectedItem as UsbDevice)?.Index ?? 0;
+        var selectedDevice = DevicePicker.SelectedItem as UsbDevice;
+        var index = selectedDevice?.Index ?? 0;
+        var stopAdb = selectedDevice is null ? StopAdbToggle.IsOn : ShouldStopAdb(selectedDevice);
         await RunBusyAsync(async cancellationToken =>
         {
-            var result = await _backend.RunDoctorAsync(index, StopAdbToggle.IsOn, cancellationToken);
+            var result = await _backend.RunDoctorAsync(index, stopAdb, cancellationToken);
             DiagnosticsText.Text = string.Join(
                 Environment.NewLine,
                 new[] { result.StandardOutput.Trim(), result.StandardError.Trim() }
@@ -660,7 +667,7 @@ public sealed partial class MainWindow : Window
 
         await RunBusyAsync(async cancellationToken =>
         {
-            var result = await _backend.DetectAsync(device.Index, StopAdbToggle.IsOn, cancellationToken);
+            var result = await _backend.DetectAsync(device.Index, ShouldStopAdb(device), cancellationToken);
             DiagnosticsText.Text = string.Join(
                 Environment.NewLine,
                 new[] { result.StandardOutput.Trim(), result.StandardError.Trim() }
