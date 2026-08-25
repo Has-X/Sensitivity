@@ -115,12 +115,13 @@ On Windows, the packaged command is `sensitivity-cli.exe` (or `sensitivity-cli` 
 ```console
 sensitivity doctor                       # diagnose USB and local ADB coexistence
 sensitivity devices                      # list matching USB interfaces without claiming them
-sensitivity detect                       # verify the direct-USB protocol handshake
+sensitivity detect                       # verify the recovery protocol handshake
 sensitivity info                         # human-readable device information
 sensitivity info --json                  # stable output for scripts
 sensitivity completions bash             # generate shell completion definitions
 sensitivity list-allowed-roms             # query packages accepted for this device
 sensitivity download-latest               # download and verify the latest approved ROM
+sensitivity flash ROM.zip --validate-only # validate without starting sideload
 sensitivity flash ROM.zip                 # validate and flash a local package
 sensitivity flash-from-latest             # download, validate, and flash
 sensitivity reboot                        # leave recovery

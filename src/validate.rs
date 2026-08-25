@@ -258,29 +258,24 @@ pub fn validate(server_url: &str, json_body: &str) -> Result<ValidateResult> {
     parse_validation_response(&json_text)
 }
 
-pub fn print_allowed(res: &ValidateResult) {
+pub fn print_allowed(res: &ValidateResult) -> Result<()> {
     // Prefer explicit allowed list (PkgRom.Validate)
     if let Some(list) = &res.pkgrom_validate {
         if list.is_empty() {
-            println!("{}", tr("status.no_allowed_roms"));
+            bail!("{}", tr("status.no_allowed_roms"));
         } else {
             println!("{}", tr("status.allowed_roms"));
             for s in list {
                 println!("- {}", s);
             }
         }
-        return;
+        return Ok(());
     }
 
     // Fallback: parse top-level JSON and print entries with name/md5 (as miasst.c does for list-allowed-roms)
     if let Some(json_str) = &res.full_json {
         if let Ok(val) = serde_json::from_str::<serde_json::Value>(json_str) {
             if let Some(obj) = val.as_object() {
-                // Detect invalid data like C code
-                if obj.contains_key("Signup") || obj.contains_key("VersionBoot") {
-                    eprintln!("{}: Invalid data", tr("error.prefix"));
-                    return;
-                }
                 let mut printed = false;
                 for (k, v) in obj {
                     if k == "Icon" {
@@ -296,18 +291,13 @@ pub fn print_allowed(res: &ValidateResult) {
                     }
                 }
                 if printed {
-                    return;
+                    return Ok(());
                 }
             }
         }
     }
 
-    // Last resort: print server message if any
-    if let Some(msg) = &res.code_message {
-        println!("{}", msg);
-    } else {
-        println!("{}", tr("status.no_allowed_roms"));
-    }
+    bail!("{}", tr("status.no_allowed_roms"))
 }
 
 #[cfg(test)]
@@ -391,5 +381,30 @@ mod tests {
         assert!(diagnostic.contains("Unexpected"));
         assert!(diagnostic.contains("Value"));
         assert!(!diagnostic.contains("private"));
+    }
+
+    #[test]
+    fn response_without_a_package_is_not_reported_as_success() {
+        let result = parse_validation_response(
+            r#"{"AuthResult":0,"Code":{"code":0,"message":"success"},"Signup":{},"patchInfo":[]}"#,
+        )
+        .unwrap();
+
+        assert!(print_allowed(&result).is_err());
+    }
+
+    #[test]
+    fn latest_rom_is_accepted_alongside_account_metadata() {
+        let result = parse_validation_response(
+            r#"{
+                "Code":{"code":0,"message":"success"},
+                "Signup":{"rank":"0"},
+                "VersionBoot":"1",
+                "LatestRom":{"name":"ROM","md5":"0123456789abcdef0123456789abcdef"}
+            }"#,
+        )
+        .unwrap();
+
+        assert!(print_allowed(&result).is_ok());
     }
 }
