@@ -711,7 +711,7 @@ impl SensitivityApp {
                 Message::Downloaded(path) => {
                     self.rom_path = Some(path.clone());
                     self.validated = None;
-                    self.log(format!("Downloaded and MD5-verified: {}", path.display()));
+                    self.log(self.t("status.downloaded"));
                 }
                 Message::Validated {
                     path,

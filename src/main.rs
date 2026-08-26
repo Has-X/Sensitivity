@@ -228,17 +228,18 @@ fn run() -> Result<()> {
     // Open USB transport
     let make_client = || -> Result<MiClient> {
         if cli.adb_policy == AdbPolicy::Keep && adb_was_running {
-            let recoveries = util::adb_server::discover_mi_recoveries(Duration::from_secs(3))
-                .context("Discovering Mi Recovery devices through the running ADB server")?;
-            if !recoveries.is_empty() {
-                let recovery = recoveries.get(cli.device_index).ok_or_else(|| {
-                    anyhow::anyhow!(
-                        "Device index {} out of range ({} found through ADB server)",
-                        cli.device_index,
-                        recoveries.len()
-                    )
-                })?;
-                return Ok(MiClient::from_adb_server(recovery.transport_id));
+            if let Ok(recoveries) = util::adb_server::discover_mi_recoveries(Duration::from_secs(3))
+            {
+                if !recoveries.is_empty() {
+                    let recovery = recoveries.get(cli.device_index).ok_or_else(|| {
+                        anyhow::anyhow!(
+                            "Device index {} out of range ({} found through ADB server)",
+                            cli.device_index,
+                            recoveries.len()
+                        )
+                    })?;
+                    return Ok(MiClient::from_adb_server(recovery.transport_id));
+                }
             }
         }
         let transport =
@@ -792,27 +793,28 @@ fn discover_recovery_interfaces(
     adb_server_running: bool,
 ) -> Result<Vec<sensitivity::usb::UsbDeviceInfo>> {
     if adb_policy == AdbPolicy::Keep && adb_server_running {
-        let recoveries = util::adb_server::discover_mi_recoveries(Duration::from_secs(3))?;
-        if !recoveries.is_empty() {
-            return Ok(recoveries
-                .into_iter()
-                .enumerate()
-                .map(|(index, recovery)| sensitivity::usb::UsbDeviceInfo {
-                    index,
-                    transport: "adb-server".to_owned(),
-                    transport_id: Some(recovery.transport_id),
-                    bus: 0,
-                    address: 0,
-                    vendor_id: 0,
-                    product_id: 0,
-                    interface: 0,
-                    protocol: 1,
-                    endpoint_in: 0,
-                    endpoint_out: 0,
-                    recovery_device: Some(recovery.recovery_device),
-                    model: recovery.model,
-                })
-                .collect());
+        if let Ok(recoveries) = util::adb_server::discover_mi_recoveries(Duration::from_secs(3)) {
+            if !recoveries.is_empty() {
+                return Ok(recoveries
+                    .into_iter()
+                    .enumerate()
+                    .map(|(index, recovery)| sensitivity::usb::UsbDeviceInfo {
+                        index,
+                        transport: "adb-server".to_owned(),
+                        transport_id: Some(recovery.transport_id),
+                        bus: 0,
+                        address: 0,
+                        vendor_id: 0,
+                        product_id: 0,
+                        interface: 0,
+                        protocol: 1,
+                        endpoint_in: 0,
+                        endpoint_out: 0,
+                        recovery_device: Some(recovery.recovery_device),
+                        model: recovery.model,
+                    })
+                    .collect());
+            }
         }
     }
     UsbTransport::discover()

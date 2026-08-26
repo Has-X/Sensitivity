@@ -37,7 +37,9 @@ public sealed class UsbDevice
 
     [JsonIgnore]
     public string DisplayName => Transport == "adb-server"
-        ? $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {RecoveryDevice ?? Model ?? LocalizationService.Get("label.recovery_device")}  ·  ADB"
+        ? string.IsNullOrWhiteSpace(RecoveryDevice) && string.IsNullOrWhiteSpace(Model)
+            ? $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  ADB"
+            : $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {(string.IsNullOrWhiteSpace(RecoveryDevice) ? Model : RecoveryDevice)}  ·  ADB"
         : $"{LocalizationService.Get("label.recovery_device")} {Index + 1}  ·  {VendorId:x4}:{ProductId:x4}  ·  USB {Bus}/{Address}";
 }
 
