@@ -7,7 +7,7 @@ use anyhow::{anyhow, bail, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
 use cbc::cipher::{block_padding::Pkcs7, BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
 use reqwest::blocking::Client;
-use serde::Deserialize;
+use serde_json::{Map, Value};
 use std::time::Duration;
 
 use crate::mi::DeviceInfo;
@@ -113,35 +113,114 @@ fn extract_json_braces(text: &str) -> Option<String> {
     Some(text[start..=end].to_string())
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(untagged)]
-enum ValidateField {
-    Str(String),
-    Arr(Vec<String>),
+fn object_value_ci<'a>(object: &'a Map<String, Value>, key: &str) -> Option<&'a Value> {
+    object
+        .iter()
+        .find_map(|(name, value)| name.eq_ignore_ascii_case(key).then_some(value))
 }
 
-#[derive(Debug, Deserialize)]
-struct ResponsePkgRom {
-    #[serde(default, rename = "Validate")]
-    validate: Option<ValidateField>,
-    #[serde(default, rename = "Erase")]
-    erase: Option<i32>,
-    #[serde(default, rename = "Token")]
-    token: Option<String>,
+fn find_key_recursive_ci<'a>(value: &'a Value, key: &str) -> Option<&'a Value> {
+    match value {
+        Value::Object(object) => object_value_ci(object, key).or_else(|| {
+            object
+                .values()
+                .find_map(|child| find_key_recursive_ci(child, key))
+        }),
+        Value::Array(items) => items
+            .iter()
+            .find_map(|child| find_key_recursive_ci(child, key)),
+        _ => None,
+    }
 }
 
-#[derive(Debug, Deserialize)]
-struct ResponseCode {
-    #[serde(default)]
-    message: String,
+fn non_empty_string(value: &Value) -> Option<String> {
+    value
+        .as_str()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToOwned::to_owned)
 }
 
-#[derive(Debug, Deserialize)]
-struct ResponseRoot {
-    #[serde(default, rename = "PkgRom")]
-    pkg_rom: Option<ResponsePkgRom>,
-    #[serde(default, rename = "Code")]
-    code: Option<ResponseCode>,
+fn token_from_validate(value: &Value) -> Option<String> {
+    if let Some(token) = non_empty_string(value) {
+        return Some(token);
+    }
+    let object = value.as_object()?;
+    object_value_ci(object, "token")
+        .and_then(non_empty_string)
+        .or_else(|| object_value_ci(object, "validate").and_then(token_from_validate))
+}
+
+fn erase_value(value: &Value) -> Option<i32> {
+    value
+        .as_i64()
+        .and_then(|number| i32::try_from(number).ok())
+        .or_else(|| value.as_str().and_then(|number| number.parse().ok()))
+        .or_else(|| value.as_bool().map(i32::from))
+}
+
+fn parse_validation_response(json_text: &str) -> Result<ValidateResult> {
+    let root: Value = serde_json::from_str(json_text).context("Parsing JSON in server response")?;
+    let mut out = ValidateResult {
+        full_json: Some(json_text.to_owned()),
+        ..ValidateResult::default()
+    };
+
+    if let Some(pkg) = find_key_recursive_ci(&root, "PkgRom") {
+        if let Some(object) = pkg.as_object() {
+            if let Some(validate) = object_value_ci(object, "Validate") {
+                if let Some(items) = validate.as_array() {
+                    out.pkgrom_validate = Some(
+                        items
+                            .iter()
+                            .filter_map(non_empty_string)
+                            .collect::<Vec<_>>(),
+                    );
+                } else {
+                    out.validate_token = token_from_validate(validate);
+                }
+            }
+            if out.validate_token.is_none() {
+                out.validate_token = object_value_ci(object, "Token").and_then(non_empty_string);
+            }
+            out.pkgrom_erase = object_value_ci(object, "Erase").and_then(erase_value);
+        }
+    }
+
+    if let Some(code) = find_key_recursive_ci(&root, "Code") {
+        out.code_message = code
+            .as_object()
+            .and_then(|object| object_value_ci(object, "message"))
+            .and_then(non_empty_string);
+    }
+
+    Ok(out)
+}
+
+fn redact_json_value(value: &Value) -> Value {
+    match value {
+        Value::Object(object) => Value::Object(
+            object
+                .iter()
+                .map(|(key, value)| (key.clone(), redact_json_value(value)))
+                .collect(),
+        ),
+        Value::Array(items) => Value::Array(items.iter().map(redact_json_value).collect()),
+        Value::String(_) => Value::String("<redacted>".to_owned()),
+        Value::Number(_) => Value::Number(0.into()),
+        Value::Bool(_) => Value::Bool(false),
+        Value::Null => Value::Null,
+    }
+}
+
+pub fn redacted_response_json(result: &ValidateResult) -> Result<String> {
+    let raw = result
+        .full_json
+        .as_deref()
+        .ok_or_else(|| anyhow!("No validation response JSON is available"))?;
+    let value: Value = serde_json::from_str(raw).context("Parsing validation response for dump")?;
+    serde_json::to_string_pretty(&redact_json_value(&value))
+        .context("Serializing redacted validation response")
 }
 
 pub fn validate(server_url: &str, json_body: &str) -> Result<ValidateResult> {
@@ -176,61 +255,27 @@ pub fn validate(server_url: &str, json_body: &str) -> Result<ValidateResult> {
     let preview = String::from_utf8_lossy(&plain);
     let json_text = extract_json_braces(&preview)
         .ok_or_else(|| anyhow!("No JSON object found in plaintext (len {})", plain.len()))?;
-    let root: ResponseRoot =
-        serde_json::from_str(&json_text).context("Parsing JSON in server response")?;
-    let mut out = ValidateResult::default();
-    if let Some(pkg) = root.pkg_rom {
-        if let Some(v) = pkg.validate {
-            match v {
-                ValidateField::Arr(list) => out.pkgrom_validate = Some(list),
-                ValidateField::Str(s) => out.validate_token = Some(s),
-            }
-        }
-        if out.validate_token.is_none() {
-            if let Some(tok) = pkg.token {
-                out.validate_token = Some(tok);
-            }
-        }
-        out.pkgrom_erase = pkg.erase;
-    }
-    if let Some(code) = root.code {
-        if !code.message.is_empty() {
-            out.code_message = Some(code.message);
-        }
-    }
-    out.full_json = Some(json_text.clone());
-    if out.pkgrom_validate.is_none() && out.code_message.is_none() {
-        bail!(
-            "Validation response missing expected keys (PkgRom.Validate or Code.message); decrypted payload was {} bytes",
-            plain.len()
-        );
-    }
-    Ok(out)
+    parse_validation_response(&json_text)
 }
 
-pub fn print_allowed(res: &ValidateResult) {
+pub fn print_allowed(res: &ValidateResult) -> Result<()> {
     // Prefer explicit allowed list (PkgRom.Validate)
     if let Some(list) = &res.pkgrom_validate {
         if list.is_empty() {
-            println!("{}", tr("status.no_allowed_roms"));
+            bail!("{}", tr("status.no_allowed_roms"));
         } else {
             println!("{}", tr("status.allowed_roms"));
             for s in list {
                 println!("- {}", s);
             }
         }
-        return;
+        return Ok(());
     }
 
     // Fallback: parse top-level JSON and print entries with name/md5 (as miasst.c does for list-allowed-roms)
     if let Some(json_str) = &res.full_json {
         if let Ok(val) = serde_json::from_str::<serde_json::Value>(json_str) {
             if let Some(obj) = val.as_object() {
-                // Detect invalid data like C code
-                if obj.contains_key("Signup") || obj.contains_key("VersionBoot") {
-                    eprintln!("{}: Invalid data", tr("error.prefix"));
-                    return;
-                }
                 let mut printed = false;
                 for (k, v) in obj {
                     if k == "Icon" {
@@ -246,18 +291,13 @@ pub fn print_allowed(res: &ValidateResult) {
                     }
                 }
                 if printed {
-                    return;
+                    return Ok(());
                 }
             }
         }
     }
 
-    // Last resort: print server message if any
-    if let Some(msg) = &res.code_message {
-        println!("{}", msg);
-    } else {
-        println!("{}", tr("status.no_allowed_roms"));
-    }
+    bail!("{}", tr("status.no_allowed_roms"))
 }
 
 #[cfg(test)]
@@ -277,5 +317,94 @@ mod tests {
         let s = "garbage { \"a\": 1 } trailing";
         let j = extract_json_braces(s).unwrap();
         assert_eq!(j, "{ \"a\": 1 }");
+    }
+
+    #[test]
+    fn parses_standard_validation_token() {
+        let result = parse_validation_response(
+            r#"{"PkgRom":{"Validate":"secret-token","Erase":1},"Code":{"message":"success"}}"#,
+        )
+        .unwrap();
+        assert_eq!(result.validate_token.as_deref(), Some("secret-token"));
+        assert_eq!(result.pkgrom_erase, Some(1));
+        assert_eq!(result.code_message.as_deref(), Some("success"));
+    }
+
+    #[test]
+    fn parses_case_insensitive_nested_validation_token() {
+        let result = parse_validation_response(
+            r#"{"data":{"pkgrom":{"validate":{"token":"nested-token"},"erase":"1"}},"code":{"MESSAGE":"success"}}"#,
+        )
+        .unwrap();
+        assert_eq!(result.validate_token.as_deref(), Some("nested-token"));
+        assert_eq!(result.pkgrom_erase, Some(1));
+        assert_eq!(result.code_message.as_deref(), Some("success"));
+    }
+
+    #[test]
+    fn preserves_allowed_rom_array() {
+        let result =
+            parse_validation_response(r#"{"PkgRom":{"Validate":["one.zip","two.zip"],"Erase":0}}"#)
+                .unwrap();
+        assert_eq!(
+            result.pkgrom_validate,
+            Some(vec!["one.zip".to_owned(), "two.zip".to_owned()])
+        );
+        assert_eq!(result.validate_token, None);
+    }
+
+    #[test]
+    fn diagnostic_json_redacts_all_scalar_values() {
+        let result = parse_validation_response(
+            r#"{"PkgRom":{"Validate":"secret-token","Erase":7,"Wipe":true},"Code":{"message":"success"}}"#,
+        )
+        .unwrap();
+        let diagnostic = redacted_response_json(&result).unwrap();
+        assert!(diagnostic.contains("PkgRom"));
+        assert!(diagnostic.contains("Validate"));
+        assert!(!diagnostic.contains("secret-token"));
+        assert!(!diagnostic.contains("success"));
+        assert!(!diagnostic.contains("string:"));
+        assert!(!diagnostic.contains("\": 7"));
+        assert!(!diagnostic.contains("true"));
+        let redacted: Value = serde_json::from_str(&diagnostic).unwrap();
+        assert!(redacted["PkgRom"]["Validate"].is_string());
+        assert!(redacted["PkgRom"]["Erase"].is_number());
+        assert!(redacted["PkgRom"]["Wipe"].is_boolean());
+    }
+
+    #[test]
+    fn unfamiliar_json_remains_available_for_redacted_diagnostics() {
+        let result = parse_validation_response(r#"{"Unexpected":{"Value":"private"}}"#).unwrap();
+        assert_eq!(result.validate_token, None);
+        let diagnostic = redacted_response_json(&result).unwrap();
+        assert!(diagnostic.contains("Unexpected"));
+        assert!(diagnostic.contains("Value"));
+        assert!(!diagnostic.contains("private"));
+    }
+
+    #[test]
+    fn response_without_a_package_is_not_reported_as_success() {
+        let result = parse_validation_response(
+            r#"{"AuthResult":0,"Code":{"code":0,"message":"success"},"Signup":{},"patchInfo":[]}"#,
+        )
+        .unwrap();
+
+        assert!(print_allowed(&result).is_err());
+    }
+
+    #[test]
+    fn latest_rom_is_accepted_alongside_account_metadata() {
+        let result = parse_validation_response(
+            r#"{
+                "Code":{"code":0,"message":"success"},
+                "Signup":{"rank":"0"},
+                "VersionBoot":"1",
+                "LatestRom":{"name":"ROM","md5":"0123456789abcdef0123456789abcdef"}
+            }"#,
+        )
+        .unwrap();
+
+        assert!(print_allowed(&result).is_ok());
     }
 }

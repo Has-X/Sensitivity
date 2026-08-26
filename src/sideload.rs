@@ -11,7 +11,8 @@ use anyhow::{bail, Context, Result};
 use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::adb::{AdbStream, A_CLSE, A_OKAY, A_WRTE};
-use crate::mi::MiClient;
+use crate::mi::{MiClient, OpenedSideload};
+use crate::util::adb_server::AdbServerSideloadStream;
 
 fn block_window(total: u64, chunk_size: usize, index: u64) -> Option<(u64, usize)> {
     let offset = index.checked_mul(chunk_size as u64)?;
@@ -20,6 +21,31 @@ fn block_window(total: u64, chunk_size: usize, index: u64) -> Option<(u64, usize
     }
     let length = std::cmp::min(chunk_size as u64, total - offset) as usize;
     Some((offset, length))
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum ServerSideloadCommand {
+    Block(u64),
+    Done,
+    Fail,
+}
+
+fn parse_server_sideload_command(command: [u8; 8]) -> Result<ServerSideloadCommand> {
+    match &command {
+        b"DONEDONE" => return Ok(ServerSideloadCommand::Done),
+        b"FAILFAIL" => return Ok(ServerSideloadCommand::Fail),
+        _ => {}
+    }
+    let command_text =
+        std::str::from_utf8(&command).context("Sideload block request is not ASCII")?;
+    if !command_text.bytes().all(|byte| byte.is_ascii_digit()) {
+        bail!("Unexpected sideload command from recovery");
+    }
+    Ok(ServerSideloadCommand::Block(
+        command_text
+            .parse::<u64>()
+            .context("Invalid sideload block index")?,
+    ))
 }
 
 fn sideload_host_service(
@@ -104,16 +130,46 @@ where
     // The last field is the wipe flag. Some cross-region updates require data wipe.
     // When server indicates Erase==1, we must send ":1"; otherwise ":0" will make recovery abort.
     let host_str = sideload_host_service(total, chunk_size, validate_token, allow_wipe)?;
-    let (mut stream, pending) = client
-        .open_sideload(&host_str)
-        .context("Opening sideload-host service")?;
-    // Give the device more time between requests during sideload
-    // (some recoveries take >5s before first WRTE)
-    stream.set_timeout(std::time::Duration::from_secs(30));
-
     progress(0, total);
-
     let mut reader = BufReader::new(file);
+    match client
+        .open_sideload(&host_str)
+        .context("Opening sideload-host service")?
+    {
+        OpenedSideload::Direct { stream, pending } => transfer_direct(
+            stream,
+            pending,
+            &mut reader,
+            total,
+            chunk_size,
+            cancel,
+            &mut progress,
+        ),
+        OpenedSideload::Server(stream) => transfer_through_adb_server(
+            stream,
+            &mut reader,
+            total,
+            chunk_size,
+            cancel,
+            &mut progress,
+        ),
+    }
+}
+
+fn transfer_direct<F>(
+    mut stream: AdbStream<'_>,
+    pending: Option<crate::adb::AdbPacket>,
+    reader: &mut BufReader<File>,
+    total: u64,
+    chunk_size: usize,
+    cancel: &AtomicBool,
+    progress: &mut F,
+) -> Result<()>
+where
+    F: FnMut(u64, u64),
+{
+    // Some recoveries take more than five seconds before their first request.
+    stream.set_timeout(std::time::Duration::from_secs(30));
     let mut send_block =
         |index: u64, s: &mut AdbStream<'_>, pkt_arg0: u32, pkt_arg1: u32| -> Result<u64> {
             let Some((offset, to_send)) = block_window(total, chunk_size, index) else {
@@ -221,6 +277,53 @@ where
     Ok(())
 }
 
+fn transfer_through_adb_server<F>(
+    mut stream: AdbServerSideloadStream,
+    reader: &mut BufReader<File>,
+    total: u64,
+    chunk_size: usize,
+    cancel: &AtomicBool,
+    progress: &mut F,
+) -> Result<()>
+where
+    F: FnMut(u64, u64),
+{
+    // The ADB server unwraps ADB packets and exposes Android's sideload-host
+    // protocol: eight decimal block-index bytes, followed by the requested data.
+    stream.set_timeout(std::time::Duration::from_secs(30));
+    let mut bytes_sent = 0;
+    loop {
+        if cancel.load(Ordering::Relaxed) {
+            stream.close();
+            bail!("Sideload cancelled by user");
+        }
+
+        let index = match parse_server_sideload_command(stream.read_command()?)? {
+            ServerSideloadCommand::Done => {
+                stream.close();
+                if bytes_sent < total {
+                    bail!("Sideload ended after {bytes_sent} of {total} bytes");
+                }
+                return Ok(());
+            }
+            ServerSideloadCommand::Fail => {
+                stream.close();
+                bail!("Sideload reported failure");
+            }
+            ServerSideloadCommand::Block(index) => index,
+        };
+        let Some((offset, length)) = block_window(total, chunk_size, index) else {
+            bail!("Recovery requested sideload block {index} outside the ROM package");
+        };
+        let mut block = vec![0; length];
+        reader.seek(SeekFrom::Start(offset))?;
+        reader.read_exact(&mut block)?;
+        stream.write_block(&block)?;
+        bytes_sent = bytes_sent.max(offset + length as u64);
+        progress(bytes_sent, total);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -236,6 +339,23 @@ mod tests {
     #[test]
     fn absurd_block_index_cannot_overflow_offset() {
         assert_eq!(block_window(10, 64 * 1024, u64::MAX), None);
+    }
+
+    #[test]
+    fn adb_server_sideload_commands_are_strictly_parsed() {
+        assert_eq!(
+            parse_server_sideload_command(*b"00000023").unwrap(),
+            ServerSideloadCommand::Block(23)
+        );
+        assert_eq!(
+            parse_server_sideload_command(*b"DONEDONE").unwrap(),
+            ServerSideloadCommand::Done
+        );
+        assert_eq!(
+            parse_server_sideload_command(*b"FAILFAIL").unwrap(),
+            ServerSideloadCommand::Fail
+        );
+        assert!(parse_server_sideload_command(*b"0000oops").is_err());
     }
 
     #[test]

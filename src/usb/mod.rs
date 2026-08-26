@@ -17,6 +17,8 @@ pub struct UsbTransport {
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct UsbDeviceInfo {
     pub index: usize,
+    pub transport: String,
+    pub transport_id: Option<u64>,
     pub bus: u8,
     pub address: u8,
     pub vendor_id: u16,
@@ -25,6 +27,8 @@ pub struct UsbDeviceInfo {
     pub protocol: u8,
     pub endpoint_in: u8,
     pub endpoint_out: u8,
+    pub recovery_device: Option<String>,
+    pub model: Option<String>,
 }
 
 struct UsbCandidate {
@@ -72,6 +76,8 @@ fn discover_candidates(context: &rusb::Context) -> Result<Vec<UsbCandidate>> {
                         device: device.clone(),
                         info: UsbDeviceInfo {
                             index: 0,
+                            transport: "usb".to_owned(),
+                            transport_id: None,
                             bus: device.bus_number(),
                             address: device.address(),
                             vendor_id: descriptor.as_ref().map_or(0, |value| value.vendor_id()),
@@ -80,6 +86,8 @@ fn discover_candidates(context: &rusb::Context) -> Result<Vec<UsbCandidate>> {
                             protocol: setting.protocol_code(),
                             endpoint_in,
                             endpoint_out,
+                            recovery_device: None,
+                            model: None,
                         },
                     };
                     if setting.protocol_code() == 0x01 {

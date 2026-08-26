@@ -80,7 +80,7 @@
   "{device} is ready": "{device} جاهز",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery جاهزة",
-  "The direct USB handshake and device queries succeeded.": "نجحت المصافحة المباشرة USB واستعلامات الجهاز.",
+  "The recovery handshake and device queries succeeded.": "نجحت مصافحة وضع الاسترداد واستعلامات الجهاز.",
   "Reading recovery information…": "قراءة معلومات الاسترداد...",
   "Ready to validate and flash": "جاهز للتحقق من الصحة وفلاش",
   "Choose a ROM": "اختر ROM",

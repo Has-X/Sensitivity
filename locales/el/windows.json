@@ -80,7 +80,7 @@
   "{device} is ready": "{device} είναι έτοιμο",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery έτοιμο",
-  "The direct USB handshake and device queries succeeded.": "Η άμεση χειραψία USB και τα ερωτήματα συσκευής πέτυχαν.",
+  "The recovery handshake and device queries succeeded.": "Η σύνδεση με το recovery και τα ερωτήματα συσκευής ολοκληρώθηκαν με επιτυχία.",
   "Reading recovery information…": "Ανάγνωση πληροφοριών ανάκτησης…",
   "Ready to validate and flash": "Έτοιμο για επικύρωση και αναβοσβήνει",
   "Choose a ROM": "Επιλέξτε ROM",

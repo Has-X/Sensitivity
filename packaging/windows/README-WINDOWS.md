@@ -4,7 +4,7 @@ Run `Sensitivity-Setup-x64.exe` and open **Sensitivity** from the Start menu, or
 
 The installer follows the Windows light or dark setting. The app selects a supported system language or in-app override, including the 34 runtime catalogs listed in the project localization guide. For unattended deployment, use `Sensitivity-Setup-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART`.
 
-The app includes diagnostics and can explain likely driver or ADB ownership problems. The installer adds `sensitivity-cli.exe` to the machine `PATH`; open a new terminal after setup and run `sensitivity-cli` for scripts and detailed troubleshooting.
+The app includes diagnostics and can explain likely driver or ADB ownership problems. The installer adds `sensitivity-cli.exe` to the machine `PATH`; open a new terminal after setup and run `sensitivity-cli` (the installed `sensitivity-cli.exe`) for scripts and detailed troubleshooting.
 
 ## One-time WinUSB setup
 

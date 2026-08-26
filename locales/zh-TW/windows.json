@@ -80,7 +80,7 @@
   "{device} is ready": "{device} 已準備就緒",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery 準備就緒",
-  "The direct USB handshake and device queries succeeded.": "直接 USB 握手和設備查詢成功。",
+  "The recovery handshake and device queries succeeded.": "Recovery 連線和裝置資訊查詢成功。",
   "Reading recovery information…": "讀取復原資訊...",
   "Ready to validate and flash": "準備好驗證並刷新",
   "Choose a ROM": "選擇 ROM",

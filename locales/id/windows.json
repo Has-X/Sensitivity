@@ -80,7 +80,7 @@
   "{device} is ready": "{device} sudah siap",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery siap",
-  "The direct USB handshake and device queries succeeded.": "Jabat tangan USB langsung dan kueri perangkat berhasil.",
+  "The recovery handshake and device queries succeeded.": "Koneksi recovery dan kueri perangkat berhasil.",
   "Reading recovery information…": "Membaca informasi pemulihan…",
   "Ready to validate and flash": "Siap memvalidasi dan mem-flash",
   "Choose a ROM": "Pilih ROM",

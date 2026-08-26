@@ -80,7 +80,7 @@
   "{device} is ready": "{device} の準備が完了しました",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery 準備完了",
-  "The direct USB handshake and device queries succeeded.": "直接の USB ハンドシェイクとデバイス クエリは成功しました。",
+  "The recovery handshake and device queries succeeded.": "リカバリーとの接続とデバイス情報の取得に成功しました。",
   "Reading recovery information…": "リカバリー情報の読み取り中...",
   "Ready to validate and flash": "検証およびフラッシュの準備ができました。",
   "Choose a ROM": "ROM を選択してください",

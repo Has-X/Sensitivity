@@ -13,15 +13,19 @@ use std::thread;
 use eframe::egui;
 use sensitivity::mi::{DeviceInfo, MiClient};
 use sensitivity::usb::{UsbDeviceInfo, UsbTransport};
-use sensitivity::{sideload, util, validate};
+use sensitivity::{download, sideload, util, validate};
 
 const SERVER_URL: &str = "https://update.miui.com/updates/miotaV3.php";
 
 fn main() -> eframe::Result<()> {
+    let app_icon =
+        eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/sensitivity-icon.png"))
+            .expect("embedded Sensitivity icon must be a valid PNG");
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1040.0, 720.0])
-            .with_min_inner_size([820.0, 560.0]),
+            .with_min_inner_size([820.0, 560.0])
+            .with_icon(app_icon),
         ..Default::default()
     };
     eframe::run_native(
@@ -37,6 +41,7 @@ enum Message {
     Error(String),
     DeviceInfo(DeviceInfo),
     Roms(String),
+    Downloaded(PathBuf),
     Validated {
         path: PathBuf,
         token: String,
@@ -292,9 +297,11 @@ fn load_catalog(language: Language) -> HashMap<String, String> {
     let aliases: HashMap<String, String> =
         serde_json::from_str(include_str!("../../../locales/_keys/gui.json")).unwrap_or_default();
     for (id, source_key) in aliases {
-        if let Some(value) = catalog.get(&source_key).cloned() {
-            catalog.insert(id, value);
-        }
+        let value = catalog
+            .get(&source_key)
+            .cloned()
+            .unwrap_or_else(|| source_key.clone());
+        catalog.insert(id, value);
     }
     catalog
 }
@@ -324,6 +331,7 @@ struct SensitivityApp {
     cancel: Option<Arc<AtomicBool>>,
     confirm_flash: bool,
     confirm_format: bool,
+    icon_texture: egui::TextureHandle,
 }
 
 impl SensitivityApp {
@@ -333,6 +341,19 @@ impl SensitivityApp {
             .and_then(|storage| storage.get_string("sensitivity.state"))
             .and_then(|json| serde_json::from_str::<PersistedState>(&json).ok())
             .unwrap_or_default();
+        let icon = eframe::icon_data::from_png_bytes(include_bytes!(
+            "../../../assets/sensitivity-icon.png"
+        ))
+        .expect("embedded Sensitivity icon must be a valid PNG");
+        let icon_image = egui::ColorImage::from_rgba_unmultiplied(
+            [icon.width as usize, icon.height as usize],
+            &icon.rgba,
+        );
+        let icon_texture = context.egui_ctx.load_texture(
+            "sensitivity-icon",
+            icon_image,
+            egui::TextureOptions::LINEAR,
+        );
         let mut app = Self {
             devices: Vec::new(),
             selected_device: 0,
@@ -351,6 +372,7 @@ impl SensitivityApp {
             cancel: None,
             confirm_flash: false,
             confirm_format: false,
+            icon_texture,
         };
         app.status = app.t("status.initial");
         app.refresh_devices();
@@ -478,6 +500,44 @@ impl SensitivityApp {
             self.validated = None;
             self.status = self.t("status.rom_selected");
         }
+    }
+
+    fn download_latest(&mut self) {
+        let Some(info) = self.device_info.clone() else {
+            self.log(self.t("log.read_info_first_roms"));
+            return;
+        };
+        let output_dir = std::env::var_os("HOME")
+            .map(PathBuf::from)
+            .map(|home| home.join("Downloads"))
+            .filter(|path| path.is_dir())
+            .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+        self.start_task(self.t("status.downloading_latest"), move |sender| {
+            let result = (|| -> anyhow::Result<PathBuf> {
+                let request = validate::build_request_json(&info, None)?;
+                let response = validate::validate(SERVER_URL, &request)?;
+                let json = response
+                    .full_json
+                    .ok_or_else(|| anyhow::anyhow!("No full ROM response returned"))?;
+                let (latest, mirrors) = download::parse_latest_from_json(&json)?;
+                let url = download::choose_url(&mirrors, &latest.filename)
+                    .ok_or_else(|| anyhow::anyhow!("No HTTPS ROM mirror returned"))?;
+                let client = reqwest::blocking::Client::builder()
+                    .user_agent("MiTunes_UserAgent_v3.0")
+                    .build()?;
+                download::download_with_md5(&client, &url, &output_dir, &latest.md5)
+            })();
+            match result {
+                Ok(path) => {
+                    let _ = sender.send(Message::Downloaded(path));
+                    let _ = sender.send(Message::Status("status.downloaded".into()));
+                }
+                Err(error) => {
+                    let _ =
+                        sender.send(Message::Error(format!("status.operation_failed|{error:#}")));
+                }
+            }
+        });
     }
 
     fn validate_rom(&mut self) {
@@ -648,6 +708,11 @@ impl SensitivityApp {
                     };
                     self.busy = false;
                 }
+                Message::Downloaded(path) => {
+                    self.rom_path = Some(path.clone());
+                    self.validated = None;
+                    self.log(self.t("status.downloaded"));
+                }
                 Message::Validated {
                     path,
                     token,
@@ -707,6 +772,10 @@ impl eframe::App for SensitivityApp {
 
         egui::Panel::top("header").show(ui, |ui| {
             ui.horizontal(|ui| {
+                ui.add(
+                    egui::Image::from_texture(&self.icon_texture)
+                        .fit_to_exact_size(egui::vec2(30.0, 30.0)),
+                );
                 ui.heading(self.t("app.title"));
                 ui.separator();
                 ui.label(self.t("app.subtitle"));
@@ -782,6 +851,15 @@ impl eframe::App for SensitivityApp {
                     .clicked()
                 {
                     self.choose_rom();
+                }
+                if ui
+                    .add_enabled(
+                        !self.busy && self.device_info.is_some(),
+                        egui::Button::new(self.t("action.download_latest")),
+                    )
+                    .clicked()
+                {
+                    self.download_latest();
                 }
                 if let Some(path) = &self.rom_path {
                     ui.small(path.display().to_string());

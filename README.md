@@ -26,7 +26,7 @@ It speaks the Mi Assistant ADB-like protocol directly over USB, validates offici
 
 ## Install
 
-Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, choose the native `Sensitivity-Setup-x64.exe` or `Sensitivity-Setup-arm64.exe` for the processor architecture, then open Sensitivity from Start. Portable ZIPs are available too. The Windows app follows the system light or dark mode and accent colour, with Mica material where supported. The app and CLI support 34 languages; see the [localization guide](docs/LOCALIZATION.md) for the maintained list and translation rules. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
+Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, choose the native `Sensitivity-Setup-x64.exe` or `Sensitivity-Setup-arm64.exe` for the processor architecture, then open Sensitivity from Start. Portable ZIPs are available too. Linux releases include x86_64 tarball, AppImage, and Debian packages, plus an ARM64 tarball. The Windows app follows the system light or dark mode and accent colour, with Mica material where supported. The app and CLI support 34 languages; see the [localization guide](docs/LOCALIZATION.md) for the maintained list and translation rules. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
 
 To build or install from source:
 
@@ -45,19 +45,33 @@ In the desktop app, select the detected recovery and ROM, review validation and 
 For the CLI:
 
 1. Boot the phone into stock recovery and choose **Connect with Mi Assistant**.
-2. Connect it directly by USB and run the setup check:
+2. Connect it directly by USB and run the setup check. On Windows, use the packaged CLI executable:
+
+   ```powershell
+   .\sensitivity-cli.exe doctor
+   ```
+
+   On Linux and macOS, use:
 
    ```console
    sensitivity doctor
    ```
 
-3. Read the detected device identity:
+3. Read the detected device identity with the same platform-specific command:
+
+   ```powershell
+   .\sensitivity-cli.exe info
+   ```
 
    ```console
    sensitivity info
    ```
 
 4. Flash an official Recovery ROM:
+
+   ```powershell
+   .\sensitivity-cli.exe flash C:\path\to\recovery-rom.zip
+   ```
 
    ```console
    sensitivity flash /path/to/recovery-rom.zip
@@ -92,19 +106,22 @@ The maintained documentation is available in the [Sensitivity Wiki](https://gith
 
 Translation contributors should use the [English source and translator guide](docs/LOCALIZATION.md). It records the safety context for Windows, installer, portable GUI, and CLI messages.
 
-Use `sensitivity help` or `sensitivity help <command>` for the complete command reference.
+Use `sensitivity help` or `sensitivity help <command>` for the complete command reference. On Windows, use `sensitivity-cli.exe help` or `sensitivity-cli.exe help <command>`.
+
+On Windows, the packaged command is `sensitivity-cli.exe` (or `sensitivity-cli` after the installer adds it to `PATH`). On Linux and macOS, the command is `sensitivity`. The examples below use the cross-platform name.
 
 ## Common commands
 
 ```console
 sensitivity doctor                       # diagnose USB and local ADB coexistence
 sensitivity devices                      # list matching USB interfaces without claiming them
-sensitivity detect                       # verify the direct-USB protocol handshake
+sensitivity detect                       # verify the recovery protocol handshake
 sensitivity info                         # human-readable device information
 sensitivity info --json                  # stable output for scripts
 sensitivity completions bash             # generate shell completion definitions
 sensitivity list-allowed-roms             # query packages accepted for this device
 sensitivity download-latest               # download and verify the latest approved ROM
+sensitivity flash ROM.zip --validate-only # validate without starting sideload
 sensitivity flash ROM.zip                 # validate and flash a local package
 sensitivity flash-from-latest             # download, validate, and flash
 sensitivity reboot                        # leave recovery
@@ -120,14 +137,14 @@ The supported profiles are `global`, `eea`, `in`, `ru`, `id`, `tr`, `tw`, and `c
 
 ## ADB coexistence
 
-Sensitivity uses direct USB and leaves a local Android Debug Bridge server untouched by default. If `adb` already owns the recovery interface, stop it only for this invocation:
+Sensitivity leaves a local Android Debug Bridge server untouched by default. When that server already owns a Mi Recovery interface, Sensitivity reuses the matching recovery transport while keeping unrelated Android devices connected. It falls back to direct USB when no compatible recovery is available through ADB. To force direct USB for one invocation:
 
 ```console
 sensitivity --adb-policy stop doctor
 sensitivity --adb-policy stop flash ROM.zip
 ```
 
-Sensitivity never occupies port 5037 and only asks the ADB server to stop when you choose that policy. The Windows app detects likely ownership conflicts, explains the impact, and asks before retrying.
+Sensitivity only asks the ADB server to stop when you choose that policy. The Windows app lists Mi Recovery transports without presenting normal Android devices as recovery targets. Existing debugging sessions remain connected when the default policy is used.
 
 Users and scripts moving from the older project should read [Migrating from MiAssistantFork](docs/MIGRATING_FROM_MAF.md).
 

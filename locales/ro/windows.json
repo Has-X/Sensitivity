@@ -80,7 +80,7 @@
   "{device} is ready": "{device} este gata",
   "Recovery {version} · {region} {romzone}": "Recovery {version} · {region} {romzone}",
   "Recovery ready": "Recovery gata",
-  "The direct USB handshake and device queries succeeded.": "Strângerea de mână directă USB și interogările dispozitivului au reușit.",
+  "The recovery handshake and device queries succeeded.": "Conexiunea la recovery și interogările dispozitivului au reușit.",
   "Reading recovery information…": "Citire informații despre recuperare...",
   "Ready to validate and flash": "Gata de validare și flash",
   "Choose a ROM": "Alegeți un ROM",
