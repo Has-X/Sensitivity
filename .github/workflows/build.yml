@@ -39,12 +39,17 @@ concurrency:
 
 jobs:
   build:
-    name: Build (${{ matrix.os }})
+    # Keep required status-check identities stable when updating runner images.
+    name: Build (${{ matrix.check_name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-14]
+        include:
+          - os: ubuntu-latest
+            check_name: ubuntu-latest
+          - os: macos-15
+            check_name: macos-14
 
     steps:
       - name: Checkout

@@ -60,7 +60,7 @@ jobs:
             os: macos-15-intel
             archive: sensitivity-macos-x86_64.tar.gz
           - name: macos-aarch64
-            os: macos-14
+            os: macos-15
             archive: sensitivity-macos-aarch64.tar.gz
     runs-on: ${{ matrix.os }}
     needs: preflight
