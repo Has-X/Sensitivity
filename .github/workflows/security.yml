@@ -3,27 +3,9 @@ name: security
 on:
   push:
     branches: [main]
-    paths:
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - ".github/workflows/security.yml"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
-    paths:
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - ".github/workflows/security.yml"
   schedule:
     - cron: "23 3 * * 1"
   workflow_dispatch:
@@ -36,9 +18,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scope:
+    uses: ./.github/workflows/change-scope.yml
+
   codeql:
+    needs: scope
+    if: ${{ always() }}
     name: CodeQL (${{ matrix.language }})
-    runs-on: ubuntu-24.04
+    runs-on: ${{ needs.scope.outputs.docs_only == 'true' && 'ubuntu-24.04' || 'ubuntu-24.04' }}
     permissions:
       security-events: write
       packages: read
@@ -49,10 +36,18 @@ jobs:
       matrix:
         language: [csharp, rust]
     steps:
+      - name: Documentation checks passed
+        if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - name: Checkout
+        if: needs.scope.outputs.docs_only != 'true'
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
+        if: needs.scope.outputs.docs_only != 'true'
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
@@ -60,6 +55,7 @@ jobs:
           queries: security-extended
 
       - name: Analyze
+        if: needs.scope.outputs.docs_only != 'true'
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"

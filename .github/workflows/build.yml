@@ -3,45 +3,24 @@ name: build
 on:
   push:
     branches: [ main, master ]
-    paths:
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "tests/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - "installer/**"
-      - "packaging/**"
-      - "tools/check-locales.ps1"
-      - ".github/workflows/build.yml"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, master ]
-    paths:
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "tests/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - "installer/**"
-      - "packaging/**"
-      - "tools/check-locales.ps1"
-      - ".github/workflows/build.yml"
 
 concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  scope:
+    uses: ./.github/workflows/change-scope.yml
+
   build:
+    needs: scope
+    if: ${{ always() }}
     # Keep required status-check identities stable when updating runner images.
     name: Build (${{ matrix.check_name }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ needs.scope.outputs.docs_only == 'true' && 'ubuntu-24.04' || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -52,13 +31,22 @@ jobs:
             check_name: macos-14
 
     steps:
+      - name: Documentation checks passed
+        if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - name: Checkout
+        if: needs.scope.outputs.docs_only != 'true'
         uses: actions/checkout@v7
 
       - name: Install Rust
+        if: needs.scope.outputs.docs_only != 'true'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache cargo registry
+        if: needs.scope.outputs.docs_only != 'true'
         uses: actions/cache@v5
         with:
           path: |
@@ -69,6 +57,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Cache target dir
+        if: needs.scope.outputs.docs_only != 'true'
         uses: actions/cache@v5
         with:
           path: target
@@ -77,23 +66,28 @@ jobs:
             ${{ runner.os }}-target-
 
       - name: Build (release)
+        if: needs.scope.outputs.docs_only != 'true'
         run: cargo build --workspace --release --locked
 
       - name: Format
+        if: needs.scope.outputs.docs_only != 'true'
         run: cargo fmt --all -- --check
 
       - name: Validate locales
+        if: needs.scope.outputs.docs_only != 'true'
         shell: pwsh
         run: pwsh -NoProfile -File tools/check-locales.ps1
 
       - name: Clippy
+        if: needs.scope.outputs.docs_only != 'true'
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
       - name: Test
+        if: needs.scope.outputs.docs_only != 'true'
         run: cargo test --workspace --locked
 
       - name: Prepare artifact (Linux)
-        if: runner.os == 'Linux'
+        if: needs.scope.outputs.docs_only != 'true' && (runner.os == 'Linux')
         shell: bash
         run: |
           mkdir -p dist
@@ -101,7 +95,7 @@ jobs:
           cp target/release/sensitivity-gui dist/sensitivity-gui-linux-x86_64
 
       - name: Prepare artifact (macOS)
-        if: runner.os == 'macOS'
+        if: needs.scope.outputs.docs_only != 'true' && (runner.os == 'macOS')
         shell: bash
         run: |
           mkdir -p dist
@@ -109,14 +103,17 @@ jobs:
           cp target/release/sensitivity-gui dist/sensitivity-gui-macos-aarch64
 
       - name: Upload artifact
+        if: needs.scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: sensitivity-${{ runner.os }}-${{ runner.arch }}
           path: dist/*
 
   windows-native:
+    needs: scope
+    if: ${{ always() }}
     name: Build native Windows app (${{ matrix.architecture }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ needs.scope.outputs.docs_only == 'true' && 'ubuntu-24.04' || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -132,29 +129,41 @@ jobs:
             rust_target: aarch64-pc-windows-msvc
             platform: ARM64
     steps:
+      - name: Documentation checks passed
+        if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
+        if: needs.scope.outputs.docs_only != 'true'
       - uses: dtolnay/rust-toolchain@stable
+        if: needs.scope.outputs.docs_only != 'true'
       - uses: actions/setup-dotnet@v6
-        if: matrix.architecture == 'x64'
+        if: needs.scope.outputs.docs_only != 'true' && (matrix.architecture == 'x64')
         with:
           dotnet-version: 10.0.x
       - uses: ./.github/actions/setup-dotnet-arm64
-        if: matrix.architecture == 'arm64'
+        if: needs.scope.outputs.docs_only != 'true' && (matrix.architecture == 'arm64')
       - uses: Swatinem/rust-cache@v2
+        if: needs.scope.outputs.docs_only != 'true'
       - run: rustup target add ${{ matrix.rust_target }}
+        if: needs.scope.outputs.docs_only != 'true'
       - run: cargo test -p sensitivity --locked
-        if: matrix.architecture == 'x64'
+        if: needs.scope.outputs.docs_only != 'true' && (matrix.architecture == 'x64')
       - name: Windows service regressions
-        if: matrix.architecture == 'x64'
+        if: needs.scope.outputs.docs_only != 'true' && (matrix.architecture == 'x64')
         run: dotnet run --project tests/windows-services/WindowsServices.Tests.csproj -c Release
       - name: Validate locales
-        if: matrix.architecture == 'x64'
+        if: needs.scope.outputs.docs_only != 'true' && (matrix.architecture == 'x64')
         shell: pwsh
         run: pwsh -NoProfile -File tools/check-locales.ps1
       - run: cargo clippy -p sensitivity --all-targets --locked -- -D warnings
-        if: matrix.architecture == 'x64'
+        if: needs.scope.outputs.docs_only != 'true' && (matrix.architecture == 'x64')
       - run: cargo build -p sensitivity --release --target ${{ matrix.rust_target }} --locked
+        if: needs.scope.outputs.docs_only != 'true'
       - name: Publish WinUI 3 app
+        if: needs.scope.outputs.docs_only != 'true'
         shell: pwsh
         run: |
           dotnet publish apps/windows/Sensitivity.WinUI/Sensitivity.WinUI.csproj -c Release -r ${{ matrix.runtime }} -p:Platform=${{ matrix.platform }} --self-contained true -p:DebugType=None -p:DebugSymbols=false -o native-publish
@@ -163,49 +172,89 @@ jobs:
           if (!(Test-Path native-publish/Sensitivity.exe)) { throw "Sensitivity.exe was not published" }
           if (!(Test-Path native-publish/sensitivity-cli.exe)) { throw "sensitivity-cli.exe was not packaged" }
       - uses: actions/upload-artifact@v7
+        if: needs.scope.outputs.docs_only != 'true'
         with:
           name: sensitivity-Windows-${{ matrix.architecture }}
           path: native-publish/*
           if-no-files-found: error
 
   linux-arm64:
+    needs: scope
+    if: ${{ always() }}
     name: Build Linux ARM64
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ needs.scope.outputs.docs_only == 'true' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     steps:
+      - name: Documentation checks passed
+        if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
+        if: needs.scope.outputs.docs_only != 'true' && (needs.scope.outputs.docs_only != 'true')
       - uses: dtolnay/rust-toolchain@stable
+        if: needs.scope.outputs.docs_only != 'true' && (needs.scope.outputs.docs_only != 'true')
       - uses: Swatinem/rust-cache@v2
+        if: needs.scope.outputs.docs_only != 'true' && (needs.scope.outputs.docs_only != 'true')
       - name: Build release binaries
+        if: needs.scope.outputs.docs_only != 'true' && (needs.scope.outputs.docs_only != 'true')
         run: cargo build --workspace --release --locked
       - name: Test Rust workspace
+        if: needs.scope.outputs.docs_only != 'true' && (needs.scope.outputs.docs_only != 'true')
         run: cargo test --workspace --locked
       - name: Prepare artifact
+        if: needs.scope.outputs.docs_only != 'true' && (needs.scope.outputs.docs_only != 'true')
         run: |
           mkdir -p dist
           cp target/release/sensitivity dist/sensitivity-linux-aarch64
           cp target/release/sensitivity-gui dist/sensitivity-gui-linux-aarch64
       - uses: actions/upload-artifact@v7
+        if: needs.scope.outputs.docs_only != 'true' && (needs.scope.outputs.docs_only != 'true')
         with:
           name: sensitivity-Linux-arm64
           path: dist/*
           if-no-files-found: error
 
   msrv:
+    needs: scope
+    if: ${{ always() }}
     name: Minimum Rust 1.97
-    runs-on: ubuntu-24.04
+    runs-on: ${{ needs.scope.outputs.docs_only == 'true' && 'ubuntu-24.04' || 'ubuntu-24.04' }}
     steps:
+      - name: Documentation checks passed
+        if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
+        if: needs.scope.outputs.docs_only != 'true'
       - uses: dtolnay/rust-toolchain@1.97.1
+        if: needs.scope.outputs.docs_only != 'true'
       - uses: Swatinem/rust-cache@v2
+        if: needs.scope.outputs.docs_only != 'true'
       - run: cargo check --workspace --locked
+        if: needs.scope.outputs.docs_only != 'true'
 
   fuzz-target:
+    needs: scope
+    if: ${{ always() }}
     name: Fuzz target compiles
-    runs-on: ubuntu-24.04
+    runs-on: ${{ needs.scope.outputs.docs_only == 'true' && 'ubuntu-24.04' || 'ubuntu-24.04' }}
     steps:
+      - name: Documentation checks passed
+        if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
+        if: needs.scope.outputs.docs_only != 'true'
       - uses: dtolnay/rust-toolchain@stable
+        if: needs.scope.outputs.docs_only != 'true'
       - uses: Swatinem/rust-cache@v2
+        if: needs.scope.outputs.docs_only != 'true'
         with:
           workspaces: fuzz
       - run: cargo check --manifest-path fuzz/Cargo.toml --locked
+        if: needs.scope.outputs.docs_only != 'true'
