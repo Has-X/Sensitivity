@@ -26,6 +26,30 @@ It speaks the Mi Assistant ADB-like protocol directly over USB, validates offici
 
 ## Install
 
+Sensitivity is also available through Windows Package Manager:
+
+```powershell
+winget install --id Chromatic.Sensitivity --exact --source winget
+# Update an existing installation:
+winget upgrade --id Chromatic.Sensitivity --exact --source winget
+```
+
+The WinGet catalog currently offers v1.1.3. The [v1.2.0 update](https://github.com/microsoft/winget-pkgs/pull/481533)
+is pending Microsoft validation and review; use GitHub Releases for v1.2.0 now.
+
+## What changed in v1.2.0
+
+- Smaller self-contained Windows installers: x64 **68.1 → 52.1 MB** (23.5% smaller), ARM64 **65.5 → 49.8 MB** (23.9% smaller), comparing published v1.1.3 and v1.2.0 assets. Unused Windows App SDK components were removed; the required WinUI runtime remains included.
+- Firmware catalog discovery through XM Firmware Updater and miroms, plus additional exact-package download fallbacks and live mirror probes.
+- Automatic ZIP selection remains enabled by default, with a persistent setting to turn it off. Manual selections take priority.
+- Session logs and exportable bug-report bundles, with sensitive identifiers, tokens, paths, and signed URLs omitted.
+- Updated dependencies, recovery transport fixes, corrected validation JSON, and repaired language-picker labels.
+
+All six release platform builds passed. See the [release notes](https://github.com/Has-X/Sensitivity/releases/tag/v1.2.0)
+for validation results and remaining hardware/UI acceptance limits.
+
+## Download from GitHub
+
 Download a release for Windows, Linux, or macOS from [GitHub Releases](https://github.com/Has-X/Sensitivity/releases). On Windows, choose the native `Sensitivity-Setup-x64.exe` or `Sensitivity-Setup-arm64.exe` for the processor architecture, then open Sensitivity from Start. Portable ZIPs are available too. Linux releases include x86_64 tarball, AppImage, and Debian packages, plus an ARM64 tarball. The Windows app follows the system light or dark mode and accent colour, with Mica material where supported. The app and CLI support 34 languages; see the [localization guide](docs/LOCALIZATION.md) for the maintained list and translation rules. The separate `sensitivity-cli.exe` is for terminals and scripts. On Linux or macOS, open `sensitivity-gui`. Releases include SHA-256 checksums.
 
 To build or install from source:
