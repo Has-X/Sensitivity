@@ -8,6 +8,7 @@ on:
       - "Cargo.lock"
       - "fuzz/**"
       - "src/**"
+      - "tests/**"
       - "crates/**"
       - "apps/**"
       - "locales/**"
@@ -23,6 +24,7 @@ on:
       - "Cargo.lock"
       - "fuzz/**"
       - "src/**"
+      - "tests/**"
       - "crates/**"
       - "apps/**"
       - "locales/**"
@@ -137,6 +139,9 @@ jobs:
       - run: rustup target add ${{ matrix.rust_target }}
       - run: cargo test -p sensitivity --locked
         if: matrix.architecture == 'x64'
+      - name: Windows service regressions
+        if: matrix.architecture == 'x64'
+        run: dotnet run --project tests/windows-services/WindowsServices.Tests.csproj -c Release
       - name: Validate locales
         if: matrix.architecture == 'x64'
         shell: pwsh

@@ -9,6 +9,8 @@
 //! parsing live in the `sensitivity` binary.
 
 pub mod adb;
+pub mod catalog;
+pub mod diagnostics;
 pub mod download;
 pub mod i18n;
 pub mod mi;

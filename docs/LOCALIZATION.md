@@ -93,3 +93,12 @@ is installed.
 Low-level USB protocol diagnostics intentionally retain stable English terms
 such as ADB, WinUSB, CNXN, and sideload-host. These are technical identifiers,
 not translatable UI copy.
+
+Language picker autonyms (for example, `日本語` and `Italiano`) intentionally
+remain the same across catalogs. Every language entry has a semantic alias;
+missing aliases must never replace visible names with internal keys.
+
+The new catalog-discovery controls, automatic-selection setting, session-log, report-export, discovered-ROM review, and verified-download
+error strings currently retain English in catalogs other than English and
+Hungarian pending native-language review. They are deliberately not presented
+as reviewed translations.

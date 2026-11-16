@@ -56,20 +56,16 @@ pub struct ValidateResult {
 
 pub fn build_request_json(info: &DeviceInfo, md5_opt: Option<String>) -> Result<String> {
     let md5 = md5_opt.unwrap_or_default();
-    // Replicate C behavior exactly: inject romzone verbatim (may be non-numeric like F)
-    let zone_field = info.romzone.trim().to_string();
-    let esc = |s: &str| s.replace('"', "\\\"");
-    let json = format!(
-        "{{\"d\":\"{}\",\"v\":\"{}\",\"c\":\"{}\",\"b\":\"{}\",\"sn\":\"{}\",\"l\":\"en-US\",\"f\":\"1\",\"options\":{{\"zone\":{}}},\"pkg\":\"{}\"}}",
-        esc(&info.device),
-        esc(&info.version),
-        esc(&info.codebase),
-        esc(&info.branch),
-        esc(&info.sn),
-        zone_field,
-        esc(&md5),
-    );
-    Ok(json)
+    let zone = info.romzone.trim();
+    let zone = zone
+        .parse::<i64>()
+        .map(Value::from)
+        .unwrap_or_else(|_| Value::String(zone.into()));
+    serde_json::to_string(&serde_json::json!({
+        "d": info.device, "v": info.version, "c": info.codebase, "b": info.branch,
+        "sn": info.sn, "l": "en-US", "f": "1", "options": {"zone": zone}, "pkg": md5
+    }))
+    .context("Serializing validation request")
 }
 
 fn aes128_cbc_encrypt_b64(plain: &[u8]) -> Result<String> {
@@ -224,6 +220,10 @@ pub fn redacted_response_json(result: &ValidateResult) -> Result<String> {
 }
 
 pub fn validate(server_url: &str, json_body: &str) -> Result<ValidateResult> {
+    crate::diagnostics::event(
+        "validation.started",
+        serde_json::json!({"request_bytes": json_body.len()}),
+    );
     let enc = aes128_cbc_encrypt_b64(json_body.as_bytes())?;
     let form = [("q", enc.as_str()), ("t", ""), ("s", "1")];
     let client = Client::builder().timeout(Duration::from_secs(30)).build()?;
@@ -234,28 +234,38 @@ pub fn validate(server_url: &str, json_body: &str) -> Result<ValidateResult> {
         .send();
     let resp = match resp {
         Ok(r) => r,
-        Err(e) => bail!("HTTP request failed: {}", e),
+        Err(e) => return Err(e.without_url()).context("Validation HTTP request failed"),
     };
     let status = resp.status();
-    let text = resp.text().unwrap_or_default();
+    crate::diagnostics::event(
+        "validation.http",
+        serde_json::json!({"status": status.as_u16()}),
+    );
+    let text = resp.text().context("Reading validation response")?;
+    crate::diagnostics::event(
+        "validation.response",
+        serde_json::json!({"bytes": text.len()}),
+    );
     if !status.is_success() {
-        let head = text.bytes().take(200).collect::<Vec<_>>();
-        let head_hex = hex::encode(&head);
-        bail!(
-            "Validation failed: HTTP {}. First {} bytes: {}",
-            status.as_u16(),
-            head.len(),
-            head_hex
-        );
+        bail!("Validation failed: HTTP {}", status.as_u16());
     }
     if text.trim().is_empty() {
         bail!("Validation failed: empty response body");
     }
-    let plain = aes128_cbc_decrypt_b64(&text).context("Decrypting server response")?;
+    let plain = aes128_cbc_decrypt_b64(text.trim()).context("Decrypting server response")?;
     let preview = String::from_utf8_lossy(&plain);
     let json_text = extract_json_braces(&preview)
         .ok_or_else(|| anyhow!("No JSON object found in plaintext (len {})", plain.len()))?;
-    parse_validation_response(&json_text)
+    let result = parse_validation_response(&json_text)?;
+    crate::diagnostics::event(
+        "validation.parsed",
+        serde_json::json!({
+            "token_present": result.validate_token.is_some(), "wipe_requested": result.pkgrom_erase == Some(1),
+            "allowed_count": result.pkgrom_validate.as_ref().map(Vec::len),
+            "response_shape": serde_json::from_str::<Value>(&redacted_response_json(&result)?)?
+        }),
+    );
+    Ok(result)
 }
 
 pub fn print_allowed(res: &ValidateResult) -> Result<()> {
@@ -303,6 +313,29 @@ pub fn print_allowed(res: &ValidateResult) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn request_preserves_numeric_zone_and_escapes_non_numeric_identity() {
+        let mut info = DeviceInfo {
+            device: "device\\\"name".into(),
+            sn: "private\nserial".into(),
+            version: "version".into(),
+            codebase: "16".into(),
+            branch: "F".into(),
+            language: "en".into(),
+            region: "TW".into(),
+            romzone: "1".into(),
+        };
+        let request: Value =
+            serde_json::from_str(&build_request_json(&info, None).unwrap()).unwrap();
+        assert_eq!(request["options"]["zone"], 1);
+        assert_eq!(request["sn"], info.sn);
+        assert_eq!(request["d"], info.device);
+        info.romzone = "F".into();
+        let request: Value =
+            serde_json::from_str(&build_request_json(&info, None).unwrap()).unwrap();
+        assert_eq!(request["options"]["zone"], "F");
+    }
 
     #[test]
     fn test_aes_b64_roundtrip() {

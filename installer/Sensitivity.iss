@@ -2,7 +2,7 @@
 ; Pass /DAppVersion, /DSourceDir and /DOutputDir from CI or a local build.
 
 #ifndef AppVersion
-  #define AppVersion "1.1.3"
+  #define AppVersion "1.2.0"
 #endif
 #ifndef SourceDir
   #define SourceDir "..\\native-publish"

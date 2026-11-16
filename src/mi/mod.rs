@@ -74,6 +74,8 @@ impl MiClient {
     }
 
     pub fn simple_query(&mut self, cmd: &str) -> Result<String> {
+        // Commands here are fixed protocol names; never record the response.
+        crate::diagnostics::event("recovery.query", serde_json::json!({"command": cmd}));
         let text = match &mut self.backend {
             MiBackend::Direct(adb) => adb.query_text(cmd),
             MiBackend::Server(adb) => adb.query_text(cmd),
@@ -96,6 +98,7 @@ impl MiClient {
     }
 
     pub fn open_sideload(&mut self, name: &str) -> Result<OpenedSideload<'_>> {
+        crate::diagnostics::event("recovery.sideload_open", serde_json::json!({}));
         match &mut self.backend {
             MiBackend::Direct(adb) => {
                 let (stream, pending) = adb.open_sideload(name)?;

@@ -31,9 +31,9 @@
                     </StackPanel>
                 </ScrollViewer>
                 <ScrollViewer x:Name="FlashPage" Grid.Row="1" Padding="32,32,32,40" Visibility="Collapsed" HorizontalContentAlignment="Left" HorizontalScrollBarVisibility="Disabled"><StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="24"><StackPanel Spacing="6"><TextBlock Tag="page.flash" Style="{StaticResource PageTitleStyle}" /><TextBlock Tag="page.flash_intro" Style="{StaticResource CaptionStyle}" /></StackPanel><Border Style="{StaticResource CardStyle}"><StackPanel Spacing="16"><TextBlock Tag="section.recovery_rom" Style="{StaticResource SectionTitleStyle}" /><TextBlock Tag="rom.select_hint" Style="{StaticResource CaptionStyle}" /><Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="RomPathText" Tag="rom.none" IsReadOnly="True" /><Button Grid.Column="1" Tag="action.browse" Click="BrowseRomButton_Click" /></Grid><Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="DownloadDirectoryText" Tag="label.download_directory" IsReadOnly="True" /><Button Grid.Column="1" Tag="action.choose_folder" Click="ChooseDownloadFolderButton_Click" /></Grid><StackPanel Orientation="Horizontal" Spacing="10"><Button x:Name="DownloadLatestButton" Style="{StaticResource AccentButtonStyle}" Tag="action.download_latest" Click="DownloadLatestButton_Click" /><Button x:Name="FlashLatestButton" Tag="action.download_flash_latest" Click="FlashLatestButton_Click" /><Button Tag="action.find_zip" Click="FindDownloadedRomButton_Click" /></StackPanel><TextBlock Tag="latest_rom.warning" Style="{StaticResource CaptionStyle}" /></StackPanel></Border><Border Style="{StaticResource CardStyle}"><StackPanel Spacing="16"><Grid><TextBlock Tag="section.flash_progress" Style="{StaticResource SectionTitleStyle}" /><TextBlock x:Name="ProgressPercentText" HorizontalAlignment="Right" /></Grid><TextBlock x:Name="OperationStatusText" Tag="status.ready" Style="{StaticResource CaptionStyle}" /><ProgressBar x:Name="FlashProgress" Minimum="0" Maximum="100" Value="0" Height="8" /><StackPanel Orientation="Horizontal" Spacing="10"><Button x:Name="StartFlashButton" Style="{StaticResource AccentButtonStyle}" Click="StartFlashButton_Click"><StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE898;" /><TextBlock Tag="action.review_flash" /></StackPanel></Button><Button x:Name="CancelFlashButton" Tag="action.cancel_safely" IsEnabled="False" Click="CancelFlashButton_Click" /><ProgressRing x:Name="BusyRing" Width="24" Height="24" IsActive="False" /></StackPanel></StackPanel></Border></StackPanel></ScrollViewer>
-                <ScrollViewer x:Name="RomsPage" Grid.Row="1" Padding="32,32,32,40" Visibility="Collapsed" HorizontalContentAlignment="Left" HorizontalScrollBarVisibility="Disabled"><StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="24"><StackPanel Spacing="6"><TextBlock Tag="page.roms" Style="{StaticResource PageTitleStyle}" /><TextBlock Tag="page.roms_intro" Style="{StaticResource CaptionStyle}" /></StackPanel><Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><StackPanel Orientation="Horizontal" Spacing="10"><TextBlock Tag="section.allowed_roms" Style="{StaticResource SectionTitleStyle}" VerticalAlignment="Center" /><Button Tag="action.refresh_allowed" Click="ListAllowedRomsButton_Click" /></StackPanel><TextBox x:Name="AllowedRomsText" Tag="allowed_roms.none" MinHeight="180" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Cascadia Mono,Consolas" /></StackPanel></Border></StackPanel></ScrollViewer>
+                <ScrollViewer x:Name="RomsPage" Grid.Row="1" Padding="32,32,32,40" Visibility="Collapsed" HorizontalContentAlignment="Left" HorizontalScrollBarVisibility="Disabled"><StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="24"><StackPanel Spacing="6"><TextBlock Tag="page.roms" Style="{StaticResource PageTitleStyle}" /><TextBlock Tag="page.roms_intro" Style="{StaticResource CaptionStyle}" /></StackPanel><Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><StackPanel Orientation="Horizontal" Spacing="10"><TextBlock Tag="section.allowed_roms" Style="{StaticResource SectionTitleStyle}" VerticalAlignment="Center" /><Button Tag="action.refresh_allowed" Click="ListAllowedRomsButton_Click" /></StackPanel><Button Tag="action.search_catalogs" Click="SearchCatalogsButton_Click" HorizontalAlignment="Left" /><TextBlock Tag="catalog.discovery_hint" Style="{StaticResource CaptionStyle}" /><TextBox x:Name="AllowedRomsText" Tag="allowed_roms.none" MinHeight="180" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Cascadia Mono,Consolas" /></StackPanel></Border></StackPanel></ScrollViewer>
                 <ScrollViewer x:Name="RecoveryPage" Grid.Row="1" Padding="32,32,32,40" Visibility="Collapsed" HorizontalContentAlignment="Left" HorizontalScrollBarVisibility="Disabled"><StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="24"><StackPanel Spacing="6"><TextBlock Tag="page.recovery" Style="{StaticResource PageTitleStyle}" /><TextBlock Tag="page.recovery_intro" Style="{StaticResource CaptionStyle}" /></StackPanel><Border Style="{StaticResource CardStyle}"><Grid ColumnSpacing="20"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Spacing="4"><TextBlock Tag="section.reboot_phone" Style="{StaticResource SectionTitleStyle}" /><TextBlock Tag="reboot.exit_hint" Style="{StaticResource CaptionStyle}" /></StackPanel><Button Grid.Column="1" Tag="action.reboot" Click="RebootButton_Click" /></Grid></Border><Border Style="{StaticResource CardStyle}" BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"><Grid ColumnSpacing="20"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Spacing="4"><TextBlock Tag="section.erase_data" Style="{StaticResource SectionTitleStyle}" /><TextBlock Tag="erase.warning_short" Style="{StaticResource CaptionStyle}" /></StackPanel><Button Grid.Column="1" Tag="action.erase_data_short" Click="EraseDataButton_Click" /></Grid></Border></StackPanel></ScrollViewer>
-                <ScrollViewer x:Name="DiagnosticsPage" Grid.Row="1" Padding="32,32,32,40" Visibility="Collapsed" HorizontalContentAlignment="Left" HorizontalScrollBarVisibility="Disabled"><StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="24"><StackPanel Spacing="6"><TextBlock Tag="page.diagnostics" Style="{StaticResource PageTitleStyle}" /><TextBlock Tag="page.diagnostics_intro" Style="{StaticResource CaptionStyle}" /></StackPanel><Border Style="{StaticResource CardStyle}"><StackPanel Spacing="16"><StackPanel Orientation="Horizontal" Spacing="10"><Button Style="{StaticResource AccentButtonStyle}" Tag="action.test_connection" Click="DetectButton_Click" /><Button Tag="action.run_diagnostics" Click="RunDoctorButton_Click" /><Button Tag="action.copy_report" Click="CopyDiagnosticsButton_Click" /></StackPanel><TextBox x:Name="DiagnosticsText" Tag="diagnostics.none" MinHeight="300" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Cascadia Mono,Consolas" /></StackPanel></Border></StackPanel></ScrollViewer>
+                <ScrollViewer x:Name="DiagnosticsPage" Grid.Row="1" Padding="32,32,32,40" Visibility="Collapsed" HorizontalContentAlignment="Left" HorizontalScrollBarVisibility="Disabled"><StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="24"><StackPanel Spacing="6"><TextBlock Tag="page.diagnostics" Style="{StaticResource PageTitleStyle}" /><TextBlock Tag="page.diagnostics_intro" Style="{StaticResource CaptionStyle}" /></StackPanel><Border Style="{StaticResource CardStyle}"><StackPanel Spacing="16"><StackPanel Orientation="Horizontal" Spacing="10"><Button Style="{StaticResource AccentButtonStyle}" Tag="action.test_connection" Click="DetectButton_Click" /><Button Tag="action.run_diagnostics" Click="RunDoctorButton_Click" /><Button Tag="action.copy_report" Click="CopyDiagnosticsButton_Click" /></StackPanel><TextBlock x:Name="SessionLoggingText" Style="{StaticResource CaptionStyle}" /><StackPanel Orientation="Horizontal" Spacing="10"><Button Tag="action.view_session_log" Click="ViewSessionLogButton_Click" /><Button Tag="action.export_report" Click="ExportReportButton_Click" /></StackPanel><TextBox x:Name="DiagnosticsText" Tag="diagnostics.none" MinHeight="300" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Cascadia Mono,Consolas" /></StackPanel></Border></StackPanel></ScrollViewer>
                 <ScrollViewer x:Name="SettingsPage" Grid.Row="1" Padding="32,32,32,40" Visibility="Collapsed" HorizontalContentAlignment="Left" HorizontalScrollBarVisibility="Disabled">
     <StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="24">
         <StackPanel Spacing="6">
@@ -50,35 +50,35 @@
                     <ComboBoxItem Tag="es" AutomationProperties.Name="language.spanish" />
                     <ComboBoxItem Tag="de" AutomationProperties.Name="language.german" />
                     <ComboBoxItem Tag="fr" AutomationProperties.Name="language.french" />
-                    <ComboBoxItem Tag="it" Content="Italian" AutomationProperties.Name="language.italian" />
-                    <ComboBoxItem Tag="pl" Content="Polski" AutomationProperties.Name="language.polish" />
-                    <ComboBoxItem Tag="pt-BR" Content="Português (Brasil)" AutomationProperties.Name="language.portuguese_brazil" />
-                    <ComboBoxItem Tag="tr" Content="Türkçe" AutomationProperties.Name="language.turkish" />
-                    <ComboBoxItem Tag="id" Content="Bahasa Indonesia" AutomationProperties.Name="language.indonesian" />
-                    <ComboBoxItem Tag="ro" Content="Română" AutomationProperties.Name="language.romanian" />
-                    <ComboBoxItem Tag="cs" Content="Čeština" AutomationProperties.Name="language.czech" />
-                    <ComboBoxItem Tag="sk" Content="Slovenčina" AutomationProperties.Name="language.slovak" />
-                    <ComboBoxItem Tag="ru" Content="Русский" AutomationProperties.Name="language.russian" />
-                    <ComboBoxItem Tag="uk" Content="Українська" AutomationProperties.Name="language.ukrainian" />
-                    <ComboBoxItem Tag="zh-CN" Content="简体中文" AutomationProperties.Name="language.chinese_simplified" />
-                    <ComboBoxItem Tag="ar" Content="العربية" AutomationProperties.Name="language.arabic" />
-                    <ComboBoxItem Tag="vi" Content="Tiếng Việt" AutomationProperties.Name="language.vietnamese" />
-                    <ComboBoxItem Tag="th" Content="ไทย" AutomationProperties.Name="language.thai" />
-                    <ComboBoxItem Tag="hi" Content="हिन्दी" AutomationProperties.Name="language.hindi" />
-                    <ComboBoxItem Tag="zh-TW" Content="繁體中文" AutomationProperties.Name="language.chinese_traditional" />
-                    <ComboBoxItem Tag="ja" Content="日本語" AutomationProperties.Name="language.japanese" />
-                    <ComboBoxItem Tag="ko" Content="한국어" AutomationProperties.Name="language.korean" />
-                    <ComboBoxItem Tag="nl" Content="Nederlands" AutomationProperties.Name="language.dutch" />
-                    <ComboBoxItem Tag="el" Content="Ελληνικά" AutomationProperties.Name="language.greek" />
-                    <ComboBoxItem Tag="bg" Content="Български" AutomationProperties.Name="language.bulgarian" />
-                    <ComboBoxItem Tag="hr" Content="Hrvatski" AutomationProperties.Name="language.croatian" />
-                    <ComboBoxItem Tag="sr" Content="Српски" AutomationProperties.Name="language.serbian" />
-                    <ComboBoxItem Tag="sl" Content="Slovenščina" AutomationProperties.Name="language.slovenian" />
-                    <ComboBoxItem Tag="sv" Content="Svenska" AutomationProperties.Name="language.swedish" />
-                    <ComboBoxItem Tag="da" Content="Dansk" AutomationProperties.Name="language.danish" />
-                    <ComboBoxItem Tag="fi" Content="Suomi" AutomationProperties.Name="language.finnish" />
-                    <ComboBoxItem Tag="nb" Content="Norsk bokmål" AutomationProperties.Name="language.norwegian" />
-                    <ComboBoxItem Tag="pt-PT" Content="Português (Portugal)" AutomationProperties.Name="language.portuguese_portugal" />
+                    <ComboBoxItem Tag="it" AutomationProperties.Name="language.italian" />
+                    <ComboBoxItem Tag="pl" AutomationProperties.Name="language.polish" />
+                    <ComboBoxItem Tag="pt-BR" AutomationProperties.Name="language.portuguese_brazil" />
+                    <ComboBoxItem Tag="tr" AutomationProperties.Name="language.turkish" />
+                    <ComboBoxItem Tag="id" AutomationProperties.Name="language.indonesian" />
+                    <ComboBoxItem Tag="ro" AutomationProperties.Name="language.romanian" />
+                    <ComboBoxItem Tag="cs" AutomationProperties.Name="language.czech" />
+                    <ComboBoxItem Tag="sk" AutomationProperties.Name="language.slovak" />
+                    <ComboBoxItem Tag="ru" AutomationProperties.Name="language.russian" />
+                    <ComboBoxItem Tag="uk" AutomationProperties.Name="language.ukrainian" />
+                    <ComboBoxItem Tag="zh-CN" AutomationProperties.Name="language.chinese_simplified" />
+                    <ComboBoxItem Tag="ar" AutomationProperties.Name="language.arabic" />
+                    <ComboBoxItem Tag="vi" AutomationProperties.Name="language.vietnamese" />
+                    <ComboBoxItem Tag="th" AutomationProperties.Name="language.thai" />
+                    <ComboBoxItem Tag="hi" AutomationProperties.Name="language.hindi" />
+                    <ComboBoxItem Tag="zh-TW" AutomationProperties.Name="language.chinese_traditional" />
+                    <ComboBoxItem Tag="ja" AutomationProperties.Name="language.japanese" />
+                    <ComboBoxItem Tag="ko" AutomationProperties.Name="language.korean" />
+                    <ComboBoxItem Tag="nl" AutomationProperties.Name="language.dutch" />
+                    <ComboBoxItem Tag="el" AutomationProperties.Name="language.greek" />
+                    <ComboBoxItem Tag="bg" AutomationProperties.Name="language.bulgarian" />
+                    <ComboBoxItem Tag="hr" AutomationProperties.Name="language.croatian" />
+                    <ComboBoxItem Tag="sr" AutomationProperties.Name="language.serbian" />
+                    <ComboBoxItem Tag="sl" AutomationProperties.Name="language.slovenian" />
+                    <ComboBoxItem Tag="sv" AutomationProperties.Name="language.swedish" />
+                    <ComboBoxItem Tag="da" AutomationProperties.Name="language.danish" />
+                    <ComboBoxItem Tag="fi" AutomationProperties.Name="language.finnish" />
+                    <ComboBoxItem Tag="nb" AutomationProperties.Name="language.norwegian" />
+                    <ComboBoxItem Tag="pt-PT" AutomationProperties.Name="language.portuguese_portugal" />
                 </ComboBox>
             </StackPanel>
         </Border>
@@ -93,7 +93,7 @@
         </Border>
         <Border Style="{StaticResource CardStyle}">
             <StackPanel Spacing="12">
-                <TextBlock Tag="section.rom_matching" Style="{StaticResource SectionTitleStyle}" />
+                <TextBlock Tag="section.rom_matching" Style="{StaticResource SectionTitleStyle}" /><ToggleSwitch x:Name="AutoSelectRomToggle" Tag="setting.auto_select_rom" IsOn="True" Toggled="AutoSelectRomToggle_Toggled" /><TextBlock Tag="setting.auto_select_rom_hint" Style="{StaticResource CaptionStyle}" />
                 <ComboBox x:Name="RegionProfilePicker" Tag="label.region_profile" SelectionChanged="RegionProfilePicker_SelectionChanged">
                     <ComboBoxItem Tag="" AutomationProperties.Name="profile.auto" />
                     <ComboBoxItem Tag="global" AutomationProperties.Name="region.global" />

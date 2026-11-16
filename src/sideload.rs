@@ -113,7 +113,7 @@ pub fn sideload_zip_with_progress<F>(
     validate_token: &str,
     allow_wipe: bool,
     cancel: &AtomicBool,
-    mut progress: F,
+    progress: F,
 ) -> Result<()>
 where
     F: FnMut(u64, u64),
@@ -130,6 +130,22 @@ where
     // The last field is the wipe flag. Some cross-region updates require data wipe.
     // When server indicates Erase==1, we must send ":1"; otherwise ":0" will make recovery abort.
     let host_str = sideload_host_service(total, chunk_size, validate_token, allow_wipe)?;
+    crate::diagnostics::event(
+        "sideload.started",
+        serde_json::json!({"bytes": total, "chunk_bytes": chunk_size, "wipe": allow_wipe}),
+    );
+    let mut report_progress = progress;
+    let mut next_log = 0;
+    let mut progress = |sent: u64, total: u64| {
+        if sent >= next_log || sent == total {
+            crate::diagnostics::event(
+                "sideload.progress",
+                serde_json::json!({"bytes": sent, "total": total}),
+            );
+            next_log = sent.saturating_add(128 * 1024 * 1024);
+        }
+        report_progress(sent, total);
+    };
     progress(0, total);
     let mut reader = BufReader::new(file);
     match client

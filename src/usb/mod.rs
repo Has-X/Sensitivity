@@ -123,6 +123,10 @@ impl UsbTransport {
     }
 
     pub fn open(device_index: usize, debug_usb: bool) -> Result<Self> {
+        crate::diagnostics::event(
+            "usb.open",
+            serde_json::json!({"device_index": device_index}),
+        );
         let context = usb_context()?;
         let mut matches = discover_candidates(&context)?;
 

@@ -23,6 +23,8 @@ public sealed partial class MainWindow : Window
     private string? _detectedCodename;
     private bool _busy;
     private bool _hasRecoveryDevice;
+    private bool _settingsReady;
+    private bool _automaticRomSelection;
 
     private static string L(string key) => LocalizationService.Get(key);
 
@@ -47,6 +49,7 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(1120, 760));
         AutoResolveAdbToggle.IsOn = settings.OfferAdbResolution;
         StopAdbToggle.IsOn = settings.AlwaysStopAdb;
+        AutoSelectRomToggle.IsOn = settings.AutoSelectRom;
         _backend.Profile = settings.RegionProfile;
         _backend.Codename = settings.Codename;
         DownloadDirectoryText.Text = string.IsNullOrWhiteSpace(settings.DownloadDirectory)
@@ -58,16 +61,16 @@ public sealed partial class MainWindow : Window
         LanguagePicker.SelectedItem = LanguagePicker.Items
             .OfType<ComboBoxItem>()
             .FirstOrDefault(item => (item.Tag as string ?? string.Empty) == (settings.LanguageOverride ?? string.Empty));
-        if (settings.LastRomPath is { } lastRom && File.Exists(lastRom))
-        {
-            SelectRomPath(lastRom);
-        }
+        _settingsReady = true;
+        if (settings.AutoSelectRom && settings.LastRomPath is { } lastRom && File.Exists(lastRom))
+            SelectRomPath(lastRom, automatic: true);
         else TrySelectDownloadedRom();
         Navigation.SelectedItem = Navigation.MenuItems[0];
         Root.Loaded += Root_Loaded;
         Closed += (_, _) =>
         {
             _operationCancellation?.Cancel();
+            SessionLog.Record("application.closed");
             SaveSettings();
         };
     }
@@ -165,8 +168,10 @@ public sealed partial class MainWindow : Window
         LanguagePicker.Header = L("label.language");
         foreach (var item in LanguagePicker.Items.OfType<ComboBoxItem>())
         {
-            item.Content = L(AutomationProperties.GetName(item));
+            var key = AutomationProperties.GetName(item);
+            if (L(key) != key) item.Content = L(key);
         }
+        SessionLoggingText.Text = L(SessionLog.IsAvailable ? "diagnostics.logging_enabled" : "diagnostics.logging_unavailable");
         foreach (var item in RegionProfilePicker.Items.OfType<ComboBoxItem>())
         {
             var localizationKey = AutomationProperties.GetName(item);
@@ -188,6 +193,7 @@ public sealed partial class MainWindow : Window
         {
             OfferAdbResolution = AutoResolveAdbToggle.IsOn,
             AlwaysStopAdb = StopAdbToggle.IsOn,
+            AutoSelectRom = AutoSelectRomToggle.IsOn,
             LastRomPath = _romPath,
             DownloadDirectory = DownloadDirectoryText.Text,
             RegionProfile = _backend.Profile,
@@ -334,12 +340,22 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void FindDownloadedRomButton_Click(object sender, RoutedEventArgs e)
+    private async void FindDownloadedRomButton_Click(object sender, RoutedEventArgs e)
     {
-        if (TrySelectDownloadedRom() && _romPath is { } romPath)
+        await RunBusyAsync(async _ =>
         {
-            ShowStatus(L("status.rom_found"), Path.GetFileName(romPath), InfoBarSeverity.Success);
-        }
+            var romPath = FindDownloadedRom();
+            if (romPath is null)
+            {
+                ShowStatus(L("status.rom_not_found"), L("status.rom_not_found_detail"), InfoBarSeverity.Warning);
+                return;
+            }
+            if (await ShowChoiceAsync(L("dialog.select_discovered_rom"), Path.GetFileName(romPath), L("action.choose_rom"), L("action.cancel")))
+            {
+                SelectRomPath(romPath);
+                ShowStatus(L("status.rom_found"), Path.GetFileName(romPath), InfoBarSeverity.Success);
+            }
+        }, L("status.fetching_allowed"));
     }
 
     private async void ListAllowedRomsButton_Click(object sender, RoutedEventArgs e)
@@ -357,6 +373,24 @@ public sealed partial class MainWindow : Window
         }, L("status.fetching_allowed"));
     }
 
+    private async void SearchCatalogsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var device = _backend.Codename ?? _detectedCodename;
+        if (string.IsNullOrWhiteSpace(device))
+        {
+            ShowStatus(L("dialog.no_recovery"), L("catalog.read_identity"), InfoBarSeverity.Warning);
+            return;
+        }
+        await RunBusyAsync(async cancellationToken =>
+        {
+            var region = _backend.Profile;
+            if (string.IsNullOrWhiteSpace(region) && Services.CatalogRegion.IsKnown(RegionText.Text)) region = RegionText.Text;
+            var result = await _backend.CatalogAsync(device, region, cancellationToken);
+            AllowedRomsText.Text = result.StandardOutput.Trim();
+            if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
+        }, L("status.fetching_allowed"));
+    }
+
     private async void DownloadLatestButton_Click(object sender, RoutedEventArgs e)
     {
         if (DevicePicker.SelectedItem is not UsbDevice device)
@@ -364,11 +398,12 @@ public sealed partial class MainWindow : Window
             ShowStatus(L("dialog.no_recovery"), L("dialog.no_recovery_detail"), InfoBarSeverity.Warning);
             return;
         }
+        ClearRomSelection();
         await RunBusyAsync(async cancellationToken =>
         {
             var result = await _backend.DownloadLatestAsync(device.Index, DownloadDirectoryText.Text, ShouldStopAdb(device), cancellationToken);
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
-            var romPath = ExtractDownloadedRomPath(result.StandardOutput) ?? FindDownloadedRom();
+            var romPath = DownloadedRomResult.GetVerifiedPath(result.StandardOutput);
             if (romPath is not null)
             {
                 SelectRomPath(romPath);
@@ -378,26 +413,31 @@ public sealed partial class MainWindow : Window
             }
             else
             {
-                ShowStatus(L("status.download_complete"), result.StandardOutput.Trim(), InfoBarSeverity.Success);
+                throw new InvalidOperationException(L("error.download_result"));
             }
         }, L("status.downloading_latest"));
     }
 
-    private void SelectRomPath(string path)
+    private void ClearRomSelection()
     {
+        _romPath = null;
+        _automaticRomSelection = false;
+        RomPathText.Text = string.Empty;
+        FlashProgress.Value = 0;
+        ProgressPercentText.Text = string.Empty;
+        UpdateDeviceActionState();
+    }
+
+    private void SelectRomPath(string path, bool automatic = false)
+    {
+        _automaticRomSelection = automatic;
+        SessionLog.Record("rom.selected", new { source = automatic ? "automatic" : "explicit_selection" });
         _romPath = path;
         RomPathText.Text = path;
         FlashProgress.Value = 0;
         ProgressPercentText.Text = string.Empty;
         OperationStatusText.Text = L("status.ready_to_flash");
-    }
-
-    private bool TrySelectDownloadedRom()
-    {
-        var romPath = FindDownloadedRom();
-        if (romPath is null) return false;
-        SelectRomPath(romPath);
-        return true;
+        UpdateDeviceActionState();
     }
 
     private string? FindDownloadedRom()
@@ -412,42 +452,29 @@ public sealed partial class MainWindow : Window
             .ToList();
         if (candidates.Count == 0) return null;
 
-        var codename = _backend.Codename ?? _detectedCodename;
-        if (!string.IsNullOrWhiteSpace(codename))
-        {
-            var matching = candidates.FirstOrDefault(file => file.Name.Contains(codename, StringComparison.OrdinalIgnoreCase));
-            return matching?.FullName ?? (candidates.Count == 1 ? candidates[0].FullName : null);
-        }
-
-        return candidates.Count == 1 ? candidates[0].FullName : null;
+        return RomSelection.ChooseCandidate(candidates.Select(file => file.FullName).ToArray(), _backend.Codename ?? _detectedCodename);
     }
 
-    private static string? ExtractDownloadedRomPath(string output)
+    private void TrySelectDownloadedRom()
     {
+        if (!AutoSelectRomToggle.IsOn || (!_automaticRomSelection && _romPath is not null && File.Exists(_romPath))) return;
         try
         {
-            using var document = System.Text.Json.JsonDocument.Parse(output);
-            if (document.RootElement.TryGetProperty("event", out var eventProperty)
-                && eventProperty.GetString() == "downloaded"
-                && document.RootElement.TryGetProperty("path", out var pathProperty))
-            {
-                var machinePath = pathProperty.GetString();
-                if (!string.IsNullOrWhiteSpace(machinePath) && File.Exists(machinePath)) return machinePath;
-            }
+            if (FindDownloadedRom() is { } path) SelectRomPath(path, automatic: true);
+            else if (_automaticRomSelection) ClearRomSelection();
         }
-        catch (System.Text.Json.JsonException)
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
-            // Older portable backends may still emit the human-readable line.
+            SessionLog.Failure(error);
         }
-        const string prefix = "Downloaded to ";
-        const string suffix = " (md5 ok)";
-        var line = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .FirstOrDefault(value => value.StartsWith(prefix, StringComparison.Ordinal));
-        if (line is null) return null;
+    }
 
-        var path = line[prefix.Length..];
-        if (path.EndsWith(suffix, StringComparison.Ordinal)) path = path[..^suffix.Length];
-        return File.Exists(path) ? path : null;
+    private void AutoSelectRomToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (!_settingsReady) return;
+        if (!AutoSelectRomToggle.IsOn && _automaticRomSelection) ClearRomSelection();
+        if (AutoSelectRomToggle.IsOn) TrySelectDownloadedRom();
+        SaveSettings();
     }
 
     private static string? DeriveCodename(string device)
@@ -471,11 +498,13 @@ public sealed partial class MainWindow : Window
             return;
         }
         if (!await ShowChoiceAsync(L("dialog.flash_latest"), L("dialog.flash_latest_detail"), L("action.download_flash_latest"), L("action.cancel"))) return;
+        ClearRomSelection();
         _operationCancellation = new CancellationTokenSource();
         SetBusy(true, L("status.downloading_latest"));
         try
         {
             var result = await _backend.FlashLatestAsync(device.Index, DownloadDirectoryText.Text, ShouldStopAdb(device), HandleBackendEventAsync, _operationCancellation.Token);
+            _operationCancellation.Token.ThrowIfCancellationRequested();
             if (!result.Succeeded) throw new InvalidOperationException(result.ErrorMessage);
             FlashProgress.Value = 100;
             ProgressPercentText.Text = "100%";
@@ -488,6 +517,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception error)
         {
+            SessionLog.Failure(error);
             OperationStatusText.Text = L("status.flash_stopped");
             ShowStatus(L("status.flash_stopped"), CleanError(error.Message), InfoBarSeverity.Error);
         }
@@ -551,6 +581,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception error)
         {
+            SessionLog.Failure(error);
             OperationStatusText.Text = L("status.flash_stopped");
             ShowStatus(L("status.flash_stopped"), CleanError(error.Message), InfoBarSeverity.Error);
         }
@@ -568,6 +599,9 @@ public sealed partial class MainWindow : Window
         {
             switch (backendEvent.Event)
             {
+                case "downloaded":
+                    if (backendEvent.Md5Verified && backendEvent.Path is { } path && File.Exists(path)) SelectRomPath(path);
+                    break;
                 case "status":
                     OperationStatusText.Text = backendEvent.Message ?? L("status.working");
                     break;
@@ -686,6 +720,35 @@ public sealed partial class MainWindow : Window
         ShowStatus(L("status.report_copied"), L("status.report_copied_detail"), InfoBarSeverity.Success);
     }
 
+    private async void ExportReportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var picker = new FileSavePicker { SuggestedFileName = $"Sensitivity-report-{DateTime.Now:yyyyMMdd-HHmmss}" };
+        picker.FileTypeChoices.Add("ZIP", new List<string> { ".zip" });
+        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
+        var file = await picker.PickSaveFileAsync();
+        if (file is null) return;
+        try
+        {
+            await Task.Run(() => SessionLog.Export(file.Path));
+            ShowStatus(L("status.report_exported"), L("diagnostics.report_hint"), InfoBarSeverity.Success);
+        }
+        catch (Exception error)
+        {
+            SessionLog.Failure(error);
+            ShowStatus(L("status.operation_failed"), L("error.report_export"), InfoBarSeverity.Error);
+        }
+    }
+
+    private async void ViewSessionLogButton_Click(object sender, RoutedEventArgs e)
+    {
+        try { DiagnosticsText.Text = await Task.Run(SessionLog.ReadCurrent); }
+        catch (Exception error)
+        {
+            SessionLog.Failure(error);
+            ShowStatus(L("status.operation_failed"), L("diagnostics.logging_unavailable"), InfoBarSeverity.Error);
+        }
+    }
+
     private async Task RunBusyAsync(Func<CancellationToken, Task> operation, string status)
     {
         if (_busy) return;
@@ -697,6 +760,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception error)
         {
+            SessionLog.Failure(error);
             ShowStatus(L("status.operation_failed"), CleanError(error.Message), InfoBarSeverity.Error);
         }
         finally
@@ -729,7 +793,7 @@ public sealed partial class MainWindow : Window
     {
         var enabled = _hasRecoveryDevice && !_busy;
         ReadInfoButton.IsEnabled = enabled;
-        StartFlashButton.IsEnabled = enabled;
+        StartFlashButton.IsEnabled = enabled && _romPath is not null && File.Exists(_romPath);
         DownloadLatestButton.IsEnabled = enabled;
         FlashLatestButton.IsEnabled = enabled;
     }
@@ -746,6 +810,7 @@ public sealed partial class MainWindow : Window
 
     private void ShowStatus(string title, string message, InfoBarSeverity severity)
     {
+        SessionLog.Record("ui.status", new { title, severity = severity.ToString() });
         StatusBar.Title = title;
         StatusBar.Message = message;
         StatusBar.Severity = severity;

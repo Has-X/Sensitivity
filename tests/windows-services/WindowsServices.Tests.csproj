@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../apps/windows/Sensitivity.WinUI/Services/SessionLog.cs" Link="SessionLog.cs" />
+    <Compile Include="../../apps/windows/Sensitivity.WinUI/Services/RomSelection.cs" Link="RomSelection.cs" />
+    <Compile Include="../../apps/windows/Sensitivity.WinUI/Services/SettingsStore.cs" Link="SettingsStore.cs" />
+    <Compile Include="../../apps/windows/Sensitivity.WinUI/Services/DownloadedRomResult.cs" Link="DownloadedRomResult.cs" />
+  </ItemGroup>
+</Project>

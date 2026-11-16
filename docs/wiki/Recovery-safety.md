@@ -11,6 +11,27 @@ Before flashing:
 
 The `doctor`, `devices`, and `info` commands are read-only. ADB is preserved by default. Only use the explicit ADB stop policy when another process owns the recovery interface.
 
+ROM downloads use unique temporary files in the destination directory. Only a
+checksum-verified download replaces the destination, using an atomic rename.
+Failed transfers, checksum checks, and finalization attempts remove their own
+temporary file and preserve any existing ROM.
+
+The Windows app automatically selects a ZIP by default to help beginners.
+Turn off **Settings → Automatically select a ZIP** to disable folder selection
+and restoration of a previously selected path. Automatic discovery prefers a
+codename match or a single ZIP and has no project-name exclusions. An explicit
+current-session file choice is preserved. **Find ZIP** remains available when
+automatic selection is off and asks you to review the result. A suggested or
+selected ZIP is never compatibility approval: Xiaomi validation and the normal
+flash/wipe confirmations remain mandatory before sideload.
+
+For failures, use **Diagnostics → Export bug report** and include reproduction
+steps. See [support logging](../SUPPORT_LOGGING.md) for contents and privacy.
+
+Third-party catalogs can find full Recovery packages and additional copies of
+Xiaomi's selected artifact. A listing is not compatibility approval. See
+[firmware sources](../FIRMWARE_SOURCES.md) for adapters and download policy.
+
 ## Validation diagnostics
 
 Check a local package without opening sideload, and save a redacted response for troubleshooting:

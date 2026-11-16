@@ -7,6 +7,12 @@ accent resources, accessible native controls, and Mica where supported. The
 recovery protocol remains in the shared Rust core and is shipped as
 `sensitivity-cli.exe` beside the user-facing `Sensitivity.exe`.
 
+The application references only `Microsoft.WindowsAppSDK.WinUI`, rather than
+the SDK metapackage that also includes unused AI/ML and search components.
+WinUI 3 is distributed with the Windows App SDK; Windows 11's built-in XAML is
+not a drop-in replacement. The installer remains self-contained so an offline
+installation does not depend on a separately installed framework runtime.
+
 The publish target explicitly copies Sensitivity's generated PRI resource file.
 Windows App SDK 2.x currently omits this file from unpackaged publish output by
 default, which causes an immediate WinUI startup failure without this safeguard.
@@ -47,8 +53,14 @@ failure.
 
 Validation tokens and raw protocol authentication values are deliberately not
 included in events, diagnostics, settings, or process arguments. App settings
-contain only ADB preferences and the last selected ROM path in the current
-user's local application-data directory.
+retain connection, download-folder, language, and appearance
+preferences and the last selected ROM path. Automatic ZIP selection is enabled
+by default and can be disabled in Settings. It restores an existing selection
+or searches the download folder on startup, recovery-information refresh, and
+folder changes, preferring a codename match or a single ZIP. It does not filter
+by recovery-project name, and it does not replace an explicit current-session
+choice. Disabling the setting clears an automatically selected file and prevents
+automatic restoration. The Rust core still validates every package before sideload.
 
 ## ADB coexistence
 

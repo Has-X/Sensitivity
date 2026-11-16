@@ -8,11 +8,17 @@ public partial class App : Application
 
     public App()
     {
+        Services.SessionLog.Record("application.starting");
         InitializeComponent();
         UnhandledException += (_, args) =>
         {
-            System.Diagnostics.Debug.WriteLine(args.Exception);
+            Services.SessionLog.Failure(args.Exception);
         };
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            if (args.ExceptionObject is Exception error) Services.SessionLog.Failure(error);
+        };
+        TaskScheduler.UnobservedTaskException += (_, args) => Services.SessionLog.Failure(args.Exception);
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
