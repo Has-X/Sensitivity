@@ -3,31 +3,9 @@ name: security
 on:
   push:
     branches: [main]
-    paths:
-      - "README.md"
-      - "docs/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - ".github/workflows/security.yml"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
-    paths:
-      - "README.md"
-      - "docs/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - ".github/workflows/security.yml"
   schedule:
     - cron: "23 3 * * 1"
   workflow_dispatch:
@@ -40,7 +18,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scope:
+    uses: ./.github/workflows/change-scope.yml
+
   codeql:
+    needs: scope
+    if: ${{ always() && (needs.scope.outputs.docs_only != 'true' || needs.scope.result != 'success') }}
     name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-24.04
     permissions:
@@ -53,6 +36,9 @@ jobs:
       matrix:
         language: [csharp, rust]
     steps:
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - name: Checkout
         uses: actions/checkout@v4
 

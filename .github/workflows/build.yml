@@ -3,46 +3,21 @@ name: build
 on:
   push:
     branches: [ main, master ]
-    paths:
-      - "README.md"
-      - "docs/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "tests/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - "installer/**"
-      - "packaging/**"
-      - "tools/check-locales.ps1"
-      - ".github/workflows/build.yml"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, master ]
-    paths:
-      - "README.md"
-      - "docs/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "fuzz/**"
-      - "src/**"
-      - "tests/**"
-      - "crates/**"
-      - "apps/**"
-      - "locales/**"
-      - "installer/**"
-      - "packaging/**"
-      - "tools/check-locales.ps1"
-      - ".github/workflows/build.yml"
 
 concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  scope:
+    uses: ./.github/workflows/change-scope.yml
+
   build:
+    needs: scope
+    if: ${{ always() && (needs.scope.outputs.docs_only != 'true' || needs.scope.result != 'success') }}
     # Keep required status-check identities stable when updating runner images.
     name: Build (${{ matrix.check_name }})
     runs-on: ${{ matrix.os }}
@@ -56,6 +31,9 @@ jobs:
             check_name: macos-14
 
     steps:
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - name: Checkout
         uses: actions/checkout@v7
 
@@ -119,6 +97,8 @@ jobs:
           path: dist/*
 
   windows-native:
+    needs: scope
+    if: ${{ always() && (needs.scope.outputs.docs_only != 'true' || needs.scope.result != 'success') }}
     name: Build native Windows app (${{ matrix.architecture }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -136,6 +116,9 @@ jobs:
             rust_target: aarch64-pc-windows-msvc
             platform: ARM64
     steps:
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-dotnet@v6
@@ -173,9 +156,14 @@ jobs:
           if-no-files-found: error
 
   linux-arm64:
+    needs: scope
+    if: ${{ always() && (needs.scope.outputs.docs_only != 'true' || needs.scope.result != 'success') }}
     name: Build Linux ARM64
     runs-on: ubuntu-24.04-arm
     steps:
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
@@ -195,18 +183,28 @@ jobs:
           if-no-files-found: error
 
   msrv:
+    needs: scope
+    if: ${{ always() && (needs.scope.outputs.docs_only != 'true' || needs.scope.result != 'success') }}
     name: Minimum Rust 1.97
     runs-on: ubuntu-24.04
     steps:
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@1.97.1
       - uses: Swatinem/rust-cache@v2
       - run: cargo check --workspace --locked
 
   fuzz-target:
+    needs: scope
+    if: ${{ always() && (needs.scope.outputs.docs_only != 'true' || needs.scope.result != 'success') }}
     name: Fuzz target compiles
     runs-on: ubuntu-24.04
     steps:
+      - name: Require successful change classification
+        if: needs.scope.result != 'success'
+        run: exit 1
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
