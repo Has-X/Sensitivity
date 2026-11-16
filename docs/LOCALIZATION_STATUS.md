@@ -1,6 +1,6 @@
 # Localization status
 
-Status date: 2026-08-22
+Status date: 2026-11-16
 
 ## Runtime coverage
 
@@ -15,6 +15,11 @@ The Windows picker accepts the same set. The CLI detects `SENSITIVITY_LANG`,
 `LC_ALL`, or `LANG`; Portuguese and Chinese region tags are resolved to the
 matching Brazilian/European or simplified/traditional catalog. Existing ROM
 region profiles remain independent from UI language selection.
+
+Language labels now have complete semantic aliases, including Japanese. New
+catalog-discovery, automatic-selection, support-logging, export, ROM-review, and verified-download error strings retain
+English outside English and Hungarian pending native review; catalog coverage
+does not imply that these additions have been reviewed in every language.
 
 ## Validation
 

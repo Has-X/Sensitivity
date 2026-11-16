@@ -152,6 +152,7 @@ Users and scripts moving from the older project should read [Migrating from MiAs
 
 - HTTPS validation is required unless the advanced `--http` override is supplied.
 - Package integrity is checked before downloaded ROMs are used.
+- Downloads use separate temporary files and replace the destination only after checksum verification. A failed download leaves an existing ROM intact.
 - Server-requested wipes are shown before flashing; `--yes` is intended for automation.
 - A manual token does not imply permission to wipe; add `--wipe` explicitly when required.
 - Validation tokens are never printed or passed to the Windows presentation layer.
@@ -159,6 +160,22 @@ Users and scripts moving from the older project should read [Migrating from MiAs
 - Ctrl-C during sideload requests a graceful close after the current USB operation.
 
 Hardware behavior varies between recovery versions. Offline CI proves builds, parsing, crypto framing, and command behavior; it cannot prove a real flash. Please report the device codename, OS, recovery version, command output, and ROM filename when filing a hardware issue.
+
+## Firmware catalogs
+
+Firmware discovery also supports [third-party ROM catalogs](docs/FIRMWARE_SOURCES.md):
+XM Firmware Updater and miroms. Use **Search firmware catalogs** on the Windows
+ROMs page, or `sensitivity rom-catalog --device garnet --region TW` without a
+connected phone. A catalog listing does not replace Xiaomi approval.
+
+## Reporting bugs
+
+For a Windows bug report, open **Diagnostics**, select **View session log** to
+review the operation timeline, then **Export bug report**. Attach the ZIP and
+describe the steps, expected result, and actual result. No developer build is
+needed. Reports omit serials, validation tokens, ROM paths, signed URLs, and raw
+protocol payloads. See [support logging](docs/SUPPORT_LOGGING.md) for retention,
+CLI logging, and the limits of these reports.
 
 ## Development
 
@@ -178,7 +195,7 @@ cd fuzz
 cargo +nightly fuzz run adb-header
 ```
 
-Tagging a version such as `v1.1.3` builds self-contained Fluent 2 WinUI 3 applications and architecture-matched x64 and ARM64 Inno Setup installers for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
+Tagging a version such as `v1.2.0` builds self-contained Fluent 2 WinUI 3 applications and architecture-matched x64 and ARM64 Inno Setup installers for Windows, portable Linux and macOS applications, `SHA256SUMS`, and a GitHub Release.
 
 The native process boundary, cancellation handshake, and machine-event schema are documented in [Native Windows architecture](docs/WINDOWS_ARCHITECTURE.md). Contributors should also follow the repository [engineering guide](AGENTS.md) and [design system](DESIGN.md).
 

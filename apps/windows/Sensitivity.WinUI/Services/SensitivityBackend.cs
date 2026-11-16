@@ -18,6 +18,13 @@ public sealed class SensitivityBackend
 
     public bool IsAvailable => File.Exists(ExecutablePath);
 
+    public Task<BackendResult> CatalogAsync(string device, string? region, CancellationToken cancellationToken)
+    {
+        var arguments = new List<string> { "rom-catalog", "--device", device };
+        if (!string.IsNullOrWhiteSpace(region)) arguments.AddRange(["--region", region]);
+        return RunAsync(arguments, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<UsbDevice>> GetDevicesAsync(CancellationToken cancellationToken)
     {
         var result = await RunAsync(["devices", "--json"], cancellationToken);
@@ -181,6 +188,11 @@ public sealed class SensitivityBackend
                 ExecutablePath);
         }
 
+        var operation = Guid.NewGuid().ToString("N");
+        var command = arguments.FirstOrDefault(argument => new[] { "rom-catalog", "devices", "info", "doctor", "detect", "list-allowed-roms", "download-latest", "flash-from-latest", "flash", "reboot", "format-data" }.Contains(argument)) ?? "unknown";
+        var stopwatch = Stopwatch.StartNew();
+        SessionLog.Record("backend.started", new { operation, command, stop_adb = arguments.Contains("stop") });
+
         using var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -199,6 +211,9 @@ public sealed class SensitivityBackend
         {
             process.StartInfo.ArgumentList.Add(argument);
         }
+        process.StartInfo.Environment["SENSITIVITY_LANG"] = LocalizationService.CurrentLanguage;
+        if (SessionLog.IsAvailable)
+            process.StartInfo.Environment["SENSITIVITY_LOG_FILE"] = Path.Combine(SessionLog.SessionDirectory, $"backend-{operation}.jsonl");
 
         if (!process.Start())
         {
@@ -207,12 +222,13 @@ public sealed class SensitivityBackend
 
         var output = new StringBuilder();
         var errors = new StringBuilder();
-        var stdoutTask = ReadOutputAsync(process.StandardOutput, output, onEvent);
-        var stderrTask = ReadOutputAsync(process.StandardError, errors, null);
+        var stdoutTask = ReadOutputAsync(process.StandardOutput, output, onEvent, operation);
+        var stderrTask = ReadOutputAsync(process.StandardError, errors, null, operation);
         var exitTask = process.WaitForExitAsync(CancellationToken.None);
 
         using var cancellationRegistration = cancellationToken.Register(() =>
         {
+            SessionLog.Record("backend.cancel_requested", new { operation });
             if (gracefulCancelFile is not null)
             {
                 try { File.WriteAllText(gracefulCancelFile, string.Empty); } catch { }
@@ -249,6 +265,8 @@ public sealed class SensitivityBackend
 
         await exitTask;
         await Task.WhenAll(stdoutTask, stderrTask);
+        SessionLog.Record("backend.exited", new { operation, exit_code = process.ExitCode, duration_ms = stopwatch.ElapsedMilliseconds,
+            category = process.ExitCode == 0 ? "success" : SessionLog.ErrorCategory(errors.ToString()) });
         return new BackendResult(process.ExitCode, output.ToString(), errors.ToString());
     }
 
@@ -275,11 +293,13 @@ public sealed class SensitivityBackend
     private static async Task ReadOutputAsync(
         StreamReader reader,
         StringBuilder destination,
-        Func<BackendEvent, Task>? onEvent)
+        Func<BackendEvent, Task>? onEvent,
+        string operation)
     {
         while (await reader.ReadLineAsync() is { } line)
         {
             destination.AppendLine(line);
+            SessionLog.BackendLine(operation, line);
             if (onEvent is null || !line.StartsWith('{'))
             {
                 continue;

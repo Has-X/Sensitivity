@@ -72,6 +72,11 @@ public sealed class DeviceInfo
 
 public sealed class BackendEvent
 {
+    [JsonPropertyName("path")]
+    public string? Path { get; set; }
+
+    [JsonPropertyName("md5_verified")]
+    public bool Md5Verified { get; set; }
     [JsonPropertyName("event")]
     public string Event { get; set; } = string.Empty;
 

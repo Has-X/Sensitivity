@@ -15,8 +15,10 @@ if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $OutputDirectory = Join-Path $root "local-artifacts\preflight-win-x64-$stamp"
 }
+$OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory, $root)
 
 function Invoke-Checked([string] $File, [string[]] $Arguments) {
+    Write-Host "Running: $File $($Arguments -join ' ')"
     $output = & $File @Arguments 2>&1 | Out-String
     if ($LASTEXITCODE -ne 0) { throw "Command failed ($LASTEXITCODE): $File $($Arguments -join ' ')`n$output" }
 }
@@ -27,6 +29,7 @@ function Assert-File([string] $Path) {
 
 Invoke-Checked cargo @('fmt', '--all', '--', '--check')
 Invoke-Checked pwsh @('-NoProfile', '-File', 'tools/check-locales.ps1')
+Invoke-Checked dotnet @('run', '--project', 'tests/windows-services/WindowsServices.Tests.csproj', '-c', 'Release')
 Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings')
 Invoke-Checked cargo @('test', '--workspace', '--locked')
 Invoke-Checked cargo @('check', '--manifest-path', 'fuzz/Cargo.toml', '--locked')

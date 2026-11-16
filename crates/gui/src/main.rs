@@ -519,13 +519,10 @@ impl SensitivityApp {
                 let json = response
                     .full_json
                     .ok_or_else(|| anyhow::anyhow!("No full ROM response returned"))?;
-                let (latest, mirrors) = download::parse_latest_from_json(&json)?;
-                let url = download::choose_url(&mirrors, &latest.filename)
-                    .ok_or_else(|| anyhow::anyhow!("No HTTPS ROM mirror returned"))?;
                 let client = reqwest::blocking::Client::builder()
                     .user_agent("MiTunes_UserAgent_v3.0")
                     .build()?;
-                download::download_with_md5(&client, &url, &output_dir, &latest.md5)
+                download::download_latest_with_catalog(&client, &json, &output_dir, &info.device)
             })();
             match result {
                 Ok(path) => {

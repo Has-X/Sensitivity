@@ -111,6 +111,13 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
+    /// Browse public third-party Recovery ROM indexes without accessing USB
+    RomCatalog {
+        #[arg(long)]
+        device: String,
+        #[arg(long)]
+        region: Option<String>,
+    },
     /// Generate shell completion definitions
     Completions {
         /// Shell whose completion format should be generated
@@ -188,10 +195,27 @@ enum Commands {
 }
 
 fn main() -> ExitCode {
+    sensitivity::diagnostics::event(
+        "backend.started",
+        serde_json::json!({
+            "version": env!("CARGO_PKG_VERSION"), "os": std::env::consts::OS, "arch": std::env::consts::ARCH
+        }),
+    );
     let machine = std::env::args_os().any(|argument| argument == "--machine");
     match run() {
-        Ok(()) => ExitCode::SUCCESS,
+        Ok(()) => {
+            sensitivity::diagnostics::event(
+                "backend.completed",
+                serde_json::json!({"success": true}),
+            );
+            ExitCode::SUCCESS
+        }
         Err(error) => {
+            sensitivity::diagnostics::failure(&error);
+            sensitivity::diagnostics::event(
+                "backend.completed",
+                serde_json::json!({"success": false, "cause_count": error.chain().count()}),
+            );
             if machine {
                 emit_machine_event(serde_json::json!({
                     "event": "error",
@@ -206,6 +230,17 @@ fn main() -> ExitCode {
 
 fn run() -> Result<()> {
     let cli = Cli::parse();
+    if let Commands::RomCatalog { device, region } = &cli.command {
+        let client = reqwest::blocking::Client::builder()
+            .user_agent("Sensitivity firmware catalog")
+            .build()?;
+        let report = sensitivity::catalog::fetch(&client, device, region.as_deref())?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        if report.sources.iter().all(|source| !source.available) {
+            bail!("Firmware catalogs are currently unavailable");
+        }
+        return Ok(());
+    }
     reset_control_file(cli.cancel_file.as_deref())?;
     reset_control_file(cli.approval_file.as_deref())?;
     if !cli.server_url.starts_with("https://") && !cli.http {
@@ -374,6 +409,7 @@ fn run() -> Result<()> {
     let identity = IdentityOptions::from(&cli);
 
     match cli.command {
+        Commands::RomCatalog { .. } => unreachable!("catalog browsing returns before USB dispatch"),
         Commands::Completions { .. } => {
             unreachable!("completions returns before USB command dispatch")
         }
@@ -410,16 +446,13 @@ fn run() -> Result<()> {
                 .full_json
                 .clone()
                 .ok_or_else(|| anyhow::anyhow!(tr("error.no_full_json")))?;
-            let (latest, mirrors) =
-                download::parse_latest_from_json(&json).context(tr("error.parse_latest"))?;
-            let url = download::choose_url(&mirrors, &latest.filename)
-                .ok_or_else(|| anyhow::anyhow!(tr("error.no_mirror")))?;
             let client_http = reqwest::blocking::Client::builder()
                 .user_agent("MiTunes_UserAgent_v3.0")
                 .build()?;
             let out_dir = output_dir.unwrap_or_else(|| std::env::current_dir().unwrap());
-            let path = download::download_with_md5(&client_http, &url, &out_dir, &latest.md5)
-                .context(tr("error.download_latest"))?;
+            let path =
+                download::download_latest_with_catalog(&client_http, &json, &out_dir, &info.device)
+                    .context(tr("error.download_latest"))?;
             if cli.machine {
                 emit_machine_event(serde_json::json!({
                     "event": "downloaded",
@@ -455,18 +488,22 @@ fn run() -> Result<()> {
                 .full_json
                 .clone()
                 .ok_or_else(|| anyhow::anyhow!(tr("error.no_full_json")))?;
-            let (latest, mirrors) =
+            let (latest, _) =
                 download::parse_latest_from_json(&json).context(tr("error.parse_latest"))?;
-            let url = download::choose_url(&mirrors, &latest.filename)
-                .ok_or_else(|| anyhow::anyhow!(tr("error.no_mirror")))?;
             // Step 2: Download
             emit_status(cli.machine, &tr("status.downloading"));
             let client_http = reqwest::blocking::Client::builder()
                 .user_agent("MiTunes_UserAgent_v3.0")
                 .build()?;
             let out_dir = output_dir.unwrap_or_else(|| std::env::current_dir().unwrap());
-            let local_path = download::download_with_md5(&client_http, &url, &out_dir, &latest.md5)
-                .context(tr("error.download_latest"))?;
+            let local_path =
+                download::download_latest_with_catalog(&client_http, &json, &out_dir, &info.device)
+                    .context(tr("error.download_latest"))?;
+            if cli.machine {
+                emit_machine_event(
+                    serde_json::json!({"event": "downloaded", "path": local_path, "md5_verified": true}),
+                );
+            }
             // Step 3: Validate for this MD5 and flash
             let req_json2 = validate::build_request_json(&info, Some(latest.md5.clone()))
                 .context(tr("error.build_validation"))?;

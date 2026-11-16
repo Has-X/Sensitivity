@@ -17,6 +17,13 @@ composition, CLI startup for every supported language, and the Inno Setup
 installer when ISCC is installed. The output directory contains hashes for the
 generated preflight files.
 
+The Windows service regressions also check ROM candidate filtering, verified
+download-result parsing, and private-data exclusion in exported reports.
+UI automation and real-device acceptance remain separate gates.
+
+Use `-OutputDirectory local-artifacts/my-preflight` to choose an output folder.
+Relative paths are resolved from the repository root, including for the installer.
+
 For a source-only check on a machine without Inno Setup, use:
 
 ```powershell

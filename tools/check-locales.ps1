@@ -65,4 +65,8 @@ foreach ($lang in $languages) {
 }
 $unknownAliases = @($sources | Where-Object { $_ -notin $expectedWindows })
 if ($unknownAliases.Count) { throw "Windows aliases reference unknown source keys: $($unknownAliases -join '; ')" }
+$windowsXaml = Get-Content (Join-Path $root 'apps/windows/Sensitivity.WinUI/MainWindow.xaml') -Raw
+$languageKeys = @([regex]::Matches($windowsXaml, 'AutomationProperties.Name="(language\.[^"]+)"') | ForEach-Object { $_.Groups[1].Value })
+$missingLanguageAliases = @($languageKeys | Where-Object { $_ -notin $aliases.PSObject.Properties.Name })
+if ($missingLanguageAliases.Count) { throw "Language picker labels lack catalog aliases: $($missingLanguageAliases -join ', ')" }
 Write-Host "Windows: $($expectedWindows.Count) source keys, all locales complete"
