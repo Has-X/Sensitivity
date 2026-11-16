@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
     paths:
+      - "README.md"
+      - "docs/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "fuzz/**"
@@ -16,6 +18,8 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
     paths:
+      - "README.md"
+      - "docs/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "fuzz/**"
