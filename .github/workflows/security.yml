@@ -38,7 +38,7 @@ jobs:
     steps:
       - name: Documentation checks passed
         if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
-        run: echo 'Markdown validation passed; compilation and analysis are unnecessary.'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
       - name: Require successful change classification
         if: needs.scope.result != 'success'
         run: exit 1

@@ -26,16 +26,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-        if: needs.scope.outputs.docs_only != 'true'
             check_name: ubuntu-latest
           - os: macos-15
-        if: needs.scope.outputs.docs_only != 'true'
             check_name: macos-14
 
     steps:
       - name: Documentation checks passed
         if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
-        run: echo 'Markdown validation passed; compilation and analysis are unnecessary.'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
       - name: Require successful change classification
         if: needs.scope.result != 'success'
         run: exit 1
@@ -121,13 +119,11 @@ jobs:
       matrix:
         include:
           - architecture: x64
-        if: needs.scope.outputs.docs_only != 'true'
             os: windows-latest
             runtime: win-x64
             rust_target: x86_64-pc-windows-msvc
             platform: x64
           - architecture: arm64
-        if: needs.scope.outputs.docs_only != 'true'
             os: windows-11-arm
             runtime: win-arm64
             rust_target: aarch64-pc-windows-msvc
@@ -135,7 +131,7 @@ jobs:
     steps:
       - name: Documentation checks passed
         if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
-        run: echo 'Markdown validation passed; compilation and analysis are unnecessary.'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
       - name: Require successful change classification
         if: needs.scope.result != 'success'
         run: exit 1
@@ -190,7 +186,7 @@ jobs:
     steps:
       - name: Documentation checks passed
         if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
-        run: echo 'Markdown validation passed; compilation and analysis are unnecessary.'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
       - name: Require successful change classification
         if: needs.scope.result != 'success'
         run: exit 1
@@ -227,7 +223,7 @@ jobs:
     steps:
       - name: Documentation checks passed
         if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
-        run: echo 'Markdown validation passed; compilation and analysis are unnecessary.'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
       - name: Require successful change classification
         if: needs.scope.result != 'success'
         run: exit 1
@@ -248,7 +244,7 @@ jobs:
     steps:
       - name: Documentation checks passed
         if: needs.scope.outputs.docs_only == 'true' && needs.scope.result == 'success'
-        run: echo 'Markdown validation passed; compilation and analysis are unnecessary.'
+        run: echo 'Markdown validation passed; full checks are unnecessary.'
       - name: Require successful change classification
         if: needs.scope.result != 'success'
         run: exit 1
